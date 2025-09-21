@@ -846,7 +846,10 @@ class LyricsContainer extends react.Component {
 				return reject(new Error(`${modeName} translation rate limit reached. Please wait.`));
 			}
 
-			const text = lyrics.map((l) => l?.text || "").filter(Boolean).join("\n");
+			// Filter out section headers before sending to Gemini for translation
+			const allLines = lyrics.map((l) => l?.text || "").filter(Boolean);
+			const nonSectionLines = allLines.filter(line => !Utils.isSectionHeader(line));
+			const text = nonSectionLines.join("\n");
 
 			// Show pending notification if conversion takes longer than 3s
 			const pendingTimer = setTimeout(() => {
@@ -882,11 +885,71 @@ class LyricsContainer extends react.Component {
 						throw new Error("Invalid translation format received from Gemini.");
 					}
 					
-					const mapped = lyrics.map((line, i) => ({
-						...line,
-						text: lines[i]?.trim() || line?.text || "",
-						originalText: line?.text || "",
-					}));
+					// Create mapping arrays for proper alignment
+					const originalNonSectionLines = [];
+					const originalNonSectionIndices = [];
+					
+					// Collect non-section lines from original lyrics (excluding empty lines)
+					lyrics.forEach((line, i) => {
+						const text = line?.text || "";
+						if (!Utils.isSectionHeader(text) && text.trim() !== "") {
+							originalNonSectionLines.push(text);
+							originalNonSectionIndices.push(i);
+						}
+					});
+					
+					// Filter out section headers and empty lines from translation results
+					const cleanTranslationLines = lines.filter(line => 
+						line && 
+						line.trim() !== "" && 
+						!Utils.isSectionHeader(line.trim())
+					);
+					
+					// Log debug info
+					console.log(`[LyricsPlus] Original non-section lines: ${originalNonSectionLines.length}, Translation lines: ${cleanTranslationLines.length}`);
+					console.log(`[LyricsPlus] Original lines sample:`, originalNonSectionLines.slice(0, 3));
+					console.log(`[LyricsPlus] Translation lines sample:`, cleanTranslationLines.slice(0, 3));
+					
+					// Use the clean translation lines for mapping
+					lines = cleanTranslationLines;
+					
+					// Smart mapping that accounts for section headers and empty lines
+					const mapped = lyrics.map((line, i) => {
+						const originalText = line?.text || "";
+						
+						// If this is a section header, keep original and don't show translation
+						if (Utils.isSectionHeader(originalText)) {
+							return {
+								...line,
+								text: null,
+								originalText: originalText,
+							};
+						}
+						
+						// If this is an empty line, keep it empty
+						if (originalText.trim() === "") {
+							return {
+								...line,
+								text: "",
+								originalText: originalText,
+							};
+						}
+						
+						// Find the translation index for this non-section, non-empty line
+						const positionInNonSectionLines = originalNonSectionIndices.indexOf(i);
+						const translatedText = lines[positionInNonSectionLines]?.trim() || "";
+						
+						// Debug logging for more lines to see the pattern
+						if (i < 20) {
+							console.log(`[LyricsPlus] Line ${i}: "${originalText}" -> position: ${positionInNonSectionLines}, translation: "${translatedText || 'N/A'}"`);
+						}
+						
+						return {
+							...line,
+							text: translatedText || line?.text || "",
+							originalText: originalText,
+						};
+					});
 					CacheManager.set(cacheKey2, mapped);
 					return mapped;
 				})

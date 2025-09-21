@@ -147,6 +147,32 @@ const Utils = {
 		this._langDetectCache.set(cacheKey, result);
 	},
 
+	/**
+	 * 섹션 헤더를 감지하는 함수 (예: [Verse 1], [Chorus], [Bridge] 등)
+	 * @param {string} text - 검사할 텍스트
+	 * @returns {boolean} 섹션 헤더인지 여부
+	 */
+	isSectionHeader(text) {
+		if (!text || typeof text !== 'string') return false;
+		
+		const normalizedText = text.trim();
+		
+		// 대괄호로 시작하고 끝나는 패턴 체크
+		const bracketPattern = /^\s*\[.*\]\s*$/;
+		if (!bracketPattern.test(normalizedText)) return false;
+		
+		// 일반적인 섹션 헤더 패턴들
+		const sectionPatterns = [
+			/^\s*\[\s*(verse|chorus|bridge|intro|outro|pre-?chorus|hook|refrain)\s*(\d+)?\s*(:|：)?\s*.*\]\s*$/i,
+			/^\s*\[\s*(절|후렴|브릿지|인트로|아웃트로|간주|부분)\s*(\d+)?\s*(:|：)?\s*.*\]\s*$/i,
+			/^\s*\[\s*(ヴァース|コーラス|ブリッジ|イントロ|アウトロ)\s*(\d+)?\s*(:|：)?\s*.*\]\s*$/i,
+			/^\s*\[\s*(verse|chorus|bridge|intro|outro)\s*(\d+)?\s*(:|：)?\s*[^,\[\]]*\]\s*$/i
+		];
+		
+		// 패턴 중 하나라도 매칭되면 섹션 헤더로 판단
+		return sectionPatterns.some(pattern => pattern.test(normalizedText));
+	},
+
 	detectLanguage(lyrics) {
 		if (!Array.isArray(lyrics) || lyrics.length === 0) {
 			// Debug logging

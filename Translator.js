@@ -56,7 +56,7 @@ class Translator {
 			console.log("[LyricsPlus] Trying endpoint:", url);
 			
 			const controller = new AbortController();
-			const timeoutId = setTimeout(() => controller.abort(), 80000);
+			const timeoutId = setTimeout(() => controller.abort(), 800000);
 
 			try {
 				const res = await fetch(url, {
@@ -100,7 +100,7 @@ class Translator {
 
 			if (!res || !res.ok) {
 				if (res) {
-					const errorData = await res.json().catch(() => ({ message: 'Unknown error' }));
+					const errorData = await res.json().catch(() => ({ message: 'Unknown error' })); 
 					
 					if (errorData.error && errorData.message) {
 						throw new Error(errorData.message);
