@@ -817,10 +817,10 @@ class LyricsContainer extends react.Component {
 			if (mode === "gemini_romaji") {
 				// Use Smart Phonetic logic for the unified Romaji, Romaja, Pinyin button
 				wantSmartPhonetic = true;
-				apiKey = romajiKey || viKey;
+				apiKey = "no";
 			} else {
 				// Default to Korean
-				apiKey = viKey || romajiKey;
+				apiKey = "no";
 			}
 
 			if (!apiKey || !Array.isArray(lyrics) || lyrics.length === 0) {

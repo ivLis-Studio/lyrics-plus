@@ -722,6 +722,7 @@ function openConfig() {
 				if (name === "musixmatch-translation-language") {
 					// handled below
 				} else if (name === "gemini-api-key" || name === "gemini-api-key-romaji") {
+					value = "none";
 					// Save to both Spicetify LocalStorage and regular localStorage for persistence
 					try { 
 						Spicetify?.LocalStorage?.set(`${APP_NAME}:visual:${name}`, value); 
