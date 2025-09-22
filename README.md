@@ -29,11 +29,12 @@ Google의 LLM 모델을 사용하여 자연스럽고 정확한 가사 번역을 
 
 ### 2. 간단 설치
 1. 이 프로젝트를 다운로드하여 압축 해제
-2. `lyrics-plus` 폴더를 Spicetify CustomApps 디렉토리에 복사
+2. `lyrics-plus` 폴더를 Spicetify CustomApps 디렉토리에 복사 (lyrics-plus-main 폴더 이름에서 -main을 지우십시오.)
    - Windows: `%LocalAppData%\spicetify\CustomApps`
    - MacOS/Linux: `~/.config/spicetify/CustomApps`
 3. 터미널에서 실행:
    ```
+   spicetify config custom_apps lyrics-plus
    spicetify apply
    ```
 
