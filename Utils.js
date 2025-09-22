@@ -500,4 +500,89 @@ const Utils = {
 		const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
 		return luminance > 128;
 	},
+
+	/**
+	 * Current version of the lyrics-plus app
+	 */
+	currentVersion: "1.1.0",
+
+	/**
+	 * Check for updates from remote repository
+	 * @returns {Promise<{hasUpdate: boolean, currentVersion: string, latestVersion: string}>}
+	 */
+	async checkForUpdates() {
+		try {
+			const response = await fetch("https://raw.githubusercontent.com/ivLis-Studio/lyrics-plus/refs/heads/main/version.txt");
+
+			if (!response.ok) {
+				throw new Error(`HTTP ${response.status}`);
+			}
+
+			const latestVersion = (await response.text()).trim();
+			const hasUpdate = this.compareVersions(latestVersion, this.currentVersion) > 0;
+
+			return {
+				hasUpdate,
+				currentVersion: this.currentVersion,
+				latestVersion
+			};
+		} catch (error) {
+			console.warn("Failed to check for updates:", error);
+			return {
+				hasUpdate: false,
+				currentVersion: this.currentVersion,
+				latestVersion: this.currentVersion,
+				error: error.message
+			};
+		}
+	},
+
+	/**
+	 * Compare two version strings
+	 * @param {string} a - First version (e.g., "1.1.0")
+	 * @param {string} b - Second version (e.g., "1.0.9")
+	 * @returns {number} - 1 if a > b, -1 if a < b, 0 if equal
+	 */
+	compareVersions(a, b) {
+		const aParts = a.split('.').map(Number);
+		const bParts = b.split('.').map(Number);
+
+		for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+			const aPart = aParts[i] || 0;
+			const bPart = bParts[i] || 0;
+
+			if (aPart > bPart) return 1;
+			if (aPart < bPart) return -1;
+		}
+
+		return 0;
+	},
+
+	/**
+	 * Show update notification if available
+	 */
+	async showUpdateNotificationIfAvailable() {
+		const updateInfo = await this.checkForUpdates();
+
+		if (updateInfo.hasUpdate) {
+			const updateKey = `lyrics-plus:update-dismissed:${updateInfo.latestVersion}`;
+			const isDismissed = localStorage.getItem(updateKey);
+
+			if (!isDismissed) {
+				Spicetify.showNotification(
+					`가사 플러스 업데이트 가능: v${updateInfo.latestVersion} (현재: v${updateInfo.currentVersion})`,
+					false,
+					5000
+				);
+
+				// Mark this version as notified, but don't dismiss permanently
+				// Users can still see the notification again after restart
+				setTimeout(() => {
+					localStorage.setItem(updateKey, "notified");
+				}, 5000);
+			}
+		}
+
+		return updateInfo;
+	},
 };

@@ -866,7 +866,7 @@ class LyricsContainer extends react.Component {
 
 			// Use optimized rate limiter with separate keys for each translation type
 			const rateLimitKey = mode.replace('gemini_', 'gemini-');
-			if (!RateLimiter.canMakeCall(rateLimitKey, 5, 60000)) {
+			if (!RateLimiter.canMakeCall(rateLimitKey, 5, 2000)) {
 				const modeName = mode === "gemini_romaji" ? "Romaji, Romaja, Pinyin" : "Korean";
 				return reject(new Error(`${modeName} 번역 요청이 너무 많습니다. 1분 뒤, 다시시도해주세요.`));
 			}
@@ -1388,6 +1388,13 @@ class LyricsContainer extends react.Component {
 	componentDidMount() {
 		// Register instance for external access
 		window.lyricContainer = this;
+
+		// Check for updates when app starts
+		setTimeout(() => {
+			Utils.showUpdateNotificationIfAvailable().catch(error => {
+				console.warn("Failed to check for updates:", error);
+			});
+		}, 3000); // Delay to avoid interfering with app startup
 		
 		// Enable debug mode for troubleshooting
 		window.lyricsPlusDebug = localStorage.getItem("lyrics-plus:debug") === "true";

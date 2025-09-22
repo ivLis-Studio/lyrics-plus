@@ -707,6 +707,12 @@ function openConfig() {
 					options: languageOptions,
 				},
 				{
+					desc: "GEMINI API 키",
+					info: "Gemini API를 사용한 가사 번역을 위한 API 키를 입력하세요.",
+					key: "gemini-api-key",
+					type: ConfigInput,
+				},
+				{
 					desc: "메모리 캐시 삭제",
 					info: "로드된 가사는 빠른 재로드를 위해 메모리에 캐시됩니다. 이 버튼을 눌러 Spotify를 다시 시작하지 않고 메모리에서 캐시된 가사를 삭제합니다.",
 					key: "clear-memore-cache",
@@ -716,21 +722,43 @@ function openConfig() {
 						reloadLyrics?.();
 					},
 				},
+				{
+					desc: "업데이트 확인",
+					info: `현재 버전: v${Utils.currentVersion}. 새로운 버전이 있는지 확인합니다.`,
+					key: "check-update",
+					text: "업데이트 확인",
+					type: ConfigButton,
+					onChange: async () => {
+						const updateInfo = await Utils.checkForUpdates();
+						if (updateInfo.hasUpdate) {
+							Spicetify.showNotification(
+								`업데이트 가능: v${updateInfo.latestVersion} (현재: v${updateInfo.currentVersion})`,
+								false,
+								5000
+							);
+						} else {
+							Spicetify.showNotification(
+								`최신 버전입니다: v${updateInfo.currentVersion}`,
+								false,
+								3000
+							);
+						}
+					},
+				},
 			],
 			onChange: (name, value) => {
 				CONFIG.visual[name] = value;
 				if (name === "musixmatch-translation-language") {
 					// handled below
-				} else if (name === "gemini-api-key" || name === "gemini-api-key-romaji") {
-					value = "none";
-					// Save to both Spicetify LocalStorage and regular localStorage for persistence
-					try { 
-						Spicetify?.LocalStorage?.set(`${APP_NAME}:visual:${name}`, value); 
+				} else if (name === "gemini-api-key") {
+					// Save GEMINI API key to both Spicetify LocalStorage and regular localStorage for persistence
+					try {
+						Spicetify?.LocalStorage?.set(`${APP_NAME}:visual:${name}`, value);
 					} catch (error) {
 						console.warn(`Failed to save to Spicetify LocalStorage '${name}':`, error);
 					}
-					try { 
-						localStorage.setItem(`${APP_NAME}:visual:${name}`, value); 
+					try {
+						localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
 					} catch (error) {
 						console.warn(`Failed to save to localStorage '${name}':`, error);
 					}

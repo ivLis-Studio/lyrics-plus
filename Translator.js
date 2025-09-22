@@ -40,17 +40,26 @@ class Translator {
 	static async callGemini({ artist, title, text, wantSmartPhonetic = false, provider = null }) {
 		if (!text?.trim()) throw new Error("No text provided for translation");
 
+		// Get API key from localStorage
+		const apiKey = localStorage.getItem("lyrics-plus:visual:gemini-api-key");
+
+		// Check if API key is provided
+		if (!apiKey || apiKey.trim() === '') {
+			throw new Error("Gemini API 키가 설정되지 않았습니다. 설정에서 API 키를 입력해주세요.");
+		}
+
 		const endpoints = [
 			"https://api.ivl.is/lyrics_tran/",
 			"https://api.ivl.is/lyrics_tran/index.php"
 		];
-		
+
 		const body = {
 			artist,
 			title,
 			text,
 			wantSmartPhonetic,
-			provider
+			provider,
+			apiKey
 		};
 
 		const tryFetch = async (url) => {
@@ -108,18 +117,32 @@ class Translator {
 					}
 					
 					switch (res.status) {
+						case 400:
+							// 400 오류는 클라이언트 오류이므로 JSON 응답에서 상세 정보 추출
+							try {
+								const errorData = await res.json();
+								if (errorData.code === 'MISSING_API_KEY') {
+									throw new Error("Gemini API 키가 설정되지 않았습니다. 설정에서 API 키를 입력해주세요.");
+								} else if (errorData.code === 'INVALID_API_KEY_FORMAT') {
+									throw new Error("올바르지 않은 API 키 형식입니다. Gemini API 키는 'AIza'로 시작해야 합니다.");
+								} else {
+									throw new Error(errorData.message || "요청 형식이 올바르지 않습니다.");
+								}
+							} catch (jsonError) {
+								throw new Error("요청 형식이 올바르지 않습니다. API 키를 확인해주세요.");
+							}
 						case 401:
-							throw new Error("Invalid API key. Please check your Gemini API key.");
+							throw new Error("잘못된 API 키입니다. 설정에서 Gemini API 키를 확인해주세요.");
 						case 403:
-							throw new Error("API access forbidden. Verify your API key permissions.");
+							throw new Error("API 접근이 금지되었습니다. API 키 권한을 확인해주세요.");
 						case 429:
-							throw new Error("Rate limit exceeded. Please wait before retrying.");
+							throw new Error("요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.");
 						case 500:
 						case 502:
 						case 503:
-							throw new Error("Translation service temporarily unavailable. Please try again later.");
+							throw new Error("번역 서비스를 일시적으로 사용할 수 없습니다. 나중에 다시 시도해주세요.");
 						default:
-							throw new Error(`API request failed (${res.status})`);
+							throw new Error(`API 요청이 실패했습니다 (${res.status})`);
 					}
 				}
 				
@@ -136,7 +159,22 @@ class Translator {
 			});
 			
 			if (data.error) {
-				throw new Error(data.message || "Translation failed");
+				// 서버에서 반환된 오류 코드별 처리
+				const errorMessage = data.message || "번역에 실패했습니다";
+				const errorCode = data.code;
+
+				switch (errorCode) {
+					case 'MISSING_API_KEY':
+						throw new Error("Gemini API 키가 설정되지 않았습니다. 설정에서 API 키를 입력해주세요.");
+					case 'INVALID_API_KEY_FORMAT':
+						throw new Error("올바르지 않은 API 키 형식입니다. Gemini API 키는 'AIza'로 시작해야 합니다.");
+					default:
+						// 기본적으로 서버에서 온 메시지 사용
+						if (errorMessage.includes("API 키")) {
+							throw new Error("Gemini API 키 관련 오류가 발생했습니다. 설정에서 API 키를 확인해주세요.");
+						}
+						throw new Error(errorMessage);
+				}
 			}
 			
 			return data;
@@ -144,9 +182,9 @@ class Translator {
 			console.error("[LyricsPlus] API Error:", error);
 			
 			if (error.name === 'AbortError') {
-				throw new Error("Translation request timed out. Please try again.");
+				throw new Error("번역 요청이 시간 초과되었습니다. 다시 시도해주세요.");
 			}
-			throw new Error(`Translation failed: ${error.message}`);
+			throw new Error(`번역 실패: ${error.message}`);
 		}
 	}
 
