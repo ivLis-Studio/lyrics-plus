@@ -313,6 +313,7 @@ class LyricsContainer extends react.Component {
 			isFADMode: false,
 			isCached: false,
 			language: null,
+			isTranslationLoading: false,
 		};
 		this.currentTrackUri = "";
 		this.nextTrackUri = "";
@@ -332,6 +333,30 @@ class LyricsContainer extends react.Component {
 		// Prevent infinite render loops
 		this.lastProcessedUri = null;
 		this.lastProcessedMode = null;
+		
+		// Translation loading timer
+		this.translationLoadingTimer = null;
+	}
+
+	/**
+	 * 번역 로딩 상태를 시작합니다 (1초 후에 로딩 메시지 표시)
+	 */
+	startTranslationLoading() {
+		this.clearTranslationLoading();
+		this.translationLoadingTimer = setTimeout(() => {
+			this.setState({ isTranslationLoading: true });
+		}, 1000);
+	}
+
+	/**
+	 * 번역 로딩 상태를 종료합니다
+	 */
+	clearTranslationLoading() {
+		if (this.translationLoadingTimer) {
+			clearTimeout(this.translationLoadingTimer);
+			this.translationLoadingTimer = null;
+		}
+		this.setState({ isTranslationLoading: false });
 	}
 
 	infoFromTrack(track) {
@@ -851,12 +876,8 @@ class LyricsContainer extends react.Component {
 			const nonSectionLines = allLines.filter(line => !Utils.isSectionHeader(line));
 			const text = nonSectionLines.join("\n");
 
-			// Show pending notification if conversion takes longer than 3s
-			const pendingTimer = setTimeout(() => {
-				try {
-					Spicetify.showNotification("처음 번역하는 곡입니다. 조금만 기다려주세요...", false, 2000);
-				} catch {}
-			}, 3000);
+			// Start translation loading indicator (1초 후 표시)
+			this.startTranslationLoading();
 
 			const inflightPromise = Translator.callGemini({ 
 				apiKey, 
@@ -955,7 +976,7 @@ class LyricsContainer extends react.Component {
 					return mapped;
 				})
 				.finally(() => {
-					clearTimeout(pendingTimer);
+					this.clearTranslationLoading();
 					this._inflightGemini = this._inflightGemini || new Map();
 					this._inflightGemini?.delete(inflightKey);
 				});
@@ -981,12 +1002,8 @@ class LyricsContainer extends react.Component {
 				return this._inflightTrad.get(inflightKey).then(resolve).catch(reject);
 			}
 
-			// Show pending notification if conversion takes longer than 3s
-			const pendingTimer = setTimeout(() => {
-				try {
-					Spicetify.showNotification("처음 번역하는 곡입니다. 조금만 기다려주세요...", false, 2000);
-				} catch {}
-			}, 3000);
+			// Start translation loading indicator (1초 후 표시)
+			this.startTranslationLoading();
 
 			const inflightPromise = this.translateLyrics(language, lyrics, displayMode)
 				.then((translated) => {
@@ -997,7 +1014,7 @@ class LyricsContainer extends react.Component {
 					throw new Error("Empty result from conversion.");
 				})
 				.finally(() => {
-					clearTimeout(pendingTimer);
+					this.clearTranslationLoading();
 					this._inflightTrad.delete(inflightKey);
 				});
 
@@ -1471,6 +1488,9 @@ class LyricsContainer extends react.Component {
 		this.mousetrap.reset();
 		window.removeEventListener("fad-request", lyricContainerUpdate);
 		
+		// Clean up translation loading timer
+		this.clearTranslationLoading();
+		
 		// Clean up global reference
 		if (window.lyricContainer === this) {
 			delete window.lyricContainer;
@@ -1670,6 +1690,24 @@ class LyricsContainer extends react.Component {
 			react.createElement("div", {
 				className: "lyrics-lyricsContainer-LyricsBackground",
 			}),
+			// Translation loading indicator
+			this.state.isTranslationLoading &&
+				react.createElement(
+					"div",
+					{
+						className: "lyrics-translation-loading-indicator",
+					},
+					react.createElement(
+						"div",
+						{
+							className: "lyrics-translation-loading-content",
+						},
+						react.createElement("div", {
+							className: "lyrics-translation-loading-spinner",
+						}),
+						react.createElement("span", null, "번역을 요청하고 있습니다. 30초 정도 소요됩니다")
+					)
+				),
 			react.createElement(
 				"div",
 				{

@@ -11,6 +11,60 @@
 
  @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
 
+/* Translation Loading Indicator */
+.lyrics-translation-loading-indicator {
+	position: fixed;
+	top: 24px;
+	left: 24px;
+	z-index: 9999;
+	background: var(--spice-main);
+	border: 1px solid var(--spice-misc);
+	border-radius: 8px;
+	padding: 12px 16px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	max-width: 300px;
+	animation: fadeInSlide 0.3s ease-out;
+}
+
+.lyrics-translation-loading-content {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	color: var(--spice-text);
+	font-family: var(--font-family);
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1.4;
+}
+
+.lyrics-translation-loading-spinner {
+	width: 20px;
+	height: 20px;
+	border: 2px solid var(--spice-misc);
+	border-top: 2px solid var(--spice-accent);
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+	flex-shrink: 0;
+}
+
+@keyframes fadeInSlide {
+	from {
+		opacity: 0;
+		transform: translateX(-20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
 @media (min-width: 768px) {
 	.container {
 		width: 750px;
