@@ -37,7 +37,7 @@ class Translator {
 		}
 	}
 
-	static async callGemini({ artist, title, text, wantSmartPhonetic = false }) {
+	static async callGemini({ artist, title, text, wantSmartPhonetic = false, provider = null }) {
 		if (!text?.trim()) throw new Error("No text provided for translation");
 
 		const endpoints = [
@@ -49,7 +49,8 @@ class Translator {
 			artist,
 			title,
 			text,
-			wantSmartPhonetic
+			wantSmartPhonetic,
+			provider
 		};
 
 		const tryFetch = async (url) => {

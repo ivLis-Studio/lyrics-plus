@@ -843,7 +843,7 @@ class LyricsContainer extends react.Component {
 			const rateLimitKey = mode.replace('gemini_', 'gemini-');
 			if (!RateLimiter.canMakeCall(rateLimitKey, 5, 60000)) {
 				const modeName = mode === "gemini_romaji" ? "Romaji, Romaja, Pinyin" : "Korean";
-				return reject(new Error(`${modeName} translation rate limit reached. Please wait.`));
+				return reject(new Error(`${modeName} 번역 요청이 너무 많습니다. 1분 뒤, 다시시도해주세요.`));
 			}
 
 			// Filter out section headers before sending to Gemini for translation
@@ -863,7 +863,8 @@ class LyricsContainer extends react.Component {
 				artist: this.state.artist || lyricsState.artist, 
 				title: this.state.title || lyricsState.title, 
 				text, 
-				wantSmartPhonetic 
+				wantSmartPhonetic,
+				provider: lyricsState.provider
 			})
 				.then((response) => {
 					let outText;

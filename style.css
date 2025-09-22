@@ -8,6 +8,9 @@
  * Generated using the Bootstrap Customizer (http://getbootstrap.com/customize/?id=35378cd201a131f69c68a64bc4438544)
  * Config saved to config.json and https://gist.github.com/35378cd201a131f69c68a64bc4438544
  */
+
+ @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+
 @media (min-width: 768px) {
 	.container {
 		width: 750px;
@@ -323,6 +326,7 @@ div.lyrics-tabBar-headerItemLink {
 		var(--lyrics-color-inactive)
 	);
 	-webkit-background-clip: text;
+	background-clip: text;
 	-webkit-text-fill-color: transparent;
 	background-size: 225% 100%;
 	background-position: top left 100%;
@@ -686,6 +690,15 @@ div.lyrics-tabBar-headerItemLink {
 	}
 }
 
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
 .lyrics-config-button {
 	align-items: center;
 	background-color: rgba(0, 0, 0, 0.5);
@@ -759,7 +772,7 @@ div.lyrics-tabBar-headerItemLink {
 .lyrics-lyricsContainer-LyricsLine-sub {
 	text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55), 0 0 14px rgba(0, 0, 0, 0.45);
 	-webkit-text-stroke: 0.35px rgba(0, 0, 0, 0.35);
-	font-family: "Pretendard";
+	font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
 }
 
 /* Make translated text smaller than original */

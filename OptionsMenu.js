@@ -266,7 +266,7 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
 
 		// Add language-specific display modes
 		if (friendlyLanguage) {
-			// For detected CJK languages, show specific language modes
+			// For detected CJKE languages, show specific language modes
 			baseItems.push(
 				{
 					desc: react.createElement(SettingRowDescription, { icon: ICONS.mode, text: "표시 모드" }),
@@ -309,7 +309,7 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
 				type: ConfigButton,
 				text: "언어가 감지되지 않음",
 				onChange: () => {}, // No-op button
-				info: "CJK 언어(일본어, 한국어, 중국어)가 가사에서 감지되면 표시 모드 옵션이 나타납니다. 위의 언어 강제 설정을 사용하여 특정 언어를 강제할 수 있습니다.",
+				info: "CJKE 언어(영어, 일본어, 한국어, 중국어)가 가사에서 감지되면 표시 모드 옵션이 나타납니다. 위의 언어 강제 설정을 사용하여 특정 언어를 강제할 수 있습니다.",
 			});
 		}
 
