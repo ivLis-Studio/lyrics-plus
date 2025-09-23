@@ -825,7 +825,7 @@ div.lyrics-tabBar-headerItemLink {
 .lyrics-lyricsContainer-LyricsLine,
 .lyrics-lyricsContainer-LyricsLine-sub {
 	text-shadow: 0 2px 6px rgba(0, 0, 0, 0.55), 0 0 14px rgba(0, 0, 0, 0.45);
-	-webkit-text-stroke: 0.35px rgba(0, 0, 0, 0.35);
+	-webkit-text-stroke: 0px rgba(0, 0, 0, 0.35);
 	font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
 }
 
@@ -838,7 +838,7 @@ div.lyrics-tabBar-headerItemLink {
 
 .lyrics-lyricsContainer-LyricsLine-active {
 	text-shadow: 0 3px 10px rgba(0, 0, 0, 0.7), 0 0 18px rgba(0, 0, 0, 0.65);
-	-webkit-text-stroke: 0.6px rgba(0, 0, 0, 0.45);
+	-webkit-text-stroke: 0px rgba(0, 0, 0, 0.45);
 }
 
 #lyrics-plus-gradient-background {
