@@ -60,36 +60,536 @@ const useTrackPosition = (callback) => {
 	callbackRef.current = callback;
 
 	useEffect(() => {
-		const interval = setInterval(callbackRef.current, 50);
+		const interval = setInterval(() => {
+			if (callbackRef.current) {
+				callbackRef.current();
+			}
+		}, 16); // ~60fps for smoother karaoke animation
 
 		return () => {
 			clearInterval(interval);
 		};
-	}, [callbackRef]);
+	}, []); // Empty dependency array since we use ref for callback
 };
 
-const KaraokeLine = ({ text, isActive, position, startTime }) => {
-	if (!isActive) {
-		return text.map(({ word }) => word).join("");
+const KaraokeLine = react.memo(({ text, isActive, position, startTime }) => {
+	// Stabilize position to reduce unnecessary re-renders - handle edge cases
+	const stablePosition = useMemo(() => {
+		if (typeof position !== 'number' || isNaN(position)) return 0;
+		return Math.floor(position / 16) * 16;
+	}, [position]);
+
+	// Early return for invalid inputs
+	if (!text) {
+		return "";
 	}
 
-	return text.map(({ word, time }) => {
-		const isWordActive = position >= startTime;
-		startTime += time;
-		return react.createElement(
-			"span",
-			{
-				className: `lyrics-lyricsContainer-Karaoke-Word${isWordActive ? " lyrics-lyricsContainer-Karaoke-WordActive" : ""}`,
-				style: {
-					"--word-duration": `${time}ms`,
-					// don't animate unless we have to
-					transition: !isWordActive ? "all 0s linear" : "",
+	// Handle ivLyrics word_by_word format with syllables
+	// Check if this is the ivLyrics format (has syllables or vocals property)
+	if (text && typeof text === 'object') {
+		const lineStartTime = text.startTime || startTime || 0;
+
+		// Check if this has multiple vocals (lead + background)
+		if (text.vocals && text.vocals.lead && text.vocals.lead.syllables) {
+			if (!isActive) {
+				const leadText = text.vocals.lead.syllables.map(s => s.text || "").join("");
+				const backgroundTexts = (text.vocals.background || [])
+					.filter(bg => bg && bg.syllables)
+					.map(bg => bg.syllables.map(s => s.text || "").join(""));
+				return leadText + (backgroundTexts.length > 0 ? " (" + backgroundTexts.join(", ") + ")" : "");
+			}
+
+			const renderVocalTrack = (vocal, isBackground = false) => {
+				if (!vocal || !vocal.syllables || !Array.isArray(vocal.syllables)) {
+					return react.createElement(react.Fragment, null);
+				}
+				const syllableElements = vocal.syllables.map((syllable, index) => {
+					const syllableStart = syllable.startTime || 0;
+					const syllableEnd = syllable.endTime || (syllableStart + 500);
+					const syllableDuration = syllableEnd - syllableStart;
+					const syllableText = syllable.text || "";
+
+					let syllableState = 'inactive';
+					const minThreshold = Math.max(lineStartTime + 100, 100);
+					const adjustedSyllableStart = Math.max(syllableStart, minThreshold);
+
+					const isWordActive = isActive && stablePosition >= adjustedSyllableStart && stablePosition <= syllableEnd;
+					const isSyllableCompleted = isActive && stablePosition > syllableEnd;
+					const isEmphasized = syllableDuration >= 1000 && syllableText.length <= 12;
+
+					// If syllable is not active and not completed, return simple text
+					if (!isWordActive && !isSyllableCompleted) {
+						return react.createElement(
+							"span",
+							{
+								key: `${isBackground ? 'bg' : 'lead'}-${index}`,
+								className: `lyrics-lyricsContainer-Karaoke-Syllable${isBackground ? " lyrics-lyricsContainer-Karaoke-Background" : ""}${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
+							},
+							syllableText
+						);
+					}
+
+					// If syllable is completed, show all characters as fully sung
+					if (isSyllableCompleted) {
+						const characters = Array.from(syllableText || "");
+						if (characters.length === 0) {
+							return react.createElement(
+								"span",
+								{
+									key: `${isBackground ? 'bg' : 'lead'}-${index}`,
+									className: `lyrics-lyricsContainer-Karaoke-Syllable${isBackground ? " lyrics-lyricsContainer-Karaoke-Background" : ""} lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
+								},
+								syllableText
+							);
+						}
+
+						const characterElements = characters.map((char, charIndex) => {
+							// All characters are fully sung - keep them white without glow
+							const charStyleProps = {
+								"--gradient-progress": "100%",
+								"--text-shadow-opacity": "0%",
+								"--text-shadow-blur-radius": "0px",
+								transform: "translateY(0) scale(1)",
+								transformOrigin: "center center",
+								transition: "all 0.4s ease-out"
+							};
+
+							return react.createElement(
+								"span",
+								{
+									key: `completed-char-${index}-${charIndex}`,
+									className: "lyrics-lyricsContainer-Karaoke-Character lyrics-lyricsContainer-Karaoke-CharacterActive",
+									style: charStyleProps,
+								},
+								char
+							);
+						});
+
+						return react.createElement(
+							"span",
+							{
+								key: `${isBackground ? 'bg' : 'lead'}-${index}`,
+								className: `lyrics-lyricsContainer-Karaoke-Syllable${isBackground ? " lyrics-lyricsContainer-Karaoke-Background" : ""} lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
+							},
+							...characterElements
+						);
+					}
+
+					// Calculate progress within syllable for character-by-character animation
+					const syllableProgress = (stablePosition - adjustedSyllableStart) / (syllableEnd - adjustedSyllableStart);
+					const clampedProgress = Math.min(1, Math.max(0, syllableProgress));
+
+					// Split text into individual characters for animation
+					const characters = Array.from(syllableText || "");
+
+					// Safety check for empty text
+					if (characters.length === 0 || !syllableText) {
+						return react.createElement(
+							"span",
+							{
+								key: `${isBackground ? 'bg' : 'lead'}-${index}`,
+								className: `lyrics-lyricsContainer-Karaoke-Syllable${isBackground ? " lyrics-lyricsContainer-Karaoke-Background" : ""} lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
+							},
+							syllableText
+						);
+					}
+
+					const characterElements = characters.map((char, charIndex) => {
+						// Calculate per-character timing with overlap for smoother flow
+						const overlap = 0.3; // 30% overlap between characters
+						const charDuration = (1 + overlap) / characters.length;
+						const charStartProgress = (charIndex * charDuration) - (overlap * charIndex / characters.length);
+						const charEndProgress = charStartProgress + charDuration;
+
+						// Clamp to valid range
+						const clampedCharStart = Math.max(0, charStartProgress);
+						const clampedCharEnd = Math.min(1, charEndProgress);
+
+						// Determine if this character is active
+						let charTimeScale = 0;
+						let charGlowTimeScale = 0;
+
+						if (clampedProgress > clampedCharStart) {
+							if (clampedProgress >= clampedCharEnd) {
+								// Character is fully sung - keep it visible and active
+								charTimeScale = 1;
+								charGlowTimeScale = 0; // No glow effect
+							} else {
+								// Character is currently active
+								const charProgress = (clampedProgress - clampedCharStart) / (clampedCharEnd - clampedCharStart);
+								charTimeScale = Math.min(1, Math.max(0, charProgress));
+								charGlowTimeScale = 0; // No glow effect
+							}
+						}
+
+						// Beautiful-lyrics gradient formula: -20 + (120 * timeScale)
+						const gradientProgress = -20 + (120 * charTimeScale);
+
+						// Beautiful-lyrics inspired character scaling when gradient line passes
+						let scaleValue = 1.0;
+						let yOffset = 0;
+
+						if (charTimeScale > 0 && charTimeScale <= 1) {
+							// Character scaling based on gradient progress (0-100%)
+							const gradientPos = gradientProgress + 20; // Adjust for gradient start
+
+							// Scale up when gradient is approaching/passing (beautiful-lyrics style)
+							if (gradientPos >= 0 && gradientPos <= 120) {
+								const scaleProgress = Math.min(1, gradientPos / 100);
+								// Peak scale at 50% gradient progress, then ease back
+								const scaleFactor = scaleProgress <= 0.5
+									? scaleProgress * 2 // Rise to peak
+									: 2 - (scaleProgress * 2); // Fall from peak
+
+								scaleValue = 1.0 + (0.08 * scaleFactor); // More pronounced scaling
+
+								// Subtle vertical movement
+								yOffset = -(scaleFactor * 0.02);
+							}
+						}
+
+						const isCharActive = charTimeScale > 0;
+
+						// Style properties for individual character
+						const charStyleProps = {
+							"--gradient-progress": `${gradientProgress}%`,
+							"--text-shadow-opacity": `${charGlowTimeScale * (isEmphasized ? 100 : 35)}%`,
+							"--text-shadow-blur-radius": `${4 + (2 * charGlowTimeScale * (isEmphasized ? 3 : 1))}px`,
+							transform: `translateY(calc(var(--lyrics-font-size) * ${yOffset * (isEmphasized ? 2 : 1)})) scale(${scaleValue})`,
+							transformOrigin: "center center",
+							transition: isCharActive ?
+								"transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)" :
+								"all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1)"
+						};
+
+						return react.createElement(
+							"span",
+							{
+								key: `active-char-${index}-${charIndex}`,
+								className: `lyrics-lyricsContainer-Karaoke-Character${isCharActive ? " lyrics-lyricsContainer-Karaoke-CharacterActive" : ""}`,
+								style: charStyleProps,
+							},
+							char
+						);
+					});
+
+					return react.createElement(
+						"span",
+						{
+							key: `${isBackground ? 'bg' : 'lead'}-${index}`,
+							className: `lyrics-lyricsContainer-Karaoke-Syllable${isBackground ? " lyrics-lyricsContainer-Karaoke-Background" : ""} lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
+						},
+						...characterElements
+					);
+				});
+				return react.createElement(react.Fragment, null, ...syllableElements);
+			};
+
+			return react.createElement(
+				"div",
+				{ className: "lyrics-lyricsContainer-Karaoke-MultiVocal" },
+				react.createElement(
+					"div",
+					{ className: "lyrics-lyricsContainer-Karaoke-Lead" },
+					renderVocalTrack(text.vocals.lead)
+				),
+				...((text.vocals.background || []).filter(bg => bg && bg.syllables).map((bgVocal, bgIndex) =>
+					react.createElement(
+						"div",
+						{
+							key: `bg-track-${bgIndex}`,
+							className: "lyrics-lyricsContainer-Karaoke-BackgroundTrack"
+						},
+						renderVocalTrack(bgVocal, true)
+					)
+				))
+			);
+		}
+
+		// Single vocal track (original format)
+		if (text.syllables && Array.isArray(text.syllables)) {
+			const lineSyllables = text.syllables.filter(s => s && typeof s === 'object');
+
+			if (!isActive) {
+				return lineSyllables.map(syllable => syllable.text || "").join("");
+			}
+
+			if (lineSyllables.length === 0) {
+				return text.text || "";
+			}
+
+			const syllableElements = lineSyllables.map((syllable, index) => {
+				const syllableStart = syllable.startTime || 0;
+				const syllableEnd = syllable.endTime || (syllableStart + 500);
+				const syllableDuration = syllableEnd - syllableStart;
+				const syllableText = syllable.text || "";
+
+				let syllableState = 'inactive';
+				const minThreshold = Math.max(lineStartTime + 100, 100);
+				const adjustedSyllableStart = Math.max(syllableStart, minThreshold);
+
+				const isWordActive = isActive && stablePosition >= adjustedSyllableStart && stablePosition <= syllableEnd;
+				const isSyllableCompleted = isActive && stablePosition > syllableEnd;
+				const isEmphasized = syllableDuration >= 1000 && syllableText.length <= 12;
+
+				// If syllable is not active and not completed, return simple text
+				if (!isWordActive && !isSyllableCompleted) {
+					return react.createElement(
+						"span",
+						{
+							key: index,
+							className: `lyrics-lyricsContainer-Karaoke-Syllable${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
+						},
+						syllableText
+					);
+				}
+
+				// If syllable is completed, show all characters as fully sung
+				if (isSyllableCompleted) {
+					const characters = Array.from(syllableText || "");
+					if (characters.length === 0) {
+						return react.createElement(
+							"span",
+							{
+								key: index,
+								className: `lyrics-lyricsContainer-Karaoke-Syllable lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
+							},
+							syllableText
+						);
+					}
+
+					const characterElements = characters.map((char, charIndex) => {
+						// All characters are fully sung - keep them white without glow
+						const charStyleProps = {
+							"--gradient-progress": "100%",
+							"--text-shadow-opacity": "0%",
+							"--text-shadow-blur-radius": "0px",
+							transform: "translateY(0) scale(1)",
+							transformOrigin: "center center",
+							transition: "all 0.4s ease-out"
+						};
+
+						return react.createElement(
+							"span",
+							{
+								key: `single-completed-char-${index}-${charIndex}`,
+								className: "lyrics-lyricsContainer-Karaoke-Character lyrics-lyricsContainer-Karaoke-CharacterActive",
+								style: charStyleProps,
+							},
+							char
+						);
+					});
+
+					return react.createElement(
+						"span",
+						{
+							key: index,
+							className: `lyrics-lyricsContainer-Karaoke-Syllable lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
+						},
+						...characterElements
+					);
+				}
+
+				// Calculate progress within syllable for character-by-character animation
+				const syllableProgress = (stablePosition - adjustedSyllableStart) / (syllableEnd - adjustedSyllableStart);
+				const clampedProgress = Math.min(1, Math.max(0, syllableProgress));
+
+				// Split text into individual characters for animation
+				const characters = Array.from(syllableText || "");
+
+				// Safety check for empty text
+				if (characters.length === 0) {
+					return react.createElement(
+						"span",
+						{
+							key: `${isBackground ? 'bg' : 'lead'}-${index}`,
+							className: `lyrics-lyricsContainer-Karaoke-Syllable${isBackground ? " lyrics-lyricsContainer-Karaoke-Background" : ""} lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
+						},
+						syllableText
+					);
+				}
+
+				const characterElements = characters.map((char, charIndex) => {
+					// Calculate per-character timing with overlap for smoother flow
+					const overlap = 0.3; // 30% overlap between characters
+					const charDuration = (1 + overlap) / characters.length;
+					const charStartProgress = (charIndex * charDuration) - (overlap * charIndex / characters.length);
+					const charEndProgress = charStartProgress + charDuration;
+
+					// Clamp to valid range
+					const clampedCharStart = Math.max(0, charStartProgress);
+					const clampedCharEnd = Math.min(1, charEndProgress);
+
+					// Determine if this character is active
+					let charTimeScale = 0;
+					let charGlowTimeScale = 0;
+
+					if (clampedProgress > clampedCharStart) {
+						if (clampedProgress >= clampedCharEnd) {
+							// Character is fully sung - keep it visible and active
+							charTimeScale = 1;
+							charGlowTimeScale = 0; // No glow effect
+						} else {
+							// Character is currently active
+							const charProgress = (clampedProgress - clampedCharStart) / (clampedCharEnd - clampedCharStart);
+							charTimeScale = Math.min(1, Math.max(0, charProgress));
+							charGlowTimeScale = 0; // No glow effect
+						}
+					}
+
+					// Beautiful-lyrics gradient formula: -20 + (120 * timeScale)
+					const gradientProgress = -20 + (120 * charTimeScale);
+
+					// Beautiful-lyrics inspired character scaling when gradient line passes
+					let scaleValue = 1.0;
+					let yOffset = 0;
+
+					if (charTimeScale > 0 && charTimeScale <= 1) {
+						// Character scaling based on gradient progress (0-100%)
+						const gradientPos = gradientProgress + 20; // Adjust for gradient start
+
+						// Scale up when gradient is approaching/passing (beautiful-lyrics style)
+						if (gradientPos >= 0 && gradientPos <= 120) {
+							const scaleProgress = Math.min(1, gradientPos / 100);
+							// Peak scale at 50% gradient progress, then ease back
+							const scaleFactor = scaleProgress <= 0.5
+								? scaleProgress * 2 // Rise to peak
+								: 2 - (scaleProgress * 2); // Fall from peak
+
+							scaleValue = 1.0 + (0.08 * scaleFactor); // More pronounced scaling
+
+							// Subtle vertical movement
+							yOffset = -(scaleFactor * 0.02);
+						}
+					}
+
+					const isCharActive = charTimeScale > 0;
+
+					// Style properties for individual character
+					const charStyleProps = {
+						"--gradient-progress": `${gradientProgress}%`,
+						"--text-shadow-opacity": `${charGlowTimeScale * (isEmphasized ? 100 : 35)}%`,
+						"--text-shadow-blur-radius": `${4 + (2 * charGlowTimeScale * (isEmphasized ? 3 : 1))}px`,
+						transform: `translateY(calc(var(--lyrics-font-size) * ${yOffset * (isEmphasized ? 2 : 1)})) scale(${scaleValue})`,
+						transformOrigin: "center center",
+						transition: isCharActive ?
+							"transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)" :
+							"all 0.8s cubic-bezier(0.4, 0.0, 0.2, 1)"
+					};
+
+					return react.createElement(
+						"span",
+						{
+							key: `single-active-char-${index}-${charIndex}`,
+							className: `lyrics-lyricsContainer-Karaoke-Character${isCharActive ? " lyrics-lyricsContainer-Karaoke-CharacterActive" : ""}`,
+							style: charStyleProps,
+						},
+						char
+					);
+				});
+
+				return react.createElement(
+					"span",
+					{
+						key: index,
+						className: `lyrics-lyricsContainer-Karaoke-Syllable lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
+					},
+					...characterElements
+				);
+			});
+			return react.createElement(react.Fragment, null, ...syllableElements);
+		}
+	}
+
+	// Fallback to original karaoke format
+	if (!isActive) {
+		return Array.isArray(text) ? text.map(({ word }) => word).join("") : (text?.text || text || "");
+	}
+
+	if (Array.isArray(text)) {
+		let currentStartTime = startTime;
+		const wordElements = text.map(({ word, time }, index) => {
+			const isWordActive = stablePosition >= currentStartTime;
+			const wordElement = react.createElement(
+				"span",
+				{
+					key: index,
+					className: `lyrics-lyricsContainer-Karaoke-Word${isWordActive ? " lyrics-lyricsContainer-Karaoke-WordActive" : ""}`,
+					style: {
+						"--word-duration": `${time}ms`,
+						transition: !isWordActive ? "all 0s linear" : "",
+					},
 				},
-			},
-			word
-		);
-	});
-};
+				word
+			);
+			currentStartTime += time;
+			return wordElement;
+		});
+		return react.createElement(react.Fragment, null, ...wordElements);
+	}
+
+	// Fallback for simple string karaoke (when text is string but isKara is true)
+	if (isActive && typeof text === 'string' && text) {
+
+		const characters = Array.from(text);
+		const characterElements = characters.map((char, charIndex) => {
+			// Simple character-by-character animation for string text
+			const charStartProgress = charIndex / characters.length;
+			const charEndProgress = (charIndex + 1) / characters.length;
+
+			// Simulate progress (this would normally come from timing data)
+			const currentProgress = (stablePosition % 5000) / 5000; // 5 second cycle for demo
+
+			let charTimeScale = 0;
+			if (currentProgress > charStartProgress) {
+				if (currentProgress >= charEndProgress) {
+					charTimeScale = 1;
+				} else {
+					const charProgress = (currentProgress - charStartProgress) / (charEndProgress - charStartProgress);
+					charTimeScale = Math.min(1, Math.max(0, charProgress));
+				}
+			}
+
+			const gradientProgress = -20 + (120 * charTimeScale);
+
+			// Beautiful-lyrics inspired character scaling when gradient line passes
+			let scaleValue = 1.0;
+			if (charTimeScale > 0 && charTimeScale <= 1) {
+				const gradientPos = gradientProgress + 20;
+				if (gradientPos >= 0 && gradientPos <= 120) {
+					const scaleProgress = Math.min(1, gradientPos / 100);
+					const scaleFactor = scaleProgress <= 0.5
+						? scaleProgress * 2
+						: 2 - (scaleProgress * 2);
+					scaleValue = 1.0 + (0.08 * scaleFactor);
+				}
+			}
+
+			const charStyleProps = {
+				"--gradient-progress": `${gradientProgress}%`,
+				"--text-shadow-opacity": "0%",
+				"--text-shadow-blur-radius": "0px",
+				transform: `scale(${scaleValue})`,
+				transformOrigin: "center center",
+				transition: "transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)"
+			};
+
+			return react.createElement(
+				"span",
+				{
+					key: `fallback-char-${charIndex}`,
+					className: `lyrics-lyricsContainer-Karaoke-Character${charTimeScale > 0 ? " lyrics-lyricsContainer-Karaoke-CharacterActive" : ""}`,
+					style: charStyleProps,
+				},
+				char
+			);
+		});
+
+		return react.createElement(react.Fragment, null, ...characterElements);
+	}
+
+	return text?.text || text || "";
+});
 
 const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara }) => {
 	const [position, setPosition] = useState(0);
@@ -99,9 +599,8 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 	useTrackPosition(() => {
 		const newPos = Spicetify.Player.getProgress();
 		const delay = CONFIG.visual["global-delay"] + CONFIG.visual.delay;
-		if (newPos !== position) {
-			setPosition(newPos + delay);
-		}
+		// Always update position for smoother karaoke animation
+		setPosition(newPos + delay);
 	});
 
 	const lyricWithEmptyLines = useMemo(
@@ -152,7 +651,8 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 				},
 				key: lyricsId,
 			},
-			activeLines.map(({ text, lineNumber, startTime, originalText, text2 }, i) => {
+			...activeLines.map((line, i) => {
+				const { text, lineNumber, startTime, originalText, text2 } = line;
 				if (i === 1 && activeLineIndex === 1) {
 					const nextLine = activeLines[2];
 					const nextStartTime = nextLine?.startTime || 1;
@@ -187,19 +687,28 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 				const showTranslatedBelow = displayMode === "below";
 				const replaceOriginal = displayMode === "replace";
 				
-				let mainText = text;
-				let subText = null;
-				let subText2 = null;
+				let mainText, subText, subText2;
 
-				if (showTranslatedBelow && originalText) {
-					mainText = originalText;
-					subText = text;
+				if (isKara) {
+					// For karaoke mode, use the entire line object
+					mainText = line;
+					subText = originalText ? text : null;
 					subText2 = text2;
-				} else if (replaceOriginal) {
-					// When replacing original, show translations
-					mainText = text || originalText;
-					subText = text2; // Show Mode 2 translation as sub-text
+				} else {
+					mainText = text;
+					subText = null;
 					subText2 = null;
+
+					if (showTranslatedBelow && originalText) {
+						mainText = originalText;
+						subText = text;
+						subText2 = text2;
+					} else if (replaceOriginal) {
+						// When replacing original, show translations
+						mainText = text || originalText;
+						subText = text2; // Show Mode 2 translation as sub-text
+						subText2 = null;
+					}
 				}
 
 				if (isActive) {
@@ -237,7 +746,12 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 							// For Furigana/Hiragana HTML strings
 							...(typeof mainText === "string" && !isKara ? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(mainText) } } : {}),
 						},
-						!isKara ? (typeof mainText === "string" ? null : mainText) : react.createElement(KaraokeLine, { text: mainText, startTime, position, isActive: i === activeElementIndex })
+						!isKara ? (typeof mainText === "string" ? null : mainText) : react.createElement(KaraokeLine, {
+							text: mainText,
+							startTime,
+							position,
+							isActive: i === activeElementIndex
+						})
 					),
 					(() => {
 						if (!subText) return null;
@@ -436,9 +950,10 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics, provider, copyright, isKa
 	const pageRef = useRef(null);
 
 	useTrackPosition(() => {
-		if (!Spicetify.Player.data.is_paused) {
-			setPosition(Spicetify.Player.getProgress() + CONFIG.visual["global-delay"] + CONFIG.visual.delay);
-		}
+		const newPos = Spicetify.Player.getProgress();
+		const delay = CONFIG.visual["global-delay"] + CONFIG.visual.delay;
+		// Always update position for smoother karaoke animation
+		setPosition(newPos + delay);
 	});
 
 	const padded = useMemo(() => [emptyLine, ...lyrics], [lyrics]);
@@ -522,6 +1037,11 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics, provider, copyright, isKa
 				animationIndex = i - CONFIG.visual["lines-before"] - 1;
 			}
 
+			let className = "lyrics-lyricsContainer-LyricsLine";
+			if (isActive) {
+				className += " lyrics-lyricsContainer-LyricsLine-active";
+			}
+
 			const paddingLine = (animationIndex < 0 && -animationIndex > CONFIG.visual["lines-before"]) || animationIndex > CONFIG.visual["lines-after"];
 			if (paddingLine) {
 				className += " lyrics-lyricsContainer-LyricsLine-paddingLine";
@@ -598,7 +1118,7 @@ const UnsyncedLyricsPage = react.memo(({ lyrics, provider, copyright }) => {
 		react.createElement("p", {
 			className: "lyrics-lyricsContainer-LyricsUnsyncedPadding",
 		}),
-		lyrics.map(({ text, originalText, text2 }, index) => {
+		...lyrics.map(({ text, originalText, text2 }, index) => {
 			const displayMode = CONFIG.visual["translate:display-mode"];
 			const showTranslatedBelow = displayMode === "below";
 			const replaceOriginal = displayMode === "replace";
@@ -917,8 +1437,8 @@ const VersionSelector = react.memo(({ items, index, callback }) => {
 				},
 				value: index,
 			},
-			items.map((a, i) => {
-				return react.createElement("option", { value: i }, a.title);
+			...items.map((a, i) => {
+				return react.createElement("option", { key: i, value: i }, a.title);
 			})
 		),
 		react.createElement(
@@ -935,3 +1455,32 @@ const VersionSelector = react.memo(({ items, index, callback }) => {
 		)
 	);
 });
+
+const LyricsPage = ({ lyricsContainer }) => {
+	const modes = CONFIG.modes;
+	const activeMode = lyricsContainer.getCurrentMode();
+	const lockMode = CONFIG.locked;
+
+	return react.createElement(
+		react.Fragment,
+		null,
+		react.createElement(TopBarContent, {
+			links: modes,
+			activeLink: modes[activeMode] || modes[0],
+			lockLink: lockMode !== -1 ? modes[lockMode] : null,
+			switchCallback: (mode) => {
+				const modeIndex = modes.indexOf(mode);
+				if (modeIndex !== -1) {
+					lyricsContainer.switchTo(modeIndex);
+				}
+			},
+			lockCallback: (mode) => {
+				const modeIndex = modes.indexOf(mode);
+				if (modeIndex !== -1) {
+					lyricsContainer.lockIn(modeIndex);
+				}
+			}
+		}),
+		lyricsContainer.render()
+	);
+};

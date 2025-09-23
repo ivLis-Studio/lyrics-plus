@@ -160,6 +160,44 @@ const Providers = {
 
 		return result;
 	},
+	ivlyrics: async (info) => {
+		const result = {
+			uri: info.uri,
+			karaoke: null,
+			synced: null,
+			unsynced: null,
+			provider: "ivLyrics",
+			copyright: null,
+		};
+
+		let body;
+		try {
+			body = await ProviderIvLyrics.findLyrics(info);
+			if (body.error) {
+				throw "";
+			}
+		} catch {
+			result.error = "No lyrics";
+			return result;
+		}
+
+		const synced = ProviderIvLyrics.getSynced(body);
+		if (synced) {
+			result.synced = synced;
+		}
+
+		const unsynced = synced || ProviderIvLyrics.getUnsynced(body);
+		if (unsynced) {
+			result.unsynced = unsynced;
+		}
+
+		const karaoke = ProviderIvLyrics.getKaraoke(body);
+		if (karaoke) {
+			result.karaoke = karaoke;
+		}
+
+		return result;
+	},
 	genius: async (info) => {
 		const { lyrics, versions } = await ProviderGenius.fetchLyrics(info);
 

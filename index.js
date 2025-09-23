@@ -74,7 +74,7 @@ const ConfigUtils = {
 
 const APP_NAME = "lyrics-plus";
 
-const KARAOKE = 0; // deprecated (kept for compatibility in values)
+const KARAOKE = 0;
 const SYNCED = 1;
 const UNSYNCED = 2;
 const GENIUS = 3;
@@ -134,6 +134,11 @@ const CONFIG = {
 			desc: "lrclib.net에서 제공되는 가사입니다. 동기화된 가사와 동기화되지 않은 가사를 모두 지원합니다. LRCLIB은 무료 오픈소스 가사 제공자입니다.",
 			modes: [SYNCED, UNSYNCED],
 		},
+		ivlyrics: {
+			on: ConfigUtils.get("lyrics-plus:provider:ivlyrics:on", true),
+			desc: "ivLyrics API에서 제공되는 가사입니다. 동기화된 가사, 동기화되지 않은 가사, 단어별 카라오케 가사를 지원합니다.",
+			modes: [KARAOKE, SYNCED, UNSYNCED],
+		},
 		musixmatch: {
 			on: ConfigUtils.get("lyrics-plus:provider:musixmatch:on"),
 			desc: "Spotify와 완전히 호환됩니다. 공식 Musixmatch 앱에서 가져올 수 있는 토큰이 필요합니다. 가사 검색에 문제가 있으면 <code>토큰 새로고침</code> 버튼을 클릭하여 토큰을 새로고침해 보세요. 이 제공자를 사용하려면 자체 CORS 프록시를 사용해야 할 수도 있습니다.",
@@ -152,7 +157,7 @@ const CONFIG = {
 		},
 	},
 	providersOrder: localStorage.getItem("lyrics-plus:services-order"),
-	modes: ["synced", "unsynced", "genius"],
+	modes: ["karaoke", "synced", "unsynced", "genius"],
 	locked: localStorage.getItem("lyrics-plus:lock-mode") || "-1",
 };
 
@@ -162,7 +167,7 @@ try {
 		throw "";
 	}
 } catch {
-	CONFIG.providersOrder = ["spotify", "lrclib", "musixmatch", "local"];
+	CONFIG.providersOrder = ["ivlyrics", "spotify", "lrclib", "musixmatch", "local"];
 	localStorage.setItem("lyrics-plus:services-order", JSON.stringify(CONFIG.providersOrder));
 }
 
@@ -535,13 +540,15 @@ class LyricsContainer extends react.Component {
 
 		let finalMode = mode;
 		if (mode === -1) {
-			if (this.state.explicitMode !== -1 && this.state.explicitMode !== KARAOKE) {
+			if (this.state.explicitMode !== -1) {
 				finalMode = this.state.explicitMode;
-			} else if (this.state.lockMode !== -1 && this.state.lockMode !== KARAOKE) {
+			} else if (this.state.lockMode !== -1) {
 				finalMode = this.state.lockMode;
 			} else {
-				// Auto switch (karaoke disabled): prefer synced, then unsynced, then genius
-				if (tempState.synced) {
+				// Auto switch: prefer karaoke, then synced, then unsynced, then genius
+				if (tempState.karaoke) {
+					finalMode = KARAOKE;
+				} else if (tempState.synced) {
 					finalMode = SYNCED;
 				} else if (tempState.unsynced) {
 					finalMode = UNSYNCED;
@@ -633,7 +640,7 @@ class LyricsContainer extends react.Component {
 		let lyrics = lyricsState[CONFIG.modes[mode]];
 		// Fallback: if the preferred mode has no lyrics, use any available lyrics
 		if (!lyrics) {
-			lyrics = lyricsState.synced || lyricsState.unsynced || lyricsState.genius || null;
+			lyrics = lyricsState.karaoke || lyricsState.synced || lyricsState.unsynced || lyricsState.genius || null;
 			if (!lyrics) {
 				this.setState({ currentLyrics: [] });
 				return;
@@ -1548,13 +1555,15 @@ class LyricsContainer extends react.Component {
 
 	getCurrentMode() {
 		let mode = -1;
-		if (this.state.explicitMode !== -1 && this.state.explicitMode !== KARAOKE) {
+		if (this.state.explicitMode !== -1) {
 			mode = this.state.explicitMode;
-		} else if (this.state.lockMode !== -1 && this.state.lockMode !== KARAOKE) {
+		} else if (this.state.lockMode !== -1) {
 			mode = this.state.lockMode;
 		} else {
-			// Auto switch (karaoke disabled)
-			if (this.state.synced) {
+			// Auto switch: prefer karaoke, then synced, then unsynced, then genius
+			if (this.state.karaoke) {
+				mode = KARAOKE;
+			} else if (this.state.synced) {
 				mode = SYNCED;
 			} else if (this.state.unsynced) {
 				mode = UNSYNCED;
@@ -1655,11 +1664,20 @@ class LyricsContainer extends react.Component {
 			this.state.lockMode !== -1 ? this.state.lockMode : 
 			(this.state.isLoading ? (this.lastModeBeforeLoading || SYNCED) : mode);
 		
-		showTranslationButton = (potentialMode === SYNCED || potentialMode === UNSYNCED || mode === -1);
+		showTranslationButton = (potentialMode === KARAOKE || potentialMode === SYNCED || potentialMode === UNSYNCED || mode === -1);
 
 		if (mode !== -1) {
 
-			if (mode === SYNCED && this.state.synced) {
+			if (mode === KARAOKE && this.state.karaoke) {
+				activeItem = react.createElement(SyncedLyricsPage, {
+					trackUri: this.state.uri,
+					lyrics: Array.isArray(this.state.currentLyrics) ? this.state.currentLyrics : this.state.karaoke,
+					provider: this.state.provider,
+					copyright: this.state.copyright,
+					isKara: true,
+					reRenderLyricsPage: this.reRenderLyricsPage,
+				});
+			} else if (mode === SYNCED && this.state.synced) {
 				activeItem = react.createElement(CONFIG.visual["synced-compact"] ? SyncedLyricsPage : SyncedExpandedLyricsPage, {
 					trackUri: this.state.uri,
 					lyrics: Array.isArray(this.state.currentLyrics) ? this.state.currentLyrics : [],
@@ -1723,6 +1741,24 @@ class LyricsContainer extends react.Component {
 					el.onmousewheel = this.onFontSizeChange;
 				},
 			},
+			// Tab bar for mode switching
+			react.createElement(TopBarContent, {
+				links: CONFIG.modes,
+				activeLink: CONFIG.modes[mode] || CONFIG.modes[0],
+				lockLink: CONFIG.locked !== -1 ? CONFIG.modes[CONFIG.locked] : null,
+				switchCallback: (selectedMode) => {
+					const modeIndex = CONFIG.modes.indexOf(selectedMode);
+					if (modeIndex !== -1) {
+						this.switchTo(modeIndex);
+					}
+				},
+				lockCallback: (selectedMode) => {
+					const modeIndex = CONFIG.modes.indexOf(selectedMode);
+					if (modeIndex !== -1) {
+						this.lockIn(modeIndex);
+					}
+				}
+			}),
 			react.createElement("div", {
 				id: "lyrics-plus-gradient-background",
 				style: backgroundStyle,
@@ -1881,5 +1917,17 @@ class LyricsContainer extends react.Component {
 		if (this.state.isFullscreen) return reactDOM.createPortal(out, this.fullscreenContainer);
 		if (fadLyricsContainer) return reactDOM.createPortal(out, fadLyricsContainer);
 		return out;
+	}
+
+	switchTo(mode) {
+		this.setState({ explicitMode: mode });
+		this.fetchLyrics();
+	}
+
+	lockIn(mode) {
+		CONFIG.locked = mode;
+		localStorage.setItem("lyrics-plus:lock-mode", mode.toString());
+		this.setState({ lockMode: mode });
+		this.fetchLyrics();
 	}
 }

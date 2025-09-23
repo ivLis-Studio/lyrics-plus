@@ -220,10 +220,11 @@ const ConfigSelection = ({ name, defaultValue, options, onChange = () => {} }) =
 					value,
 					onChange: setValueCallback,
 				},
-				Object.keys(options).map((item) =>
+				...Object.keys(options).map((item) =>
 					react.createElement(
 						"option",
 						{
+							key: item,
 							value: item,
 						},
 						options[item]

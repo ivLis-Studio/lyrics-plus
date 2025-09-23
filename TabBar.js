@@ -184,10 +184,11 @@ const TabBar = react.memo(({ links, activeLink, lockLink, switchCallback, lockCa
 			react.createElement("li", {
 				className: "lyrics-tabBar-headerItem",
 			}),
-			options
+			...options
 				.filter((_, id) => !droplistItem.includes(id))
 				.map((item) =>
 					react.createElement(TabBarItem, {
+						key: item.key,
 						item,
 						switchTo: switchCallback,
 						lockIn: lockCallback,

@@ -72,6 +72,7 @@
 		"ProviderMusixmatch.js",
 		"ProviderGenius.js",
 		"ProviderLRCLIB.js",
+		"ProviderIvLyrics.js",
 		"Providers.js",
 		"Pages.js",
 		"Settings.js",
