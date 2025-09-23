@@ -63,19 +63,25 @@ const TabBarMore = react.memo(({ items, switchTo, lockIn }) => {
 });
 
 const TopBarContent = ({ links, activeLink, lockLink, switchCallback, lockCallback }) => {
-	const resizeHost = document.querySelector(
-		".Root__main-view .os-resize-observer-host, .Root__main-view .os-size-observer, .Root__main-view .main-view-container__scroll-node"
-	);
-	const [windowSize, setWindowSize] = useState(resizeHost.clientWidth);
-	const resizeHandler = () => setWindowSize(resizeHost.clientWidth);
+	const [windowSize, setWindowSize] = useState(0);
 
 	useEffect(() => {
+		const resizeHost = document.querySelector(
+			".Root__main-view .os-resize-observer-host, .Root__main-view .os-size-observer, .Root__main-view .main-view-container__scroll-node"
+		);
+
+		if (!resizeHost) return;
+
+		const resizeHandler = () => setWindowSize(resizeHost.clientWidth);
+		resizeHandler(); // Initial size
+
 		const observer = new ResizeObserver(resizeHandler);
 		observer.observe(resizeHost);
+
 		return () => {
 			observer.disconnect();
 		};
-	}, [resizeHandler]);
+	}, []);
 
 	return react.createElement(
 		TabBarContext,
@@ -93,6 +99,28 @@ const TopBarContent = ({ links, activeLink, lockLink, switchCallback, lockCallba
 };
 
 const TabBarContext = ({ children }) => {
+	const [container, setContainer] = useState(null);
+
+	useEffect(() => {
+		if (container) {
+			return;
+		}
+
+		const interval = setInterval(() => {
+			const el = document.querySelector(".main-topBar-topbarContentWrapper");
+			if (el) {
+				setContainer(el);
+				clearInterval(interval);
+			}
+		}, 100);
+
+		return () => clearInterval(interval);
+	}, [container]);
+
+	if (!container) {
+		return null;
+	}
+
 	return reactDOM.createPortal(
 		react.createElement(
 			"div",
@@ -101,7 +129,7 @@ const TabBarContext = ({ children }) => {
 			},
 			children
 		),
-		document.querySelector(".main-topBar-topbarContentWrapper")
+		container
 	);
 };
 

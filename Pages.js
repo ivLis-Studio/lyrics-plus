@@ -243,7 +243,7 @@ const KaraokeLine = react.memo(({ text, isActive, position, startTime }) => {
 
 								scaleValue = 1.0 + (0.08 * scaleFactor); // More pronounced scaling
 
-								// Subtle vertical movement
+							// Subtle vertical movement
 								yOffset = -(scaleFactor * 0.02);
 							}
 						}
@@ -315,6 +315,68 @@ const KaraokeLine = react.memo(({ text, isActive, position, startTime }) => {
 			}
 
 			if (lineSyllables.length === 0) {
+				// return text.text || "";
+				const lyricString = text.text || "";
+				if (isActive && typeof lyricString === 'string' && lyricString) {
+					const characters = Array.from(lyricString);
+					const characterElements = characters.map((char, charIndex) => {
+						if (char === '\n') {
+							return react.createElement('br', { key: `br-${charIndex}` });
+						}
+						// Simple character-by-character animation for string text
+						const charStartProgress = charIndex / characters.length;
+						const charEndProgress = (charIndex + 1) / characters.length;
+
+						// Simulate progress (this would normally come from timing data)
+						const currentProgress = (stablePosition % 5000) / 5000; // 5 second cycle for demo
+
+						let charTimeScale = 0;
+						if (currentProgress > charStartProgress) {
+							if (currentProgress >= charEndProgress) {
+								charTimeScale = 1;
+							} else {
+								const charProgress = (currentProgress - charStartProgress) / (charEndProgress - charStartProgress);
+								charTimeScale = Math.min(1, Math.max(0, charProgress));
+							}
+						}
+
+						const gradientProgress = -20 + (120 * charTimeScale);
+
+						// Beautiful-lyrics inspired character scaling when gradient line passes
+						let scaleValue = 1.0;
+						if (charTimeScale > 0 && charTimeScale <= 1) {
+							const gradientPos = gradientProgress + 20;
+							if (gradientPos >= 0 && gradientPos <= 120) {
+								const scaleProgress = Math.min(1, gradientPos / 100);
+								const scaleFactor = scaleProgress <= 0.5
+									? scaleProgress * 2
+									: 2 - (scaleProgress * 2);
+								scaleValue = 1.0 + (0.08 * scaleFactor);
+							}
+						}
+
+						const charStyleProps = {
+							"--gradient-progress": `${gradientProgress}%`,
+							"--text-shadow-opacity": "0%",
+							"--text-shadow-blur-radius": "0px",
+							transform: `scale(${scaleValue})`,
+							transformOrigin: "center center",
+							transition: "transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)"
+						};
+
+						return react.createElement(
+							"span",
+							{
+								key: `fallback-char-${charIndex}`,
+								className: `lyrics-lyricsContainer-Karaoke-Character${charTimeScale > 0 ? " lyrics-lyricsContainer-Karaoke-CharacterActive" : ""}`,
+								style: charStyleProps,
+							},
+							char
+						);
+					});
+
+					return react.createElement(react.Fragment, null, ...characterElements);
+				}
 				return text.text || "";
 			}
 
@@ -528,11 +590,14 @@ const KaraokeLine = react.memo(({ text, isActive, position, startTime }) => {
 		return react.createElement(react.Fragment, null, ...wordElements);
 	}
 
-	// Fallback for simple string karaoke (when text is string but isKara is true)
-	if (isActive && typeof text === 'string' && text) {
-
-		const characters = Array.from(text);
+	// Fallback for simple string karaoke (when text is string or object with text property)
+	const lyricString = (typeof text === 'string') ? text : text?.text;
+	if (isActive && typeof lyricString === 'string' && lyricString) {
+		const characters = Array.from(lyricString);
 		const characterElements = characters.map((char, charIndex) => {
+			if (char === '\n') {
+				return react.createElement('br', { key: `br-${charIndex}` });
+			}
 			// Simple character-by-character animation for string text
 			const charStartProgress = charIndex / characters.length;
 			const charEndProgress = (charIndex + 1) / characters.length;

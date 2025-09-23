@@ -279,6 +279,8 @@
 	line-height: calc(12px + var(--lyrics-original-font-size, var(--lyrics-font-size)));
 	text-shadow: var(--lyrics-text-shadow);
 	opacity: var(--lyrics-original-opacity, 1);
+	overflow-wrap: break-word;
+	word-break: keep-all;  
 }
 
 .lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine {
@@ -288,6 +290,8 @@
 	line-height: calc(var(--lyrics-line-height) + 16px); /* Extra space for karaoke scaling */
 	text-shadow: var(--lyrics-text-shadow);
 	opacity: var(--lyrics-original-opacity, 1);
+	overflow-wrap: break-word;
+	word-break: keep-all;  
 }
 
 @media (min-width: 1280px) {
@@ -400,8 +404,8 @@ div.lyrics-tabBar-headerItemLink {
 /* Enhanced karaoke syllable styling inspired by beautiful-lyrics */
 .lyrics-lyricsContainer-Karaoke-Syllable {
 	color: var(--lyrics-color-inactive);
-	display: inline-block;
-	white-space: pre;
+	display: inline;
+	white-space: pre-wrap;
 	position: relative;
 
 	/* Prevent character clipping during scaling */
@@ -535,7 +539,7 @@ div.lyrics-tabBar-headerItemLink {
 
 /* Character-level karaoke styling */
 .lyrics-lyricsContainer-Karaoke-Character {
-	display: inline-block;
+	display: inline;
 	position: relative;
 
 	/* Setup for gradient and glow effects */
