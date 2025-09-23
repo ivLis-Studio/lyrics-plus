@@ -269,22 +269,26 @@
 }
 
 .lyrics-lyricsContainer-UnsyncedLyricsPage .lyrics-lyricsContainer-LyricsLine {
-	font-size: var(--lyrics-font-size);
-	font-weight: 700;
+	font-size: var(--lyrics-original-font-size, var(--lyrics-font-size));
+	font-weight: var(--lyrics-original-font-weight, 700);
 	letter-spacing: -0.04em;
-	line-height: calc(12px + var(--lyrics-font-size));
+	line-height: calc(12px + var(--lyrics-original-font-size, var(--lyrics-font-size)));
+	text-shadow: var(--lyrics-text-shadow);
+	opacity: var(--lyrics-original-opacity, 1);
 }
 
 .lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine {
-	font-size: var(--lyrics-font-size);
-	font-weight: 700;
+	font-size: var(--lyrics-original-font-size, var(--lyrics-font-size));
+	font-weight: var(--lyrics-original-font-weight, 700);
 	letter-spacing: -0.04em;
 	line-height: var(--lyrics-line-height);
+	text-shadow: var(--lyrics-text-shadow);
+	opacity: var(--lyrics-original-opacity, 1);
 }
 
 @media (min-width: 1280px) {
 	.lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine {
-		font-weight: 900;
+		font-weight: var(--lyrics-original-font-weight, 900);
 	}
 }
 
@@ -831,9 +835,11 @@ div.lyrics-tabBar-headerItemLink {
 
 /* Make translated text smaller than original */
 .lyrics-lyricsContainer-LyricsLine-sub {
-	font-size: calc(var(--lyrics-font-size) * 0.7);
-	font-weight: 600;
-	opacity: 0.6;
+	font-size: var(--lyrics-translation-font-size, calc(var(--lyrics-font-size) * 0.7));
+	font-weight: var(--lyrics-translation-font-weight, 600);
+	margin-top: var(--lyrics-line-spacing, 8px);
+	opacity: var(--lyrics-translation-opacity, 0.6);
+	text-shadow: var(--lyrics-text-shadow);
 }
 
 .lyrics-lyricsContainer-LyricsLine-active {

@@ -274,6 +274,10 @@ const ConfigInput = ({ name, defaultValue, onChange = () => {} }) => {
 const ConfigAdjust = ({ name, defaultValue, step, min, max, onChange = () => {} }) => {
 	const [value, setValue] = useState(defaultValue);
 
+	useEffect(() => {
+		setValue(defaultValue);
+	}, [defaultValue]);
+
 	function adjust(dir) {
 		let temp = value + dir * step;
 		if (temp < min) {
@@ -558,8 +562,63 @@ const languageOptions = languageCodes.reduce((acc, code) => {
 	return acc;
 }, {});
 
-function openConfig() {
-	const configContainer = react.createElement(
+const ConfigModal = () => {
+	const [activeTab, setActiveTab] = react.useState("general");
+
+	// Initialize line-spacing if not set
+	if (CONFIG.visual["line-spacing"] === undefined) {
+		CONFIG.visual["line-spacing"] = 8;
+	}
+
+	const GitHubButton = () => {
+		return react.createElement(
+			"button",
+			{
+				className: "github-btn",
+				onClick: () => {
+					window.open("https://github.com/ivLis-Studio/lyrics-plus", "_blank");
+				},
+				title: "GitHub에서 보기"
+			},
+			react.createElement("svg", {
+				width: 16,
+				height: 16,
+				viewBox: "0 0 16 16",
+				fill: "currentColor",
+				dangerouslySetInnerHTML: {
+					__html: '<path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>'
+				}
+			}),
+			react.createElement("span", null, "GitHub")
+		);
+	};
+
+	const TabButton = ({ id, label, isActive, onClick }) => {
+		return react.createElement(
+			"button",
+			{
+				className: `tab-btn ${isActive ? "active" : ""}`,
+				onClick: (e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					onClick(id);
+				}
+			},
+			label
+		);
+	};
+
+	const TabContainer = ({ children }) => {
+		return react.createElement(
+			"div",
+			{
+				className: "tab-container"
+			},
+			children
+		);
+	};
+
+	return react.createElement(
 		"div",
 		{
 			id: `${APP_NAME}-config-container`,
@@ -567,40 +626,196 @@ function openConfig() {
 		react.createElement("style", {
 			dangerouslySetInnerHTML: {
 				__html: `
-#${APP_NAME}-config-container { padding: 16px 20px; }
+#${APP_NAME}-config-container {
+    padding: 0;
+}
+#${APP_NAME}-config-container .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--spice-card-border);
+    background-color: var(--spice-card);
+}
+#${APP_NAME}-config-container h1 {
+    font-size: 24px;
+}
+#${APP_NAME}-config-container .github-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: var(--spice-button-elevated);
+    border: 1px solid var(--spice-button-elevated-border);
+    border-radius: 8px;
+    color: var(--spice-button-elevated-text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 600;
+}
+#${APP_NAME}-config-container .github-btn:hover {
+    transform: scale(1.03);
+    background-color: var(--spice-button-elevated-hover);
+}
+#${APP_NAME}-config-container .tabs {
+    display: flex;
+    padding: 0 24px;
+    background-color: var(--spice-card);
+    border-bottom: 1px solid var(--spice-card-border);
+}
+#${APP_NAME}-config-container .tab-btn {
+    padding: 16px 4px;
+    margin-right: 24px;
+    background: none;
+    border: none;
+    color: var(--spice-subtext);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    font-weight: 600;
+    font-size: 15px;
+}
+#${APP_NAME}-config-container .tab-btn:hover {
+    color: var(--spice-text);
+}
+#${APP_NAME}-config-container .tab-btn.active {
+    color: var(--spice-text);
+    border-bottom-color: var(--spice-accent);
+}
+#${APP_NAME}-config-container .tab-container {
+    padding: 24px;
+    background-color: var(--spice-main-elevated);
+}
+#${APP_NAME}-config-container .tab-content {
+    display: none;
+}
+#${APP_NAME}-config-container .tab-content.active {
+    display: block;
+}
+#${APP_NAME}-config-container .tab-content > div {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--spice-card-border);
+}
+#${APP_NAME}-config-container .tab-content > div:last-child {
+    border-bottom: none;
+}
 #${APP_NAME}-config-container .setting-row {
-  display: grid;
-  grid-template-columns: minmax(260px, 1fr) auto;
-  gap: 16px;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,.06);
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) auto;
+    gap: 16px;
+    align-items: center;
 }
-#${APP_NAME}-config-container .setting-row:last-child { border-bottom: none; }
-#${APP_NAME}-config-container .col.description { font-weight: 600; opacity: .9; }
-#${APP_NAME}-config-container .col.action { display: inline-flex; gap: 8px; align-items: center; justify-content: flex-end; }
-#${APP_NAME}-config-container input, #${APP_NAME}-config-container select {
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 8px;
-  padding: 6px 10px;
-  width: min(360px, 100%);
-  outline: none;
-  color: rgba(255,255,255,.95);
+#${APP_NAME}-config-container .col.description {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--spice-text);
 }
-#${APP_NAME}-config-container select:hover { background: rgba(255,255,255,.1); }
-#${APP_NAME}-config-container select option { background-color: #121212; color: #f2f2f2; }
-#${APP_NAME}-config-container select option:hover { background-color: #2a2a2a; color: #fff; }
-#${APP_NAME}-config-container select option:checked { background-color: #2a2a2a; color: #fff; }
-#${APP_NAME}-config-container h2 { margin: 18px 0 10px; font-size: 16px; opacity: .95; }
-#${APP_NAME}-config-container .adjust-value { min-width: 48px; text-align: center; }
-#${APP_NAME}-config-container .switch, #${APP_NAME}-config-container .btn { height: 28px; }
+#${APP_NAME}-config-container .tab-content > div > span {
+    display: block;
+    font-size: 13px;
+    color: var(--spice-subtext);
+    margin-top: 8px;
+    max-width: 450px;
+}
+#${APP_NAME}-config-container .col.action {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+}
+#${APP_NAME}-config-container input,
+#${APP_NAME}-config-container select {
+    background-color: var(--spice-main-elevated);
+    border: 1px solid var(--spice-card-border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    width: min(360px, 100%);
+    outline: none;
+    color: var(--spice-text);
+    transition: border-color 0.2s ease;
+}
+#${APP_NAME}-config-container input:hover,
+#${APP_NAME}-config-container select:hover {
+    border-color: var(--spice-subtext);
+}
+#${APP_NAME}-config-container select option {
+    background-color: var(--spice-main-elevated);
+    color: var(--spice-text);
+}
+#${APP_NAME}-config-container h2 {
+    margin: 24px 0 16px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--spice-text);
+    border-bottom: 1px solid var(--spice-card-border);
+    padding-bottom: 8px;
+}
+#${APP_NAME}-config-container .tab-content > h2:first-child {
+    margin-top: 0;
+}
+#${APP_NAME}-config-container .adjust-value {
+    min-width: 48px;
+    text-align: center;
+    font-weight: 600;
+}
+#${APP_NAME}-config-container .switch,
+#${APP_NAME}-config-container .btn {
+    height: 32px;
+    min-width: 32px;
+}
+#${APP_NAME}-config-container .font-preview {
+    background-color: var(--spice-card) !important;
+    border-color: var(--spice-card-border) !important;
+    padding: 24px !important;
+    margin-bottom: 24px !important;
+}
 `
 			},
 		}),
-		react.createElement("h2", null, "옵션"),
-		react.createElement(OptionList, {
-			items: [
+		react.createElement(
+			"div",
+			{ className: "header" },
+			react.createElement("h1", { style: { margin: 0, fontSize: "18px", fontWeight: "600" } }, "가사 플러스"),
+			react.createElement(GitHubButton)
+		),
+		react.createElement(
+			"div",
+			{ className: "tabs" },
+			react.createElement(TabButton, {
+				id: "general",
+				label: "일반",
+				isActive: activeTab === "general",
+				onClick: setActiveTab
+			}),
+			react.createElement(TabButton, {
+				id: "font",
+				label: "글꼴",
+				isActive: activeTab === "font",
+				onClick: setActiveTab
+			}),
+			react.createElement(TabButton, {
+				id: "providers",
+				label: "제공자",
+				isActive: activeTab === "providers",
+				onClick: setActiveTab
+			}),
+			react.createElement(TabButton, {
+				id: "advanced",
+				label: "고급",
+				isActive: activeTab === "advanced",
+				onClick: setActiveTab
+			})
+		),
+		react.createElement(TabContainer, null,
+			react.createElement(
+				"div",
+				{
+					className: `tab-content ${activeTab === "general" ? "active" : ""}`
+				},
+				react.createElement("h2", null, "일반 설정"),
+				react.createElement(OptionList, {
+				items: [
 				{
 					desc: "재생바 버튼",
 					key: "playbar-button",
@@ -615,15 +830,6 @@ function openConfig() {
 					min: -10000,
 					max: 10000,
 					step: 250,
-				},
-				{
-					desc: "글꼴 크기",
-					info: "(메인 앱에서 Ctrl + 마우스 스크롬로도 조정 가능)",
-					key: "font-size",
-					type: ConfigAdjust,
-					min: fontSizeLimit.min,
-					max: fontSizeLimit.max,
-					step: fontSizeLimit.step,
 				},
 				{
 					desc: "정렬",
@@ -669,6 +875,7 @@ function openConfig() {
 				},
 				{
 					desc: "앨범 커버 배경",
+					info: "풀스크린 모드에서는 제대로 동작하지 않습니다.",
 					key: "gradient-background",
 					type: ConfigSlider,
 				},
@@ -679,38 +886,6 @@ function openConfig() {
 					min: 0,
 					max: 100,
 					step: 10,
-				},
-				// Removed four color inputs for a cleaner configuration UI
-				{
-					desc: "텍스트 변환: 일본어 감지 임계값 (고급)",
-					info: "가사에서 가나가 지배적인지 확인합니다. 결과가 임계값을 통과하면 일본어일 가능성이 높습니다. 이 설정은 백분율로 나타냅니다.",
-					key: "ja-detect-threshold",
-					type: ConfigAdjust,
-					min: thresholdSizeLimit.min,
-					max: thresholdSizeLimit.max,
-					step: thresholdSizeLimit.step,
-				},
-				{
-					desc: "텍스트 변환: 번체-간체 감지 임계값 (고급)",
-					info: "가사에서 번체 또는 간체가 지배적인지 확인합니다. 결과가 임계값을 통과하면 간체일 가능성이 높습니다. 이 설정은 백분율로 나타냅니다.",
-					key: "hans-detect-threshold",
-					type: ConfigAdjust,
-					min: thresholdSizeLimit.min,
-					max: thresholdSizeLimit.max,
-					step: thresholdSizeLimit.step,
-				},
-				{
-					desc: "Musixmatch 번역 언어",
-					info: "가사를 번역할 언어를 선택하세요. 언어가 변경되면 가사가 다시 로드됩니다.",
-					key: "musixmatch-translation-language",
-					type: ConfigSelection,
-					options: languageOptions,
-				},
-				{
-					desc: "GEMINI API 키",
-					info: "Gemini API를 사용한 가사 번역을 위한 API 키를 입력하세요.",
-					key: "gemini-api-key",
-					type: ConfigInput,
 				},
 				{
 					desc: "메모리 캐시 삭제",
@@ -786,40 +961,352 @@ function openConfig() {
 				});
 				window.dispatchEvent(configChange);
 			},
-		}),
-		react.createElement("h2", null, "제공자"),
-		react.createElement(ServiceList, {
-			itemsList: CONFIG.providersOrder,
-			onListChange: (list) => {
-				CONFIG.providersOrder = list;
-				localStorage.setItem(`${APP_NAME}:services-order`, JSON.stringify(list));
-				reloadLyrics?.();
-			},
-			onToggle: (name, value) => {
-				CONFIG.providers[name].on = value;
-				localStorage.setItem(`${APP_NAME}:provider:${name}:on`, value);
-				reloadLyrics?.();
-			},
-			onTokenChange: (name, value) => {
-				CONFIG.providers[name].token = value;
-				localStorage.setItem(`${APP_NAME}:provider:${name}:token`, value);
-				reloadLyrics?.();
-			},
-		}),
-		react.createElement("h2", null, "CORS 프록시 템플릿"),
-		react.createElement("span", {
-			dangerouslySetInnerHTML: {
-				__html:
-					"CORS 제한을 우회하는 데 사용됩니다. URL을 원하는 CORS 프록시 서버로 교체하세요. <code>{url}</code>은 요청 URL로 교체됩니다.",
-			},
-		}),
-		react.createElement(corsProxyTemplate),
-		react.createElement("span", {
-			dangerouslySetInnerHTML: {
-				__html: "적용 후 Spotify가 웹뷰를 다시 로드합니다. 기본값으로 복원하려면 비워두세요: <code>https://cors-proxy.spicetify.app/{url}</code>",
-			},
 		})
+			),
+			react.createElement(
+				"div",
+				{
+					className: `tab-content ${activeTab === "font" ? "active" : ""}`
+				},
+				react.createElement("h2", null, "글꼴 설정"),
+				react.createElement("div", {
+					className: "font-preview",
+					style: {
+						padding: "20px",
+						marginBottom: "20px",
+						border: "1px solid rgba(255,255,255,0.1)",
+						borderRadius: "8px",
+						backgroundColor: "rgba(255,255,255,0.02)"
+					}
+				},
+					react.createElement("h3", { style: { marginTop: 0, marginBottom: "10px" } }, "미리보기"),
+					react.createElement("div", {
+						id: "lyrics-preview",
+						style: {
+							fontSize: `${CONFIG.visual["original-font-size"] || 20}px`,
+							fontWeight: CONFIG.visual["original-font-weight"] || "400",
+							textAlign: CONFIG.visual["alignment"] || "left",
+							lineHeight: "1.5",
+							marginBottom: "10px",
+							opacity: (CONFIG.visual["original-opacity"] || 100) / 100,
+							textShadow: CONFIG.visual["text-shadow-enabled"] ?
+								`0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"}${Math.round((CONFIG.visual["text-shadow-opacity"] || 50) * 2.55).toString(16).padStart(2, '0')}` :
+								"none"
+						}
+					}, "샘플 가사 텍스트입니다"),
+					react.createElement("div", {
+						id: "translation-preview",
+						style: {
+							fontSize: `${CONFIG.visual["translation-font-size"] || 16}px`,
+							fontWeight: CONFIG.visual["translation-font-weight"] || "400",
+							textAlign: CONFIG.visual["alignment"] || "left",
+							lineHeight: "1.4",
+							opacity: (CONFIG.visual["translation-opacity"] || 100) / 100,
+							color: "rgba(255,255,255,0.8)",
+							marginTop: `${parseInt(CONFIG.visual["line-spacing"]) || 8}px`,
+							textShadow: CONFIG.visual["text-shadow-enabled"] ?
+								`0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"}${Math.round((CONFIG.visual["text-shadow-opacity"] || 50) * 2.55).toString(16).padStart(2, '0')}` :
+								"none"
+						}
+					}, "Sample lyrics translation text")
+				),
+				react.createElement(OptionList, {
+					items: [
+						{
+							desc: "원문 글꼴 두께",
+							info: "가사 원문의 글꼴 두께를 설정합니다.",
+							key: "original-font-weight",
+							type: ConfigSelection,
+							options: {
+								"100": "얇게 (100)",
+								"200": "매우 가늘게 (200)",
+								"300": "가늘게 (300)",
+								"400": "보통 (400)",
+								"500": "중간 (500)",
+								"600": "두껍게 (600)",
+								"700": "굵게 (700)",
+								"800": "매우 굵게 (800)",
+								"900": "가장 굵게 (900)",
+							},
+						},
+						{
+							desc: "원문 글꼴 크기",
+							info: "가사 원문의 글꼴 크기를 설정합니다.",
+							key: "original-font-size",
+							type: ConfigAdjust,
+							min: 12,
+							max: 128,
+							step: 2,
+						},
+						{
+							desc: "번역문 글꼴 두께",
+							info: "번역된 가사의 글꼴 두께를 설정합니다.",
+							key: "translation-font-weight",
+							type: ConfigSelection,
+							options: {
+								"100": "얇게 (100)",
+								"200": "매우 가늘게 (200)",
+								"300": "가늘게 (300)",
+								"400": "보통 (400)",
+								"500": "중간 (500)",
+								"600": "두껍게 (600)",
+								"700": "굵게 (700)",
+								"800": "매우 굵게 (800)",
+								"900": "가장 굵게 (900)",
+							},
+						},
+						{
+							desc: "번역문 글꼴 크기",
+							info: "번역된 가사의 글꼴 크기를 설정합니다.",
+							key: "translation-font-size",
+							type: ConfigAdjust,
+							min: 12,
+							max: 128,
+							step: 2,
+						},
+						{
+							desc: "원문 투명도",
+							info: "가사 원문의 투명도를 설정합니다 (0-100%).",
+							key: "original-opacity",
+							type: ConfigAdjust,
+							min: 0,
+							max: 100,
+							step: 5,
+						},
+						{
+							desc: "번역문 투명도",
+							info: "번역된 가사의 투명도를 설정합니다 (0-100%).",
+							key: "translation-opacity",
+							type: ConfigAdjust,
+							min: 0,
+							max: 100,
+							step: 5,
+						},
+						{
+							desc: "원문과 번역문 간격",
+							info: "원문과 번역문 사이의 여백을 설정합니다 (픽셀).",
+							key: "line-spacing",
+							type: ConfigAdjust,
+							min: 0,
+							max: 30,
+							step: 2,
+						},
+						{
+							desc: "텍스트 그림자 활성화",
+							info: "가사에 그림자 효과를 적용합니다.",
+							key: "text-shadow-enabled",
+							type: ConfigSlider,
+						},
+						{
+							desc: "그림자 색상",
+							info: "텍스트 그림자의 색상을 설정합니다.",
+							key: "text-shadow-color",
+							type: ConfigInput,
+						},
+						{
+							desc: "그림자 투명도",
+							info: "텍스트 그림자의 투명도를 설정합니다 (0-100%).",
+							key: "text-shadow-opacity",
+							type: ConfigAdjust,
+							min: 0,
+							max: 100,
+							step: 5,
+						},
+						{
+							desc: "그림자 블러",
+							info: "텍스트 그림자의 블러 정도를 설정합니다.",
+							key: "text-shadow-blur",
+							type: ConfigAdjust,
+							min: 0,
+							max: 10,
+							step: 1,
+						},
+					],
+					onChange: (name, value) => {
+						CONFIG.visual[name] = value;
+						localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
+
+						// Update preview in real-time
+						const lyricsPreview = document.getElementById("lyrics-preview");
+						const translationPreview = document.getElementById("translation-preview");
+
+						if (lyricsPreview && translationPreview) {
+							if (name === "original-font-size") {
+								lyricsPreview.style.fontSize = `${value}px`;
+							}
+							if (name === "original-font-weight") {
+								lyricsPreview.style.fontWeight = value;
+							}
+							if (name === "translation-font-size") {
+								translationPreview.style.fontSize = `${value}px`;
+							}
+							if (name === "translation-font-weight") {
+								translationPreview.style.fontWeight = value;
+							}
+							if (name === "alignment") {
+								lyricsPreview.style.textAlign = value;
+								translationPreview.style.textAlign = value;
+							}
+							if (name === "original-opacity") {
+								lyricsPreview.style.opacity = value / 100;
+							}
+							if (name === "translation-opacity") {
+								translationPreview.style.opacity = value / 100;
+							}
+							if (name === "line-spacing") {
+								translationPreview.style.marginTop = `${parseInt(value) || 0}px`;
+							}
+							if (name === "text-shadow-enabled" || name === "text-shadow-color" || name === "text-shadow-opacity" || name === "text-shadow-blur") {
+								const shadowEnabled = CONFIG.visual["text-shadow-enabled"];
+								const shadowColor = CONFIG.visual["text-shadow-color"] || "#000000";
+								const shadowOpacity = CONFIG.visual["text-shadow-opacity"] || 50;
+								const shadowBlur = CONFIG.visual["text-shadow-blur"] || 2;
+								const shadowAlpha = Math.round(shadowOpacity * 2.55).toString(16).padStart(2, '0');
+								const shadow = shadowEnabled ? `0 0 ${shadowBlur}px ${shadowColor}${shadowAlpha}` : "none";
+								lyricsPreview.style.textShadow = shadow;
+								translationPreview.style.textShadow = shadow;
+							}
+						}
+
+						lyricContainerUpdate?.();
+
+						const configChange = new CustomEvent("lyrics-plus", {
+							detail: {
+								type: "config",
+								name: name,
+								value: value,
+							},
+						});
+						window.dispatchEvent(configChange);
+					},
+				})
+			),
+			react.createElement(
+				"div",
+				{
+					className: `tab-content ${activeTab === "providers" ? "active" : ""}`
+				},
+				react.createElement("h2", null, "가사 제공자"),
+				react.createElement(ServiceList, {
+					itemsList: CONFIG.providersOrder,
+					onListChange: (list) => {
+						CONFIG.providersOrder = list;
+						localStorage.setItem(`${APP_NAME}:services-order`, JSON.stringify(list));
+						reloadLyrics?.();
+					},
+					onToggle: (name, value) => {
+						CONFIG.providers[name].on = value;
+						localStorage.setItem(`${APP_NAME}:provider:${name}:on`, value);
+						reloadLyrics?.();
+					},
+					onTokenChange: (name, value) => {
+						CONFIG.providers[name].token = value;
+						localStorage.setItem(`${APP_NAME}:provider:${name}:token`, value);
+						reloadLyrics?.();
+					},
+				})
+			),
+			react.createElement(
+				"div",
+				{
+					className: `tab-content ${activeTab === "advanced" ? "active" : ""}`
+				},
+				react.createElement("h2", null, "고급 설정"),
+				react.createElement(OptionList, {
+					items: [
+						{
+							desc: "텍스트 변환: 일본어 감지 임계값",
+							info: "가사에서 가나가 지배적인지 확인합니다. 결과가 임계값을 통과하면 일본어일 가능성이 높습니다. 이 설정은 백분율로 나타냅니다.",
+							key: "ja-detect-threshold",
+							type: ConfigAdjust,
+							min: thresholdSizeLimit.min,
+							max: thresholdSizeLimit.max,
+							step: thresholdSizeLimit.step,
+						},
+						{
+							desc: "텍스트 변환: 번체-간체 감지 임계값",
+							info: "가사에서 번체 또는 간체가 지배적인지 확인합니다. 결과가 임계값을 통과하면 간체일 가능성이 높습니다. 이 설정은 백분율로 나타냅니다.",
+							key: "hans-detect-threshold",
+							type: ConfigAdjust,
+							min: thresholdSizeLimit.min,
+							max: thresholdSizeLimit.max,
+							step: thresholdSizeLimit.step,
+						},
+						{
+							desc: "Musixmatch 번역 언어",
+							info: "가사를 번역할 언어를 선택하세요. 언어가 변경되면 가사가 다시 로드됩니다.",
+							key: "musixmatch-translation-language",
+							type: ConfigSelection,
+							options: languageOptions,
+						},
+						{
+							desc: "GEMINI API 키",
+							info: "Gemini API를 사용한 가사 번역을 위한 API 키를 입력하세요.",
+							key: "gemini-api-key",
+							type: ConfigInput,
+						},
+					],
+					onChange: (name, value) => {
+						CONFIG.visual[name] = value;
+						if (name === "musixmatch-translation-language") {
+							// handled below
+						} else if (name === "gemini-api-key") {
+							// Save GEMINI API key to both Spicetify LocalStorage and regular localStorage for persistence
+							try {
+								Spicetify?.LocalStorage?.set(`${APP_NAME}:visual:${name}`, value);
+							} catch (error) {
+								console.warn(`Failed to save to Spicetify LocalStorage '${name}':`, error);
+							}
+							try {
+								localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
+							} catch (error) {
+								console.warn(`Failed to save to localStorage '${name}':`, error);
+							}
+						} else {
+							localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
+						}
+
+						// Reload Lyrics if translation language is changed
+						if (name === "musixmatch-translation-language") {
+							if (value === "none") {
+								CONFIG.visual["translate:translated-lyrics-source"] = "none";
+								localStorage.setItem(`${APP_NAME}:visual:translate:translated-lyrics-source`, "none");
+							}
+							reloadLyrics?.();
+						} else {
+							lyricContainerUpdate?.();
+						}
+
+						const configChange = new CustomEvent("lyrics-plus", {
+							detail: {
+								type: "config",
+								name: name,
+								value: value,
+							},
+						});
+						window.dispatchEvent(configChange);
+					},
+				}),
+				react.createElement("h3", { style: { marginTop: "24px", marginBottom: "10px" } }, "CORS 프록시 템플릿"),
+				react.createElement("span", {
+					dangerouslySetInnerHTML: {
+						__html:
+							"CORS 제한을 우회하는 데 사용됩니다. URL을 원하는 CORS 프록시 서버로 교체하세요. <code>{url}</code>은 요청 URL로 교체됩니다.",
+					},
+				}),
+				react.createElement(corsProxyTemplate),
+				react.createElement("span", {
+					dangerouslySetInnerHTML: {
+						__html: "적용 후 Spotify가 웹뷰를 다시 로드합니다. 기본값으로 복원하려면 비워두세요: <code>https://cors-proxy.spicetify.app/{url}</code>",
+					},
+				})
+			)
+		)
 	);
+};
+
+function openConfig() {
+	const configContainer = react.createElement(ConfigModal);
 
 	Spicetify.PopupModal.display({
 		title: "가사 플러스",

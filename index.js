@@ -94,6 +94,16 @@ const CONFIG = {
 		"lines-before": localStorage.getItem("lyrics-plus:visual:lines-before") || "0",
 		"lines-after": localStorage.getItem("lyrics-plus:visual:lines-after") || "2",
 		"font-size": localStorage.getItem("lyrics-plus:visual:font-size") || "32",
+		"original-font-weight": localStorage.getItem("lyrics-plus:visual:original-font-weight") || "400",
+		"original-font-size": localStorage.getItem("lyrics-plus:visual:original-font-size") || "32",
+		"translation-font-weight": localStorage.getItem("lyrics-plus:visual:translation-font-weight") || "300",
+		"translation-font-size": localStorage.getItem("lyrics-plus:visual:translation-font-size") || "24",
+		"text-shadow-enabled": ConfigUtils.get("lyrics-plus:visual:text-shadow-enabled", true),
+		"text-shadow-color": localStorage.getItem("lyrics-plus:visual:text-shadow-color") || "#000000",
+		"text-shadow-opacity": localStorage.getItem("lyrics-plus:visual:text-shadow-opacity") || "50",
+		"text-shadow-blur": localStorage.getItem("lyrics-plus:visual:text-shadow-blur") || "2",
+		"original-opacity": localStorage.getItem("lyrics-plus:visual:original-opacity") || "100",
+		"translation-opacity": localStorage.getItem("lyrics-plus:visual:translation-opacity") || "85",
 		"translate:translated-lyrics-source": localStorage.getItem("lyrics-plus:visual:translate:translated-lyrics-source") || "geminiKo",
 		"translate:display-mode": localStorage.getItem("lyrics-plus:visual:translate:display-mode") || "replace",
 		"translate:detect-language-override": localStorage.getItem("lyrics-plus:visual:translate:detect-language-override") || "off",
@@ -135,16 +145,6 @@ const CONFIG = {
 			desc: "공식 Spotify API에서 제공되는 가사입니다.",
 			modes: [SYNCED, UNSYNCED],
 		},
-		netease: {
-			on: ConfigUtils.get("lyrics-plus:provider:netease:on", false),
-			desc: "중국 개발자와 사용자가 운영하는 크라우드소싱 가사 제공자입니다.",
-			modes: [SYNCED, UNSYNCED],
-		},
-		genius: {
-			on: spotifyVersion >= "1.2.31" ? false : ConfigUtils.get("lyrics-plus:provider:genius:on"),
-			desc: "아티스트 자신의 통찰과 함께 동기화되지 않은 가사를 제공합니다. Genius는 <code>1.2.31</code> 이상 버전에서 비활성화되어 제공자로 사용할 수 없습니다.",
-			modes: [GENIUS],
-		},
 		local: {
 			on: ConfigUtils.get("lyrics-plus:provider:local:on"),
 			desc: "이전 Spotify 세션에서 로드된 캐시/로컬 파일의 가사를 제공합니다.",
@@ -162,7 +162,7 @@ try {
 		throw "";
 	}
 } catch {
-	CONFIG.providersOrder = Object.keys(CONFIG.providers);
+	CONFIG.providersOrder = ["spotify", "lrclib", "musixmatch", "local"];
 	localStorage.setItem("lyrics-plus:services-order", JSON.stringify(CONFIG.providersOrder));
 }
 
@@ -170,6 +170,14 @@ CONFIG.locked = Number.parseInt(CONFIG.locked);
 CONFIG.visual["lines-before"] = Number.parseInt(CONFIG.visual["lines-before"]);
 CONFIG.visual["lines-after"] = Number.parseInt(CONFIG.visual["lines-after"]);
 CONFIG.visual["font-size"] = Number.parseInt(CONFIG.visual["font-size"]);
+CONFIG.visual["original-font-weight"] = Number.parseInt(CONFIG.visual["original-font-weight"]);
+CONFIG.visual["original-font-size"] = Number.parseInt(CONFIG.visual["original-font-size"]);
+CONFIG.visual["translation-font-weight"] = Number.parseInt(CONFIG.visual["translation-font-weight"]);
+CONFIG.visual["translation-font-size"] = Number.parseInt(CONFIG.visual["translation-font-size"]);
+CONFIG.visual["text-shadow-opacity"] = Number.parseInt(CONFIG.visual["text-shadow-opacity"]);
+CONFIG.visual["text-shadow-blur"] = Number.parseInt(CONFIG.visual["text-shadow-blur"]);
+CONFIG.visual["original-opacity"] = Number.parseInt(CONFIG.visual["original-opacity"]);
+CONFIG.visual["translation-opacity"] = Number.parseInt(CONFIG.visual["translation-opacity"]);
 CONFIG.visual["background-brightness"] = Number.parseInt(CONFIG.visual["background-brightness"]);
 CONFIG.visual["ja-detect-threshold"] = Number.parseInt(CONFIG.visual["ja-detect-threshold"]);
 CONFIG.visual["hans-detect-threshold"] = Number.parseInt(CONFIG.visual["hans-detect-threshold"]);
@@ -1582,11 +1590,36 @@ class LyricsContainer extends react.Component {
 			backgroundStyle.filter = `brightness(${brightness})`;
 		}
 
+		// Helper function to convert hex color with opacity
+		const hexToRgba = (hex, opacity) => {
+			const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+			if (result) {
+				const r = parseInt(result[1], 16);
+				const g = parseInt(result[2], 16);
+				const b = parseInt(result[3], 16);
+				return `rgba(${r}, ${g}, ${b}, ${opacity / 100})`;
+			}
+			return hex;
+		};
+
+		// Build text shadow CSS value
+		const shadowColor = hexToRgba(CONFIG.visual["text-shadow-color"], CONFIG.visual["text-shadow-opacity"]);
+		const textShadow = CONFIG.visual["text-shadow-enabled"]
+			? `0 0 ${CONFIG.visual["text-shadow-blur"]}px ${shadowColor}`
+			: "none";
 
 		this.styleVariables = {
 			...this.styleVariables,
 			"--lyrics-align-text": CONFIG.visual.alignment,
 			"--lyrics-font-size": `${CONFIG.visual["font-size"]}px`,
+			"--lyrics-original-font-weight": CONFIG.visual["original-font-weight"],
+			"--lyrics-original-font-size": `${CONFIG.visual["original-font-size"]}px`,
+			"--lyrics-translation-font-weight": CONFIG.visual["translation-font-weight"],
+			"--lyrics-translation-font-size": `${CONFIG.visual["translation-font-size"]}px`,
+			"--lyrics-line-spacing": `${CONFIG.visual["line-spacing"] || 8}px`,
+			"--lyrics-text-shadow": textShadow,
+			"--lyrics-original-opacity": CONFIG.visual["original-opacity"] / 100,
+			"--lyrics-translation-opacity": CONFIG.visual["translation-opacity"] / 100,
 			"--animation-tempo": this.state.tempo,
 		};
 
@@ -1728,7 +1761,7 @@ class LyricsContainer extends react.Component {
 							netease: this.state.neteaseTranslation !== null,
 						},
 					}),
-				react.createElement(AdjustmentsMenu, { mode }),
+				react.createElement(SettingsMenu),
 				react.createElement(
 					Spicetify.ReactComponent.TooltipWrapper,
 					{

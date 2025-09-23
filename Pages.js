@@ -127,9 +127,8 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 	}, [lyricWithEmptyLines, position]);
 
 	const activeLines = useMemo(() => {
-		const startIndex = Math.max(activeLineIndex - 1 - CONFIG.visual["lines-before"], 0);
-		// 3 lines = 1 padding top + 1 padding bottom + 1 active
-		const linesCount = CONFIG.visual["lines-before"] + CONFIG.visual["lines-after"] + 3;
+		const startIndex = Math.max(activeLineIndex - CONFIG.visual["lines-before"], 0);
+		const linesCount = CONFIG.visual["lines-before"] + CONFIG.visual["lines-after"] + 1;
 		return lyricWithEmptyLines.slice(startIndex, startIndex + linesCount);
 	}, [activeLineIndex, lyricWithEmptyLines]);
 
@@ -164,7 +163,7 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 				}
 
 				let className = "lyrics-lyricsContainer-LyricsLine";
-				const activeElementIndex = Math.min(activeLineIndex, CONFIG.visual["lines-before"] + 1);
+				const activeElementIndex = Math.min(activeLineIndex, CONFIG.visual["lines-before"]);
 				let ref;
 
 				if (i === activeElementIndex) {
