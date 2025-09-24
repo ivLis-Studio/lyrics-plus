@@ -1175,6 +1175,16 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics, provider, copyright, isKa
 });
 
 const UnsyncedLyricsPage = react.memo(({ lyrics, provider, copyright }) => {
+	const lyricsArray = useMemo(() => {
+		if (Array.isArray(lyrics)) {
+			return lyrics;
+		}
+		if (typeof lyrics === "string") {
+			return lyrics.split("\n").map(text => ({ text }));
+		}
+		return [];
+	}, [lyrics]);
+
 	return react.createElement(
 		"div",
 		{
@@ -1183,7 +1193,7 @@ const UnsyncedLyricsPage = react.memo(({ lyrics, provider, copyright }) => {
 		react.createElement("p", {
 			className: "lyrics-lyricsContainer-LyricsUnsyncedPadding",
 		}),
-		...lyrics.map(({ text, originalText, text2 }, index) => {
+		...lyricsArray.map(({ text, originalText, text2 }, index) => {
 			const displayMode = CONFIG.visual["translate:display-mode"];
 			const showTranslatedBelow = displayMode === "below";
 			const replaceOriginal = displayMode === "replace";
@@ -1268,6 +1278,7 @@ const UnsyncedLyricsPage = react.memo(({ lyrics, provider, copyright }) => {
 		react.createElement("p", {
 			className: "lyrics-lyricsContainer-LyricsUnsyncedPadding",
 		}),
+
 		react.createElement(CreditFooter, {
 			provider,
 			copyright,
