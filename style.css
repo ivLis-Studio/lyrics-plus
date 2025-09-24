@@ -206,6 +206,7 @@
 
 .lyrics-lyricsContainer-LyricsContainer.blur-enabled .lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine {
 	filter: blur(calc(var(--blur-index) * 1.5px));
+	word-break: auto-phrase;
 }
 
 .lyrics-lyricsContainer-UnsyncedLyricsPage .lyrics-lyricsContainer-LyricsLine a {
@@ -234,15 +235,9 @@
 .lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine.lyrics-lyricsContainer-LyricsLine-active {
 	color: var(--lyrics-color-active);
 	opacity: 1;
-	transform: translateY(calc(var(--position-index) * var(--lyrics-line-height) + var(--offset))) scale(1.08);
+	transform: translateY(calc(var(--position-index) * var(--lyrics-line-height) + var(--offset)));
 	filter: none !important;
-	/* Enhanced glow effect for active line */
-	text-shadow: 0 0 20px rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.8);
 	transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-	/* Prevent character clipping during karaoke scaling */
-	padding: 8px 0;
-	overflow: visible;
 }
 
 .lyrics-lyricsContainer-SyncedLyrics > .lyrics-lyricsContainer-LyricsLine-paddingLine {
@@ -423,28 +418,16 @@ div.lyrics-tabBar-headerItemLink {
 		var(--lyrics-color-inactive),
 		var(--lyrics-color-inactive)
 	);
-
-	/* Transform origin for scaling */
-	transform-origin: center center;
-
-	/* Remove text-shadow for inactive state */
-	text-shadow: none;
-
-	/* Smooth transitions for inactive state */
-	transition: transform 0.2s ease-out;
 }
 
 .lyrics-lyricsContainer-Karaoke-SyllableActive {
 	/* Enhanced gradient fill effect */
 	background-image: linear-gradient(
 		90deg,
-		rgba(255, 255, 255, 0.85) var(--gradient-progress, 0%),
-		rgba(255, 255, 255, 0.85) calc(var(--gradient-progress, 0%) + 20%),
-		rgba(255, 255, 255, 0.5) calc(var(--gradient-progress, 0%) + 20%)
+		var(--lyrics-color-active) var(--gradient-progress, 0%),
+		var(--lyrics-color-active) calc(var(--gradient-progress, 0%) + 20%),
+		var(--lyrics-color-inactive) calc(var(--gradient-progress, 0%) + 20%)
 	) !important;
-
-	/* No text-shadow for clean effect */
-	text-shadow: none !important;
 
 	/* Color fallback for browsers without gradient support */
 	color: var(--lyrics-color-active) !important;
@@ -554,39 +537,30 @@ div.lyrics-tabBar-headerItemLink {
 		var(--lyrics-color-inactive)
 	);
 
-	/* Transform origin for scaling */
-	transform-origin: center center;
-
 	/* Subtle blur for softer gradient transition */
 	filter: blur(0.15px);
 
 	/* Performance optimization - GPU acceleration */
-	will-change: transform, text-shadow, background-position, filter;
+	will-change: background-position, filter;
 	backface-visibility: hidden;
 	transform-style: preserve-3d;
 
 	/* Smooth transitions - natural and flowing */
-	transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1), filter 0.3s ease-out;
-
-	/* No text-shadow for clean effect */
-	text-shadow: none;
+	transition: filter 0.3s ease-out;
 }
 
 .lyrics-lyricsContainer-Karaoke-CharacterActive {
-	/* Enhanced gradient fill effect for characters with softer transition */
+	/* Enhanced gradient fill effect for characters */
 	background-image: linear-gradient(
 		90deg,
-		rgba(255, 255, 255, 0.85) var(--gradient-progress, 0%),
-		rgba(255, 255, 255, 0.7) calc(var(--gradient-progress, 0%) + 10%),
-		rgba(255, 255, 255, 0.5) calc(var(--gradient-progress, 0%) + 25%),
-		rgba(255, 255, 255, 0.4) calc(var(--gradient-progress, 0%) + 35%)
+		var(--lyrics-color-active) var(--gradient-progress, 0%),
+		var(--lyrics-color-active) calc(var(--gradient-progress, 0%) + 10%),
+		var(--lyrics-color-inactive) calc(var(--gradient-progress, 0%) + 25%),
+		var(--lyrics-color-inactive) calc(var(--gradient-progress, 0%) + 35%)
 	) !important;
 
 	/* Remove blur when active to maintain clarity */
 	filter: blur(0px);
-
-	/* No text-shadow for clean effect */
-	text-shadow: none !important;
 
 	/* Color fallback for browsers without gradient support */
 	color: var(--lyrics-color-active) !important;
@@ -594,7 +568,7 @@ div.lyrics-tabBar-headerItemLink {
 
 /* Performance optimization - GPU acceleration */
 .lyrics-lyricsContainer-Karaoke-Syllable {
-	will-change: transform, text-shadow, background-position;
+	will-change: background-position;
 	backface-visibility: hidden;
 	transform-style: preserve-3d;
 }
