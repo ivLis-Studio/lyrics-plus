@@ -2,6 +2,8 @@
 
 Spicetify용 **Lyrics Plus** 커스텀 앱의 개인화된 버전입니다. Google Gemini API를 활용하여 고품질 한국어 번역 기능을 제공합니다.
 
+https://github.com/user-attachments/assets/13188134-304d-44d8-8863-827402dcfb48
+
 ---
 
 ## ✨ 주요 기능
