@@ -62,8 +62,67 @@ const TabBarMore = react.memo(({ items, switchTo, lockIn }) => {
 	);
 });
 
+// Global ResizeObserver manager to prevent duplicate observers
+const ResizeObserverManager = {
+	observers: new Map(),
+	callbacks: new Map(),
+
+	observe(element, callback) {
+		const elementKey = this.getElementKey(element);
+		
+		if (!this.callbacks.has(elementKey)) {
+			this.callbacks.set(elementKey, new Set());
+		}
+		
+		this.callbacks.get(elementKey).add(callback);
+		
+		if (!this.observers.has(elementKey)) {
+			const observer = new ResizeObserver((entries) => {
+				const callbacks = this.callbacks.get(elementKey);
+				if (callbacks) {
+					callbacks.forEach(cb => {
+						try {
+							cb(entries[0]);
+						} catch (error) {
+							console.error('Error in resize callback:', error);
+						}
+					});
+				}
+			});
+			this.observers.set(elementKey, observer);
+			observer.observe(element);
+		}
+		
+		return () => this.unobserve(element, callback);
+	},
+
+	unobserve(element, callback) {
+		const elementKey = this.getElementKey(element);
+		const callbacks = this.callbacks.get(elementKey);
+		
+		if (callbacks) {
+			callbacks.delete(callback);
+			
+			if (callbacks.size === 0) {
+				const observer = this.observers.get(elementKey);
+				if (observer) {
+					observer.disconnect();
+					this.observers.delete(elementKey);
+				}
+				this.callbacks.delete(elementKey);
+			}
+		}
+	},
+
+	getElementKey(element) {
+		// Generate a unique key for the element
+		return element.className + '-' + element.tagName + '-' + (element.id || 'no-id');
+	}
+};
+
 const TopBarContent = ({ links, activeLink, lockLink, switchCallback, lockCallback }) => {
 	const [windowSize, setWindowSize] = useState(0);
+	const cleanupRef = useRef(null);
 
 	useEffect(() => {
 		const resizeHost = document.querySelector(
@@ -72,14 +131,22 @@ const TopBarContent = ({ links, activeLink, lockLink, switchCallback, lockCallba
 
 		if (!resizeHost) return;
 
-		const resizeHandler = () => setWindowSize(resizeHost.clientWidth);
-		resizeHandler(); // Initial size
+		const resizeHandler = (entry) => {
+			const width = entry?.contentRect?.width || resizeHost.clientWidth;
+			setWindowSize(width);
+		};
+		
+		// Initial size
+		resizeHandler({ contentRect: { width: resizeHost.clientWidth } });
 
-		const observer = new ResizeObserver(resizeHandler);
-		observer.observe(resizeHost);
+		// Use global ResizeObserver manager
+		cleanupRef.current = ResizeObserverManager.observe(resizeHost, resizeHandler);
 
 		return () => {
-			observer.disconnect();
+			if (cleanupRef.current) {
+				cleanupRef.current();
+				cleanupRef.current = null;
+			}
 		};
 	}, []);
 
@@ -98,24 +165,85 @@ const TopBarContent = ({ links, activeLink, lockLink, switchCallback, lockCallba
 	);
 };
 
-const TabBarContext = ({ children }) => {
-	const [container, setContainer] = useState(null);
+// Global container manager to prevent duplicate polling
+const ContainerManager = {
+	container: null,
+	promise: null,
+	isSearching: false,
+	callbacks: new Set(),
 
-	useEffect(() => {
-		if (container) {
-			return;
+	getContainer() {
+		if (this.container) {
+			return Promise.resolve(this.container);
 		}
 
-		const interval = setInterval(() => {
-			const el = document.querySelector(".main-topBar-topbarContentWrapper");
-			if (el) {
-				setContainer(el);
-				clearInterval(interval);
-			}
-		}, 100);
+		if (this.promise) {
+			return this.promise;
+		}
 
-		return () => clearInterval(interval);
-	}, [container]);
+		this.promise = this.findContainer();
+		return this.promise;
+	},
+
+	findContainer() {
+		return new Promise((resolve, reject) => {
+			let attemptCount = 0;
+			const maxAttempts = 50;
+
+			const search = () => {
+				const el = document.querySelector(".main-topBar-topbarContentWrapper");
+				if (el) {
+					this.container = el;
+					this.promise = null;
+					resolve(el);
+					return;
+				}
+
+				attemptCount++;
+				if (attemptCount < maxAttempts) {
+					setTimeout(search, 100);
+				} else {
+					this.promise = null;
+					console.warn("TabBarContext: Could not find topbar container after max attempts");
+					reject(new Error("Container not found"));
+				}
+			};
+
+			search();
+		});
+	},
+
+	addCallback(callback) {
+		this.callbacks.add(callback);
+		this.getContainer()
+			.then(container => callback(container))
+			.catch(error => callback(null));
+	},
+
+	removeCallback(callback) {
+		this.callbacks.delete(callback);
+	}
+};
+
+const TabBarContext = ({ children }) => {
+	const [container, setContainer] = useState(null);
+	const callbackRef = useRef(null);
+
+	useEffect(() => {
+		callbackRef.current = (foundContainer) => {
+			setContainer(foundContainer);
+		};
+
+		// Add to global container manager
+		ContainerManager.addCallback(callbackRef.current);
+
+		return () => {
+			if (callbackRef.current) {
+				ContainerManager.removeCallback(callbackRef.current);
+				callbackRef.current = null;
+			}
+		};
+	}, []);
 
 	if (!container) {
 		return null;
@@ -142,7 +270,6 @@ const TabBar = react.memo(({ links, activeLink, lockLink, switchCallback, lockCa
 	const options = [];
 	for (let i = 0; i < links.length; i++) {
 		const key = links[i];
-		if (spotifyVersion >= "1.2.31" && key === "genius") continue;
 		let value = key[0].toUpperCase() + key.slice(1);
 		if (key === lockLink) value = `• ${value}`;
 		const active = key === activeLink;

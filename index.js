@@ -16,13 +16,13 @@ function render() {
 }
 
 // Optimized utility functions with better error handling and performance
-const ConfigUtils = {
-	get(name, defaultVal = true) {
+const StorageManager = {
+	get(key, defaultVal = true) {
 		try {
-	const value = localStorage.getItem(name);
+			const value = localStorage.getItem(key);
 			return value !== null ? value === "true" : defaultVal;
 		} catch (error) {
-			console.warn(`Failed to read config '${name}':`, error);
+			console.warn(`Failed to read config '${key}':`, error);
 			return defaultVal;
 		}
 	},
@@ -35,21 +35,21 @@ const ConfigUtils = {
 		} catch (error) {
 			console.warn(`Failed to read from Spicetify LocalStorage '${key}':`, error);
 		}
-		
+
 		// Fallback to regular localStorage
 		try {
 			return localStorage.getItem(key);
 		} catch (error) {
 			console.warn(`Failed to read from localStorage '${key}':`, error);
 		}
-		
+
 		return null;
 	},
 
 	setPersisted(key, value) {
 		const stringValue = String(value);
 		let success = false;
-		
+
 		// Try Spicetify LocalStorage first
 		try {
 			Spicetify?.LocalStorage?.set(key, stringValue);
@@ -57,7 +57,7 @@ const ConfigUtils = {
 		} catch (error) {
 			console.warn(`Failed to write to Spicetify LocalStorage '${key}':`, error);
 		}
-		
+
 		// Fallback to regular localStorage
 		try {
 			localStorage.setItem(key, stringValue);
@@ -65,9 +65,19 @@ const ConfigUtils = {
 		} catch (error) {
 			console.warn(`Failed to write to localStorage '${key}':`, error);
 		}
-		
+
 		if (!success) {
 			console.error(`Failed to persist data for key '${key}'`);
+		}
+	},
+
+	// Unified config save method to reduce duplication
+	saveConfig(name, value) {
+		if (name === "gemini-api-key" || name === "gemini-api-key-romaji") {
+			// Save sensitive keys to both storages for persistence
+			this.setPersisted(`${APP_NAME}:visual:${name}`, value);
+		} else {
+			localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
 		}
 	}
 };
@@ -77,15 +87,14 @@ const APP_NAME = "lyrics-plus";
 const KARAOKE = 0;
 const SYNCED = 1;
 const UNSYNCED = 2;
-const GENIUS = 3;
 
 const CONFIG = {
 	visual: {
-			"playbar-button": ConfigUtils.get("lyrics-plus:visual:playbar-button", false),
-	colorful: ConfigUtils.get("lyrics-plus:visual:colorful"),
-	"gradient-background": ConfigUtils.get("lyrics-plus:visual:gradient-background"),
+			"playbar-button": StorageManager.get("lyrics-plus:visual:playbar-button", false),
+	colorful: StorageManager.get("lyrics-plus:visual:colorful"),
+	"gradient-background": StorageManager.get("lyrics-plus:visual:gradient-background"),
 	"background-brightness": localStorage.getItem("lyrics-plus:visual:background-brightness") || "80",
-	noise: ConfigUtils.get("lyrics-plus:visual:noise"),
+	noise: StorageManager.get("lyrics-plus:visual:noise"),
 		"background-color": localStorage.getItem("lyrics-plus:visual:background-color") || "var(--spice-main)",
 		"active-color": localStorage.getItem("lyrics-plus:visual:active-color") || "var(--spice-text)",
 		"inactive-color": localStorage.getItem("lyrics-plus:visual:inactive-color") || "rgba(var(--spice-rgb-subtext),0.5)",
@@ -98,7 +107,7 @@ const CONFIG = {
 		"original-font-size": localStorage.getItem("lyrics-plus:visual:original-font-size") || "32",
 		"translation-font-weight": localStorage.getItem("lyrics-plus:visual:translation-font-weight") || "300",
 		"translation-font-size": localStorage.getItem("lyrics-plus:visual:translation-font-size") || "24",
-		"text-shadow-enabled": ConfigUtils.get("lyrics-plus:visual:text-shadow-enabled", true),
+		"text-shadow-enabled": StorageManager.get("lyrics-plus:visual:text-shadow-enabled", true),
 		"text-shadow-color": localStorage.getItem("lyrics-plus:visual:text-shadow-color") || "#000000",
 		"text-shadow-opacity": localStorage.getItem("lyrics-plus:visual:text-shadow-opacity") || "50",
 		"text-shadow-blur": localStorage.getItem("lyrics-plus:visual:text-shadow-blur") || "2",
@@ -115,49 +124,41 @@ const CONFIG = {
 		"translation-mode-2:korean": localStorage.getItem("lyrics-plus:visual:translation-mode-2:korean") || "none",
 		"translation-mode-2:chinese": localStorage.getItem("lyrics-plus:visual:translation-mode-2:chinese") || "none",
 		"translation-mode-2:gemini": localStorage.getItem("lyrics-plus:visual:translation-mode-2:gemini") || "none",
-		"gemini-api-key": ConfigUtils.getPersisted("lyrics-plus:visual:gemini-api-key") || "",
-		"gemini-api-key-romaji": ConfigUtils.getPersisted("lyrics-plus:visual:gemini-api-key-romaji") || "",
-		translate: ConfigUtils.get("lyrics-plus:visual:translate", false),
+		"gemini-api-key": StorageManager.getPersisted("lyrics-plus:visual:gemini-api-key") || "",
+		"gemini-api-key-romaji": StorageManager.getPersisted("lyrics-plus:visual:gemini-api-key-romaji") || "",
+		translate: StorageManager.get("lyrics-plus:visual:translate", false),
 		"ja-detect-threshold": localStorage.getItem("lyrics-plus:visual:ja-detect-threshold") || "40",
 		"hans-detect-threshold": localStorage.getItem("lyrics-plus:visual:hans-detect-threshold") || "40",
-		"musixmatch-translation-language": localStorage.getItem("lyrics-plus:visual:musixmatch-translation-language") || "none",
-		"fade-blur": ConfigUtils.get("lyrics-plus:visual:fade-blur"),
+		"fade-blur": StorageManager.get("lyrics-plus:visual:fade-blur"),
 		"fullscreen-key": localStorage.getItem("lyrics-plus:visual:fullscreen-key") || "f12",
-			"synced-compact": ConfigUtils.get("lyrics-plus:visual:synced-compact"),
-	"dual-genius": ConfigUtils.get("lyrics-plus:visual:dual-genius"),
+			"synced-compact": StorageManager.get("lyrics-plus:visual:synced-compact"),
 		"global-delay": Number(localStorage.getItem("lyrics-plus:visual:global-delay")) || 0,
 		delay: 0,
 	},
 	providers: {
 		lrclib: {
-			on: ConfigUtils.get("lyrics-plus:provider:lrclib:on"),
+			on: StorageManager.get("lyrics-plus:provider:lrclib:on"),
 			desc: "lrclib.net에서 제공되는 가사입니다. 동기화된 가사와 동기화되지 않은 가사를 모두 지원합니다. LRCLIB은 무료 오픈소스 가사 제공자입니다.",
 			modes: [SYNCED, UNSYNCED],
 		},
 		ivlyrics: {
-			on: ConfigUtils.get("lyrics-plus:provider:ivlyrics:on", true),
+			on: StorageManager.get("lyrics-plus:provider:ivlyrics:on", true),
 			desc: "ivLyrics API에서 제공되는 가사입니다. 동기화된 가사, 동기화되지 않은 가사, 단어별 카라오케 가사를 지원합니다.",
 			modes: [KARAOKE, SYNCED, UNSYNCED],
 		},
-		musixmatch: {
-			on: ConfigUtils.get("lyrics-plus:provider:musixmatch:on"),
-			desc: "Spotify와 완전히 호환됩니다. 공식 Musixmatch 앱에서 가져올 수 있는 토큰이 필요합니다. 가사 검색에 문제가 있으면 <code>토큰 새로고침</code> 버튼을 클릭하여 토큰을 새로고침해 보세요. 이 제공자를 사용하려면 자체 CORS 프록시를 사용해야 할 수도 있습니다.",
-			token: localStorage.getItem("lyrics-plus:provider:musixmatch:token") || "21051986b9886beabe1ce01c3ce94c96319411f8f2c122676365e3",
-			modes: [SYNCED, UNSYNCED],
-		},
 		spotify: {
-			on: ConfigUtils.get("lyrics-plus:provider:spotify:on"),
+			on: StorageManager.get("lyrics-plus:provider:spotify:on"),
 			desc: "공식 Spotify API에서 제공되는 가사입니다.",
 			modes: [SYNCED, UNSYNCED],
 		},
 		local: {
-			on: ConfigUtils.get("lyrics-plus:provider:local:on"),
+			on: StorageManager.get("lyrics-plus:provider:local:on"),
 			desc: "이전 Spotify 세션에서 로드된 캐시/로컬 파일의 가사를 제공합니다.",
 			modes: [SYNCED, UNSYNCED],
 		},
 	},
 	providersOrder: localStorage.getItem("lyrics-plus:services-order"),
-	modes: ["karaoke", "synced", "unsynced", "genius"],
+	modes: ["karaoke", "synced", "unsynced"],
 	locked: localStorage.getItem("lyrics-plus:lock-mode") || "-1",
 };
 
@@ -167,7 +168,7 @@ try {
 		throw "";
 	}
 } catch {
-	CONFIG.providersOrder = ["ivlyrics", "spotify", "lrclib", "musixmatch", "local"];
+	CONFIG.providersOrder = ["ivlyrics", "spotify", "lrclib", "local"];
 	localStorage.setItem("lyrics-plus:services-order", JSON.stringify(CONFIG.providersOrder));
 }
 
@@ -193,29 +194,55 @@ const emptyState = {
 	karaoke: null,
 	synced: null,
 	unsynced: null,
-	genius: null,
-	genius2: null,
 	currentLyrics: null,
 };
 
-// Optimized cache system with size limits and TTL
+// Enhanced cache system with memory-efficient LRU and automatic cleanup
 const CacheManager = {
 	_cache: new Map(),
 	_maxSize: 100, // Limit cache to 100 songs
 	_ttl: 30 * 60 * 1000, // 30 minutes TTL
+	_cleanupTimer: null,
+	_statsEnabled: false,
+
+	// Performance statistics
+	_stats: {
+		hits: 0,
+		misses: 0,
+		evictions: 0,
+		cleanups: 0
+	},
+
+	init() {
+		// Start periodic cleanup to prevent memory leaks
+		this._startPeriodicCleanup();
+
+		// Listen for memory pressure events
+		if ('memory' in performance) {
+			this._setupMemoryPressureListener();
+		}
+	},
 
 	get(key) {
 		const item = this._cache.get(key);
-		if (!item) return null;
-		
+		if (!item) {
+			if (this._statsEnabled) this._stats.misses++;
+			return null;
+		}
+
 		// Check if expired
 		if (Date.now() > item.expiry) {
 			this._cache.delete(key);
+			if (this._statsEnabled) this._stats.misses++;
 			return null;
 		}
-		
-		// Update access time for LRU
+
+		// Update access time for LRU (move to end)
+		this._cache.delete(key);
 		item.lastAccessed = Date.now();
+		this._cache.set(key, item);
+
+		if (this._statsEnabled) this._stats.hits++;
 		return item.data;
 	},
 
@@ -228,23 +255,101 @@ const CacheManager = {
 		this._cache.set(key, {
 			data,
 			expiry: Date.now() + this._ttl,
-			lastAccessed: Date.now()
+			lastAccessed: Date.now(),
+			size: this._estimateSize(data)
 		});
 	},
 
 	_cleanupOldEntries() {
-		// Remove oldest 20% of entries
-		const entries = Array.from(this._cache.entries())
-			.sort((a, b) => a[1].lastAccessed - b[1].lastAccessed);
-		
-		const toRemove = Math.floor(entries.length * 0.2);
+		// LRU eviction - remove oldest entries
+		const entries = Array.from(this._cache.entries());
+		const toRemove = Math.floor(entries.length * 0.3); // Remove 30% to reduce frequent cleanups
+
+		// Sort by last accessed time (oldest first)
+		entries.sort((a, b) => a[1].lastAccessed - b[1].lastAccessed);
+
 		for (let i = 0; i < toRemove; i++) {
 			this._cache.delete(entries[i][0]);
+		}
+
+		if (this._statsEnabled) {
+			this._stats.evictions += toRemove;
+			this._stats.cleanups++;
+		}
+	},
+
+	_startPeriodicCleanup() {
+		// Clean up expired entries every 5 minutes
+		this._cleanupTimer = setInterval(() => {
+			const now = Date.now();
+			const keysToDelete = [];
+
+			for (const [key, item] of this._cache.entries()) {
+				if (now > item.expiry) {
+					keysToDelete.push(key);
+				}
+			}
+
+			keysToDelete.forEach(key => this._cache.delete(key));
+
+			if (this._statsEnabled && keysToDelete.length > 0) {
+				this._stats.cleanups++;
+			}
+		}, 5 * 60 * 1000);
+	},
+
+	_setupMemoryPressureListener() {
+		// Aggressive cleanup on memory pressure
+		if (typeof PerformanceObserver !== 'undefined') {
+			try {
+				const observer = new PerformanceObserver((list) => {
+					for (const entry of list.getEntries()) {
+						if (entry.name === 'memory') {
+							const { totalJSHeapSize, usedJSHeapSize, jsHeapSizeLimit } = entry;
+							const memoryUsage = usedJSHeapSize / jsHeapSizeLimit;
+
+							// If memory usage > 80%, clear half the cache
+							if (memoryUsage > 0.8) {
+								this._aggressiveCleanup();
+							}
+						}
+					}
+				});
+				observer.observe({ entryTypes: ['measure'] });
+			} catch (error) {
+				// Performance Observer not available
+			}
+		}
+	},
+
+	_aggressiveCleanup() {
+		const entries = Array.from(this._cache.entries());
+		const toRemove = Math.floor(entries.length * 0.5);
+
+		entries.sort((a, b) => a[1].lastAccessed - b[1].lastAccessed);
+
+		for (let i = 0; i < toRemove; i++) {
+			this._cache.delete(entries[i][0]);
+		}
+
+		console.log(`LyricsPlus: Performed aggressive cache cleanup, removed ${toRemove} entries`);
+	},
+
+	_estimateSize(data) {
+		// Rough estimation of object size in bytes
+		try {
+			return JSON.stringify(data).length * 2; // 2 bytes per character (UTF-16)
+		} catch {
+			return 1000; // Default estimate
 		}
 	},
 
 	clear() {
 		this._cache.clear();
+		if (this._cleanupTimer) {
+			clearInterval(this._cleanupTimer);
+			this._cleanupTimer = null;
+		}
 	},
 
 	// Clear cache entries for a specific URI
@@ -257,6 +362,21 @@ const CacheManager = {
 		}
 		keysToDelete.forEach(key => this._cache.delete(key));
 		return keysToDelete.length;
+	},
+
+	// Get cache statistics
+	getStats() {
+		const hitRate = this._stats.hits / (this._stats.hits + this._stats.misses) * 100;
+		return {
+			...this._stats,
+			hitRate: isNaN(hitRate) ? 0 : hitRate.toFixed(2),
+			cacheSize: this._cache.size,
+			maxSize: this._maxSize
+		};
+	},
+
+	enableStats() {
+		this._statsEnabled = true;
 	}
 };
 
@@ -295,8 +415,6 @@ class LyricsContainer extends react.Component {
 			karaoke: null,
 			synced: null,
 			unsynced: null,
-			genius: null,
-			genius2: null,
 			currentLyrics: null,
 			romaji: null,
 			furigana: null,
@@ -307,8 +425,6 @@ class LyricsContainer extends react.Component {
 			cn: null,
 			hk: null,
 			tw: null,
-			musixmatchTranslation: null,
-			neteaseTranslation: null,
 			uri: "",
 			provider: "",
 			colors: {
@@ -435,7 +551,6 @@ class LyricsContainer extends react.Component {
 		let finalData = { ...emptyState, uri: trackInfo.uri };
 		for (const id of CONFIG.providersOrder) {
 			const service = CONFIG.providers[id];
-			if (spotifyVersion >= "1.2.31" && id === "genius") continue;
 			if (!service.on) continue;
 			if (mode !== -1 && !service.modes.includes(mode)) continue;
 
@@ -447,7 +562,7 @@ class LyricsContainer extends react.Component {
 				continue;
 			}
 
-			if (data.error || (!data.karaoke && !data.synced && !data.unsynced && !data.genius)) continue;
+			if (data.error || (!data.karaoke && !data.synced && !data.unsynced)) continue;
 			if (mode === -1) {
 				finalData = data;
 				return finalData;
@@ -473,13 +588,6 @@ class LyricsContainer extends react.Component {
 				finalData.copyright = `${styledMode} lyrics provided by ${data.provider}\n${finalData.copyright || ""}`.trim();
 			}
 
-			if (finalData.musixmatchTranslation && typeof finalData.musixmatchTranslation[0].startTime === "undefined" && finalData.synced) {
-				finalData.musixmatchTranslation = finalData.synced.map((line) => ({
-					...line,
-					text:
-						finalData.musixmatchTranslation.find((l) => Utils.processLyrics(l?.originalText || "") === Utils.processLyrics(line?.text || ""))?.text ?? (line?.text || ""),
-				}));
-			}
 
 			return finalData;
 		}
@@ -488,11 +596,12 @@ class LyricsContainer extends react.Component {
 	}
 
 	async fetchLyrics(track, mode = -1, refresh = false) {
-		const info = this.infoFromTrack(track);
-		if (!info) {
-			this.setState({ error: "No track info" });
-			return;
-		}
+		try {
+			const info = this.infoFromTrack(track);
+			if (!info) {
+				this.setState({ error: "No track info", isLoading: false });
+				return;
+			}
 
 		// keep artist/title for prompts
 		this.setState({ artist: info.artist, title: info.title });
@@ -545,15 +654,13 @@ class LyricsContainer extends react.Component {
 			} else if (this.state.lockMode !== -1) {
 				finalMode = this.state.lockMode;
 			} else {
-				// Auto switch: prefer karaoke, then synced, then unsynced, then genius
+				// Auto switch: prefer karaoke, then synced, then unsynced
 				if (tempState.karaoke) {
 					finalMode = KARAOKE;
 				} else if (tempState.synced) {
 					finalMode = SYNCED;
 				} else if (tempState.unsynced) {
 					finalMode = UNSYNCED;
-				} else if (tempState.genius) {
-					finalMode = GENIUS;
 				}
 			}
 		}
@@ -566,10 +673,6 @@ class LyricsContainer extends react.Component {
 				defaultLanguage = Utils.detectLanguage(tempState.synced);
 			} else if (tempState.unsynced) {
 				defaultLanguage = Utils.detectLanguage(tempState.unsynced);
-			} else if (tempState.genius) {
-				// For genius lyrics, we need to convert HTML to text first
-				const geniusText = tempState.genius.replace(/<br>/g, "\n").replace(/<[^>]*>/g, "");
-				defaultLanguage = Utils.detectLanguage([{ text: geniusText }]);
 			}
 
 			// Debug logging
@@ -579,7 +682,6 @@ class LyricsContainer extends react.Component {
 					defaultLanguage,
 					hasSynced: !!tempState.synced,
 					hasUnsynced: !!tempState.unsynced,
-					hasGenius: !!tempState.genius
 				});
 			}
 
@@ -594,44 +696,26 @@ class LyricsContainer extends react.Component {
 				cn: null,
 				hk: null,
 				tw: null,
-				musixmatchTranslation: null,
-				neteaseTranslation: null,
 				...tempState,
 				language: defaultLanguage,
-				// Preserve cached translations if they exist in tempState
-				...(tempState.romaji && { romaji: tempState.romaji }),
-				...(tempState.furigana && { furigana: tempState.furigana }),
-				...(tempState.hiragana && { hiragana: tempState.hiragana }),
-				...(tempState.katakana && { katakana: tempState.katakana }),
-				...(tempState.hangul && { hangul: tempState.hangul }),
-				...(tempState.romaja && { romaja: tempState.romaja }),
-				...(tempState.cn && { cn: tempState.cn }),
-				...(tempState.hk && { hk: tempState.hk }),
-				...(tempState.tw && { tw: tempState.tw }),
-				...(tempState.musixmatchTranslation && { musixmatchTranslation: tempState.musixmatchTranslation }),
-				...(tempState.neteaseTranslation && { neteaseTranslation: tempState.neteaseTranslation }),
-				...(tempState.currentLyrics && { currentLyrics: tempState.currentLyrics }),
+				...this.applyTranslationStates(tempState)
 			});
 			return;
 		}
 
 		// Preserve cached translations when not changing songs
-		this.setState({ 
+		this.setState({
 			...tempState,
-			// Preserve cached translations if they exist in tempState
-			...(tempState.romaji && { romaji: tempState.romaji }),
-			...(tempState.furigana && { furigana: tempState.furigana }),
-			...(tempState.hiragana && { hiragana: tempState.hiragana }),
-			...(tempState.katakana && { katakana: tempState.katakana }),
-			...(tempState.hangul && { hangul: tempState.hangul }),
-			...(tempState.romaja && { romaja: tempState.romaja }),
-			...(tempState.cn && { cn: tempState.cn }),
-			...(tempState.hk && { hk: tempState.hk }),
-			...(tempState.tw && { tw: tempState.tw }),
-			...(tempState.musixmatchTranslation && { musixmatchTranslation: tempState.musixmatchTranslation }),
-			...(tempState.neteaseTranslation && { neteaseTranslation: tempState.neteaseTranslation }),
-			...(tempState.currentLyrics && { currentLyrics: tempState.currentLyrics }),
+			...this.applyTranslationStates(tempState)
 		});
+		} catch (error) {
+			console.error("Error in fetchLyrics:", error);
+			this.setState({
+				error: `Failed to fetch lyrics: ${error.message}`,
+				isLoading: false,
+				...emptyState
+			});
+		}
 	}
 
 	lyricsSource(lyricsState, mode) {
@@ -640,7 +724,7 @@ class LyricsContainer extends react.Component {
 		let lyrics = lyricsState[CONFIG.modes[mode]];
 		// Fallback: if the preferred mode has no lyrics, use any available lyrics
 		if (!lyrics) {
-			lyrics = lyricsState.karaoke || lyricsState.synced || lyricsState.unsynced || lyricsState.genius || null;
+			lyrics = lyricsState.karaoke || lyricsState.synced || lyricsState.unsynced || null;
 			if (!lyrics) {
 				this.setState({ currentLyrics: [] });
 				return;
@@ -804,9 +888,18 @@ class LyricsContainer extends react.Component {
 
 		// Process each line to determine what to display
 		const processedLyrics = originalLyrics.map((line, i) => {
-			const originalText = line?.text || '';
-			let translation1 = mode1?.[i]?.text || '';
-			let translation2 = mode2?.[i]?.text || '';
+			// Safely extract original text
+			const originalText = (line && typeof line === 'object') ? (line.text || '') : String(line || '');
+			let translation1 = '';
+			let translation2 = '';
+			
+			// Safely extract translations
+			if (mode1 && Array.isArray(mode1) && mode1[i]) {
+				translation1 = (typeof mode1[i] === 'object') ? (mode1[i].text || '') : String(mode1[i] || '');
+			}
+			if (mode2 && Array.isArray(mode2) && mode2[i]) {
+				translation2 = (typeof mode2[i] === 'object') ? (mode2[i].text || '') : String(mode2[i] || '');
+			}
 
 			// If original is a note/placeholder line, never show sub-lines
 			if (isNoteLine(originalText)) {
@@ -839,7 +932,15 @@ class LyricsContainer extends react.Component {
 				if (!finalText && finalText2) { finalText = finalText2; finalText2 = null; }
 			}
 
-			return { ...line, originalText, text: finalText, text2: finalText2 };
+			// Create safe line object ensuring all properties are valid
+			const safeLine = {
+				...(line && typeof line === 'object' ? line : {}),
+				originalText: String(originalText),
+				text: finalText ? String(finalText) : null,
+				text2: finalText2 ? String(finalText2) : null
+			};
+
+			return safeLine;
 		});
 
 		return processedLyrics;
@@ -847,8 +948,8 @@ class LyricsContainer extends react.Component {
 
 	getGeminiTranslation(lyricsState, lyrics, mode) {
 		return(new Promise((resolve, reject) => {
-			const viKey = ConfigUtils.getPersisted(`${APP_NAME}:visual:gemini-api-key`);
-			const romajiKey = ConfigUtils.getPersisted(`${APP_NAME}:visual:gemini-api-key-romaji`);
+			const viKey = StorageManager.getPersisted(`${APP_NAME}:visual:gemini-api-key`);
+			const romajiKey = StorageManager.getPersisted(`${APP_NAME}:visual:gemini-api-key-romaji`);
 			
 			// Determine mode type and API key
 			let wantSmartPhonetic = false;
@@ -1199,70 +1300,47 @@ class LyricsContainer extends react.Component {
 		CONFIG.visual.delay = Number(localStorage.getItem(`lyrics-delay:${Spicetify.Player.data.item.uri}`)) || 0;
 	}
 
-	async onVersionChange(items, index) {
-		if (this.state.mode === GENIUS) {
-			this.setState({
-				...emptyLine,
-				genius2: this.state.genius2,
-				isLoading: true,
-			});
-			const lyrics = await ProviderGenius.fetchLyricsVersion(items, index);
-			this.setState({
-				genius: lyrics,
-				versionIndex: index,
-				isLoading: false,
-			});
-		}
-	}
 
-	async onVersionChange2(items, index) {
-		if (this.state.mode === GENIUS) {
-			this.setState({
-				...emptyLine,
-				genius: this.state.genius,
-				isLoading: true,
-			});
-			const lyrics = await ProviderGenius.fetchLyricsVersion(items, index);
-			this.setState({
-				genius2: lyrics,
-				versionIndex2: index,
-				isLoading: false,
-			});
-		}
-	}
-
-	saveLocalLyrics(uri, lyrics) {
-		if (lyrics.genius) {
-			lyrics.unsynced = lyrics.genius.split("<br>").map((lyc) => {
-				return {
-					text: lyc.replace(/<[^>]*>/g, ""),
-				};
-			});
-			lyrics.genius = null;
-		}
-
-		// Include translations and phonetic conversions in cache
-		const fullLyricsData = {
-			...lyrics,
-			// Japanese conversions
+	// Helper method to get translation states for saving/restoring
+	getTranslationStates() {
+		return {
 			romaji: this.state.romaji,
 			furigana: this.state.furigana,
 			hiragana: this.state.hiragana,
 			katakana: this.state.katakana,
-			// Korean conversions
 			hangul: this.state.hangul,
 			romaja: this.state.romaja,
-			// Chinese conversions
 			cn: this.state.cn,
 			hk: this.state.hk,
 			tw: this.state.tw,
-			// Translation services
-			musixmatchTranslation: this.state.musixmatchTranslation,
-			neteaseTranslation: this.state.neteaseTranslation,
-			// Current display mode results
 			currentLyrics: this.state.currentLyrics,
-			// Language detection
 			language: this.state.language
+		};
+	}
+
+	// Helper method to apply translation states
+	applyTranslationStates(states, additional = {}) {
+		return {
+			...additional,
+			...(states.romaji && { romaji: states.romaji }),
+			...(states.furigana && { furigana: states.furigana }),
+			...(states.hiragana && { hiragana: states.hiragana }),
+			...(states.katakana && { katakana: states.katakana }),
+			...(states.hangul && { hangul: states.hangul }),
+			...(states.romaja && { romaja: states.romaja }),
+			...(states.cn && { cn: states.cn }),
+			...(states.hk && { hk: states.hk }),
+			...(states.tw && { tw: states.tw }),
+			...(states.currentLyrics && { currentLyrics: states.currentLyrics }),
+			...(states.language && { language: states.language })
+		};
+	}
+
+	saveLocalLyrics(uri, lyrics) {
+		// Include translations and phonetic conversions in cache
+		const fullLyricsData = {
+			...lyrics,
+			...this.getTranslationStates()
 		};
 
 		const localLyrics = JSON.parse(localStorage.getItem(`${APP_NAME}:local-lyrics`)) || {};
@@ -1304,10 +1382,9 @@ class LyricsContainer extends react.Component {
 		}
 		
 		// Check if there are any translations to reset
-		const hasTranslations = this.state.romaji || this.state.furigana || this.state.hiragana || 
-			this.state.katakana || this.state.hangul || this.state.romaja || 
-			this.state.cn || this.state.hk || this.state.tw || 
-			this.state.musixmatchTranslation || this.state.neteaseTranslation;
+		const hasTranslations = this.state.romaji || this.state.furigana || this.state.hiragana ||
+			this.state.katakana || this.state.hangul || this.state.romaja ||
+			this.state.cn || this.state.hk || this.state.tw;
 		
 		// Reset translation states
 		this.setState({
@@ -1320,8 +1397,6 @@ class LyricsContainer extends react.Component {
 			cn: null,
 			hk: null,
 			tw: null,
-			musixmatchTranslation: null,
-			neteaseTranslation: null,
 		});
 		
 		// Force re-process lyrics with current display modes
@@ -1358,23 +1433,10 @@ class LyricsContainer extends react.Component {
 					return;
 				}
 
-				this.setState({ 
-					...localLyrics, 
+				this.setState({
+					...localLyrics,
 					provider: "local",
-					// Preserve cached translations if they exist in localLyrics
-					...(localLyrics.romaji && { romaji: localLyrics.romaji }),
-					...(localLyrics.furigana && { furigana: localLyrics.furigana }),
-					...(localLyrics.hiragana && { hiragana: localLyrics.hiragana }),
-					...(localLyrics.katakana && { katakana: localLyrics.katakana }),
-					...(localLyrics.hangul && { hangul: localLyrics.hangul }),
-					...(localLyrics.romaja && { romaja: localLyrics.romaja }),
-					...(localLyrics.cn && { cn: localLyrics.cn }),
-					...(localLyrics.hk && { hk: localLyrics.hk }),
-					...(localLyrics.tw && { tw: localLyrics.tw }),
-					...(localLyrics.musixmatchTranslation && { musixmatchTranslation: localLyrics.musixmatchTranslation }),
-					...(localLyrics.neteaseTranslation && { neteaseTranslation: localLyrics.neteaseTranslation }),
-					...(localLyrics.currentLyrics && { currentLyrics: localLyrics.currentLyrics }),
-					...(localLyrics.language && { language: localLyrics.language }),
+					...this.applyTranslationStates(localLyrics)
 				});
 				CACHE[this.currentTrackUri] = { ...localLyrics, provider: "local", uri: this.currentTrackUri };
 				this.saveLocalLyrics(this.currentTrackUri, localLyrics);
@@ -1401,8 +1463,23 @@ class LyricsContainer extends react.Component {
 	}
 
 	componentDidMount() {
+		// Prevent duplicate global registration
+		if (window.lyricContainer && window.lyricContainer !== this) {
+			console.warn('Multiple LyricsContainer instances detected, cleaning up previous instance');
+			if (typeof window.lyricContainer.componentWillUnmount === 'function') {
+				window.lyricContainer.componentWillUnmount();
+			}
+		}
+
 		// Register instance for external access
 		window.lyricContainer = this;
+
+		// Cache DOM elements to avoid repeated queries
+		this._domCache = {
+			viewport: null,
+			fadContainer: null,
+			fileInput: null
+		};
 
 		// Check for updates when app starts
 		setTimeout(() => {
@@ -1410,16 +1487,54 @@ class LyricsContainer extends react.Component {
 				console.warn("Failed to check for updates:", error);
 			});
 		}, 3000); // Delay to avoid interfering with app startup
-		
+
 		// Enable debug mode for troubleshooting
 		window.lyricsPlusDebug = localStorage.getItem("lyrics-plus:debug") === "true";
-		
+
 		// Add global function to toggle debug mode
 		window.toggleLyricsPlusDebug = () => {
 			window.lyricsPlusDebug = !window.lyricsPlusDebug;
 			localStorage.setItem("lyrics-plus:debug", window.lyricsPlusDebug.toString());
 			console.log("Lyrics Plus debug mode:", window.lyricsPlusDebug ? "ON" : "OFF");
 		};
+
+		// Performance monitoring utilities
+		if (!window.lyricsPerformance) {
+			window.lyricsPerformance = {
+				getCacheStats: () => CacheManager.getStats(),
+				enableCacheStats: () => CacheManager.enableStats(),
+				clearCache: () => {
+					CacheManager.clear();
+					CACHE = {};
+					console.log("All caches cleared");
+				},
+				getMemoryUsage: () => {
+					if (performance.memory) {
+						const { usedJSHeapSize, totalJSHeapSize, jsHeapSizeLimit } = performance.memory;
+						return {
+							used: `${(usedJSHeapSize / 1024 / 1024).toFixed(2)} MB`,
+							total: `${(totalJSHeapSize / 1024 / 1024).toFixed(2)} MB`,
+							limit: `${(jsHeapSizeLimit / 1024 / 1024).toFixed(2)} MB`,
+							percentage: `${(usedJSHeapSize / jsHeapSizeLimit * 100).toFixed(2)}%`
+						};
+					}
+					return "Memory API not available";
+				},
+				getAnimationStats: () => {
+					return {
+						activeCallbacks: window.AnimationManager?.callbacks?.size || 0,
+						isActive: window.AnimationManager?.active || false,
+						visibilityListeners: window.VisibilityManager?.listeners?.size || 0
+					};
+				}
+			};
+		}
+
+		// Initialize enhanced cache system only once
+		if (!CacheManager._initialized) {
+			CacheManager.init();
+			CacheManager._initialized = true;
+		}
 		
 		this.onQueueChange = async ({ data: queue }) => {
 			this.state.explicitMode = this.state.lockMode;
@@ -1463,14 +1578,26 @@ class LyricsContainer extends react.Component {
 			this.fetchLyrics(Spicetify.Player.data.item, this.state.explicitMode, true);
 		};
 
-		this.viewPort =
-			document.querySelector(".Root__main-view .os-viewport") ?? document.querySelector(".Root__main-view .main-view-container__scroll-node");
+		// Cache viewport element for better performance
+		this.viewPort = this._domCache?.viewport ??
+			(this._domCache && (this._domCache.viewport = document.querySelector(".Root__main-view .os-viewport") ??
+			document.querySelector(".Root__main-view .main-view-container__scroll-node")));
 
 		this.configButton = new Spicetify.Menu.Item("Lyrics Plus config", false, openConfig, "lyrics");
 		this.configButton.register();
 
+		// Throttled font size change to improve performance
+		let fontSizeChangeTimeout = null;
 		this.onFontSizeChange = (event) => {
 			if (!event.ctrlKey) return;
+
+			// Prevent too frequent updates
+			if (fontSizeChangeTimeout) return;
+
+			fontSizeChangeTimeout = setTimeout(() => {
+				fontSizeChangeTimeout = null;
+			}, 50); // 50ms throttle
+
 			const dir = event.deltaY < 0 ? 1 : -1;
 			let temp = CONFIG.visual["font-size"] + dir * fontSizeLimit.step;
 			if (temp < fontSizeLimit.min) {
@@ -1479,7 +1606,7 @@ class LyricsContainer extends react.Component {
 				temp = fontSizeLimit.max;
 			}
 			CONFIG.visual["font-size"] = temp;
-			localStorage.setItem("lyrics-plus:visual:font-size", temp);
+			StorageManager.saveConfig("font-size", temp);
 			lyricContainerUpdate();
 		};
 
@@ -1505,17 +1632,52 @@ class LyricsContainer extends react.Component {
 	}
 
 	componentWillUnmount() {
+		// Core cleanup
 		Utils.removeQueueListener(this.onQueueChange);
-		this.configButton.deregister();
-		this.mousetrap.reset();
+		this.configButton?.deregister();
+		this.mousetrap?.reset();
 		window.removeEventListener("fad-request", lyricContainerUpdate);
-		
+
 		// Clean up translation loading timer
 		this.clearTranslationLoading();
-		
-		// Clean up global reference
+
+		// Clean up cache system
+		CacheManager.clear();
+
+		// Clear DOM cache
+		if (this._domCache) {
+			this._domCache = null;
+		}
+
+		// Clean up global references
 		if (window.lyricContainer === this) {
 			delete window.lyricContainer;
+		}
+
+		// Clean up performance monitoring
+		if (window.lyricsPerformance) {
+			delete window.lyricsPerformance;
+		}
+
+		// Clean up inflight requests
+		if (this._inflightGemini) {
+			this._inflightGemini.clear();
+			this._inflightGemini = null;
+		}
+
+		if (this._inflightTrad) {
+			this._inflightTrad.clear();
+			this._inflightTrad = null;
+		}
+
+		// Clean up progressive results
+		if (this._dmResults) {
+			this._dmResults = null;
+		}
+
+		// Force garbage collection hint
+		if (window.gc && typeof window.gc === 'function') {
+			setTimeout(() => window.gc(), 100);
 		}
 	}
 
@@ -1560,22 +1722,48 @@ class LyricsContainer extends react.Component {
 		} else if (this.state.lockMode !== -1) {
 			mode = this.state.lockMode;
 		} else {
-			// Auto switch: prefer karaoke, then synced, then unsynced, then genius
+			// Auto switch: prefer karaoke, then synced, then unsynced
 			if (this.state.karaoke) {
 				mode = KARAOKE;
 			} else if (this.state.synced) {
 				mode = SYNCED;
 			} else if (this.state.unsynced) {
 				mode = UNSYNCED;
-			} else if (this.state.genius) {
-				mode = GENIUS;
 			}
 		}
 		return mode;
 	}
 
 	render() {
-		const fadLyricsContainer = document.getElementById("fad-lyrics-plus-container");
+		// Enhanced FAD container detection - try multiple selectors if main one fails
+		let fadLyricsContainer = this._domCache?.fadContainer;
+		
+		if (!fadLyricsContainer || !document.contains(fadLyricsContainer)) {
+			// Try main selector first
+			fadLyricsContainer = document.getElementById("fad-lyrics-plus-container");
+			
+			// If not found, try alternative selectors for FAD extension
+			if (!fadLyricsContainer) {
+				const altSelectors = [
+					"[data-fad-lyrics]",
+					".fad-lyrics-container"
+				];
+				
+				for (const selector of altSelectors) {
+					const element = document.querySelector(selector);
+					if (element) {
+						fadLyricsContainer = element;
+						break;
+					}
+				}
+			}
+			
+			// Cache the result
+			if (this._domCache) {
+				this._domCache.fadContainer = fadLyricsContainer;
+			}
+		}
+		
 		this.state.isFADMode = !!fadLyricsContainer;
 
 		if (this.state.isFADMode) {
@@ -1655,7 +1843,7 @@ class LyricsContainer extends react.Component {
 			this.lastProcessedMode = currentModeKey;
 		this.lyricsSource(this.state, mode);
 		}
-		const hasTranslation = this.state.neteaseTranslation !== null || this.state.musixmatchTranslation !== null;
+		const hasTranslation = false;
 
 		// Always render the Conversions button on synced/unsynced pages.
 		// Previously it was gated by detected language/loading state, causing it to
@@ -1691,21 +1879,6 @@ class LyricsContainer extends react.Component {
 					lyrics: Array.isArray(this.state.currentLyrics) ? this.state.currentLyrics : [],
 					provider: this.state.provider,
 					copyright: this.state.copyright,
-					reRenderLyricsPage: this.reRenderLyricsPage,
-				});
-			} else if (mode === GENIUS && this.state.genius) {
-				activeItem = react.createElement(GeniusPage, {
-					isSplitted: CONFIG.visual["dual-genius"],
-					trackUri: this.state.uri,
-					lyrics: this.state.genius,
-					provider: this.state.provider,
-					copyright: this.state.copyright,
-					versions: this.state.versions,
-					versionIndex: this.state.versionIndex,
-					onVersionChange: this.onVersionChange.bind(this),
-					lyrics2: this.state.genius2,
-					versionIndex2: this.state.versionIndex2,
-					onVersionChange2: this.onVersionChange2.bind(this),
 					reRenderLyricsPage: this.reRenderLyricsPage,
 				});
 			}
@@ -1792,10 +1965,7 @@ class LyricsContainer extends react.Component {
 				showTranslationButton &&
 					react.createElement(TranslationMenu, {
 						friendlyLanguage,
-						hasTranslation: {
-							musixmatch: this.state.musixmatchTranslation !== null,
-							netease: this.state.neteaseTranslation !== null,
-						},
+						hasTranslation: {},
 					}),
 				react.createElement(SettingsMenu),
 				react.createElement(
@@ -1808,8 +1978,8 @@ class LyricsContainer extends react.Component {
 						{
 							className: "lyrics-config-button",
 							onClick: () => {
-								const { synced, unsynced, karaoke, genius } = this.state;
-								if (!synced && !unsynced && !karaoke && !genius) {
+								const { synced, unsynced, karaoke } = this.state;
+								if (!synced && !unsynced && !karaoke) {
 									Spicetify.showNotification("No lyrics available to cache", true, 2000);
 									return;
 								}
@@ -1818,7 +1988,7 @@ class LyricsContainer extends react.Component {
 									this.deleteLocalLyrics(this.currentTrackUri);
 									Spicetify.showNotification("✓ Lyrics cache deleted", false, 2000);
 								} else {
-									this.saveLocalLyrics(this.currentTrackUri, { synced, unsynced, karaoke, genius });
+									this.saveLocalLyrics(this.currentTrackUri, { synced, unsynced, karaoke });
 									Spicetify.showNotification("✓ Lyrics cached successfully", false, 2000);
 								}
 							},
@@ -1844,7 +2014,9 @@ class LyricsContainer extends react.Component {
 						{
 							className: "lyrics-config-button",
 							onClick: () => {
-								document.getElementById("lyrics-file-input").click();
+								const fileInput = this._domCache?.fileInput ??
+									(this._domCache && (this._domCache.fileInput = document.getElementById("lyrics-file-input")));
+								fileInput?.click();
 							},
 						},
 						react.createElement("input", {
@@ -1869,17 +2041,14 @@ class LyricsContainer extends react.Component {
 				),
 				// Reset Translation button - show when there are lyrics and potential translations
 				(() => {
-					const hasLyrics = this.state.synced || this.state.unsynced || this.state.genius;
+					const hasLyrics = this.state.synced || this.state.unsynced;
 					if (window.lyricsPlusDebug) {
 						console.log("Reset button debug:", {
 							hasLyrics,
 							synced: !!this.state.synced,
 							unsynced: !!this.state.unsynced,
-							genius: !!this.state.genius,
 							romaji: !!this.state.romaji,
 							furigana: !!this.state.furigana,
-							musixmatchTranslation: !!this.state.musixmatchTranslation,
-							neteaseTranslation: !!this.state.neteaseTranslation
 						});
 					}
 					return hasLyrics;
@@ -1924,7 +2093,7 @@ class LyricsContainer extends react.Component {
 		this.fetchLyrics();
 	}
 
-	lockIn(mode) {
+		lockIn(mode) {
 		CONFIG.locked = mode;
 		localStorage.setItem("lyrics-plus:lock-mode", mode.toString());
 		this.setState({ lockMode: mode });

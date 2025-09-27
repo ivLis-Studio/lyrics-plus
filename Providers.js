@@ -36,96 +36,7 @@ const Providers = {
 			}));
 		}
 
-		/**
-		 * to distinguish it from the existing Musixmatch, the provider will remain as Spotify.
-		 * if Spotify official lyrics support multiple providers besides Musixmatch in the future, please uncomment the under section. */
 		// result.provider = lyrics.provider;
-
-		return result;
-	},
-	musixmatch: async (info) => {
-		const result = {
-			error: null,
-			uri: info.uri,
-			karaoke: null,
-			synced: null,
-			unsynced: null,
-			musixmatchTranslation: null,
-			provider: "Musixmatch",
-			copyright: null,
-		};
-
-		let list;
-		try {
-			list = await ProviderMusixmatch.findLyrics(info);
-			if (list.error) {
-				throw "";
-			}
-		} catch {
-			result.error = "No lyrics";
-			return result;
-		}
-
-		// Karaoke disabled
-		const synced = ProviderMusixmatch.getSynced(list);
-		if (synced) {
-			result.synced = synced;
-			result.copyright = list["track.subtitles.get"].message?.body?.subtitle_list?.[0]?.subtitle.lyrics_copyright.trim();
-		}
-		const unsynced = synced || ProviderMusixmatch.getUnsynced(list);
-		if (unsynced) {
-			result.unsynced = unsynced;
-			result.copyright = list["track.lyrics.get"].message?.body?.lyrics?.lyrics_copyright?.trim();
-		}
-		const translation = await ProviderMusixmatch.getTranslation(list);
-		if ((synced || unsynced) && translation) {
-			const baseLyrics = synced ?? unsynced;
-			result.musixmatchTranslation = baseLyrics.map((line) => ({
-				...line,
-				text: translation.find((t) => t.matchedLine === line.text)?.translation ?? line.text,
-				originalText: line.text,
-			}));
-		}
-
-		return result;
-	},
-	netease: async (info) => {
-		const result = {
-			uri: info.uri,
-			karaoke: null,
-			synced: null,
-			unsynced: null,
-			neteaseTranslation: null,
-			provider: "Netease",
-			copyright: null,
-		};
-
-		let list;
-		try {
-			list = await ProviderNetease.findLyrics(info);
-		} catch {
-			result.error = "No lyrics";
-			return result;
-		}
-
-		// Karaoke disabled
-		const synced = ProviderNetease.getSynced(list);
-		if (synced) {
-			result.synced = synced;
-		}
-		const unsynced = synced || ProviderNetease.getUnsynced(list);
-		if (unsynced) {
-			result.unsynced = unsynced;
-		}
-		const translation = ProviderNetease.getTranslation(list);
-		if ((synced || unsynced) && Array.isArray(translation)) {
-			const baseLyrics = synced ?? unsynced;
-			result.neteaseTranslation = baseLyrics.map((line) => ({
-				...line,
-				text: translation.find((t) => t.startTime === line.startTime)?.text ?? line.text,
-				originalText: line.text,
-			}));
-		}
 
 		return result;
 	},
@@ -197,31 +108,6 @@ const Providers = {
 		}
 
 		return result;
-	},
-	genius: async (info) => {
-		const { lyrics, versions } = await ProviderGenius.fetchLyrics(info);
-
-		let versionIndex2 = 0;
-		let genius2 = lyrics;
-		if (CONFIG.visual["dual-genius"] && versions.length > 1) {
-			genius2 = await ProviderGenius.fetchLyricsVersion(versions, 1);
-			versionIndex2 = 1;
-		}
-
-		return {
-			uri: info.uri,
-			genius: lyrics,
-			provider: "Genius",
-			karaoke: null,
-			synced: null,
-			unsynced: null,
-			copyright: null,
-			error: null,
-			versions,
-			versionIndex: 0,
-			genius2,
-			versionIndex2,
-		};
 	},
 	local: (info) => {
 		let result = {

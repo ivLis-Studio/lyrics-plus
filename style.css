@@ -271,11 +271,12 @@
 	font-size: var(--lyrics-original-font-size, var(--lyrics-font-size));
 	font-weight: var(--lyrics-original-font-weight, 700);
 	letter-spacing: -0.04em;
-	line-height: calc(12px + var(--lyrics-original-font-size, var(--lyrics-font-size)));
+	line-height: calc(20px + var(--lyrics-original-font-size, var(--lyrics-font-size)));
 	text-shadow: var(--lyrics-text-shadow);
 	opacity: var(--lyrics-original-opacity, 1);
 	overflow-wrap: break-word;
-	word-break: keep-all;  
+	word-break: keep-all;
+	margin-bottom: 12px;
 }
 
 .lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine {
@@ -363,6 +364,39 @@
 	background-color: var(--spice-button);
 }
 
+/* Strong styles for input fields to ensure visibility */
+#lyrics-plus-config-container input[type="text"],
+#lyrics-plus-config-container input[type="password"],
+#lyrics-plus-config-container input[type="number"],
+#lyrics-plus-config-container input[type="url"],
+#lyrics-plus-config-container input,
+#lyrics-plus-config-container select,
+#lyrics-plus-config-container textarea {
+	background-color: #1a1a1a !important;
+	border: 2px solid #404040 !important;
+	border-radius: 8px !important;
+	padding: 10px 14px !important;
+	color: #ffffff !important;
+	font-size: 14px !important;
+	min-height: 20px !important;
+	box-sizing: border-box !important;
+}
+
+#lyrics-plus-config-container input:hover,
+#lyrics-plus-config-container select:hover,
+#lyrics-plus-config-container textarea:hover {
+	border-color: #606060 !important;
+	background-color: #252525 !important;
+}
+
+#lyrics-plus-config-container input:focus,
+#lyrics-plus-config-container select:focus,
+#lyrics-plus-config-container textarea:focus {
+	border-color: #1ed760 !important;
+	background-color: #252525 !important;
+	box-shadow: 0 0 0 2px rgba(30, 215, 96, 0.2) !important;
+}
+
 div.lyrics-tabBar-headerItemLink {
 	padding: 0;
 }
@@ -438,7 +472,34 @@ div.lyrics-tabBar-headerItemLink {
 	/* Font settings are handled by global configuration */
 }
 
-/* Enhanced effects for emphasized syllables */
+/* Enhanced effects for all active syllables */
+.lyrics-lyricsContainer-Karaoke-SyllableActive {
+	text-shadow: 0 0 var(--text-shadow-blur-radius, 6px) rgba(255, 255, 255, var(--text-shadow-opacity, 70%)) !important;
+	/* Add subtle glow behind the text */
+	position: relative;
+}
+
+.lyrics-lyricsContainer-Karaoke-SyllableActive::before {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 120%;
+	height: 120%;
+	background: radial-gradient(circle, rgba(var(--spice-rgb-accent), 0.1) 0%, transparent 70%);
+	transform: translate(-50%, -50%);
+	border-radius: 50%;
+	z-index: -1;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.3s ease-out;
+}
+
+.lyrics-lyricsContainer-LyricsLine-active .lyrics-lyricsContainer-Karaoke-SyllableActive::before {
+	opacity: 1;
+}
+
+/* Enhanced effects for emphasized syllables (kept for compatibility) */
 .lyrics-lyricsContainer-Karaoke-Emphasis.lyrics-lyricsContainer-Karaoke-SyllableActive {
 	text-shadow: 0 0 var(--text-shadow-blur-radius, 6px) rgba(255, 255, 255, var(--text-shadow-opacity, 70%)) !important;
 }
@@ -484,14 +545,40 @@ div.lyrics-tabBar-headerItemLink {
 /* Enhanced visual feedback for active lines */
 .lyrics-lyricsContainer-LyricsLine-active .lyrics-lyricsContainer-Karaoke-Syllable {
 	/* Slightly enhance inactive syllables in active lines */
-	filter: brightness(1.1);
+	filter: brightness(1.15) contrast(1.05);
+	/* Add subtle upward animation when line becomes active */
+	animation: lineActivate 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes lineActivate {
+	0% {
+		transform: translateY(2px);
+		opacity: 0.8;
+	}
+	100% {
+		transform: translateY(0px);
+		opacity: 1;
+	}
 }
 
 /* Beautiful-lyrics inspired blur effect for inactive states */
 .lyrics-lyricsContainer-LyricsLine:not(.lyrics-lyricsContainer-LyricsLine-active) .lyrics-lyricsContainer-Karaoke-Syllable {
 	/* Subtle blur for non-active lines */
-	filter: blur(0.5px) brightness(0.7);
-	transition: filter 0.3s ease-out;
+	filter: blur(0.3px) brightness(0.75) saturate(0.8);
+	transition: filter 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+	/* Add subtle fade-in effect for upcoming lines */
+	animation: fadeInLine 0.8s ease-out forwards;
+}
+
+@keyframes fadeInLine {
+	0% {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0px);
+	}
 }
 
 /* Remove blur on hover */
@@ -522,7 +609,7 @@ div.lyrics-tabBar-headerItemLink {
 
 /* Character-level karaoke styling */
 .lyrics-lyricsContainer-Karaoke-Character {
-	display: inline;
+	display: inline-block; /* Enable transform support */
 	position: relative;
 
 	/* Setup for gradient and glow effects */
@@ -537,16 +624,21 @@ div.lyrics-tabBar-headerItemLink {
 		var(--lyrics-color-inactive)
 	);
 
-	/* Subtle blur for softer gradient transition */
-	filter: blur(0.15px);
+	/* Reduced blur for better clarity */
+	filter: blur(0.05px);
 
 	/* Performance optimization - GPU acceleration */
-	will-change: background-position, filter;
+	will-change: transform, background-position, filter, text-shadow;
 	backface-visibility: hidden;
-	transform-style: preserve-3d;
 
 	/* Smooth transitions - natural and flowing */
-	transition: filter 0.3s ease-out;
+	transition: transform 0.25s cubic-bezier(0.4, 0.0, 0.2, 1),
+	           filter 0.3s ease-out,
+	           background-position 0.1s linear,
+	           text-shadow 0.2s ease-out;
+
+	/* Add subtle character spacing for better rhythm */
+	margin-right: 0.02em;
 }
 
 .lyrics-lyricsContainer-Karaoke-CharacterActive {
@@ -591,27 +683,6 @@ div.lyrics-tabBar-headerItemLink {
 	border-bottom: 2px solid var(--lyrics-color-active);
 }
 
-.lyrics-Genius-noteTextContainer {
-	font-size: 18px;
-	font-weight: 400;
-	letter-spacing: normal;
-	line-height: 24px;
-	text-transform: none;
-
-	padding: 25px;
-	background-color: var(--lyrics-color-active);
-	border-radius: 3px;
-	color: var(--lyrics-highlight-background);
-	box-shadow: 0 10px 15px 5px rgb(0, 0, 0, 0.2);
-	cursor: default;
-	text-align: left;
-}
-
-.lyrics-Genius-divider {
-	/* border-bottom: 3px solid var(--lyrics-color-active); */
-	line-height: 0;
-	margin-left: var(--link-left);
-}
 
 .lyrics-Searchbar {
 	position: sticky;
@@ -1017,7 +1088,8 @@ div.lyrics-tabBar-headerItemLink {
 .lyrics-lyricsContainer-LyricsLine-sub {
 	font-size: var(--lyrics-translation-font-size, calc(var(--lyrics-font-size) * 0.7));
 	font-weight: var(--lyrics-translation-font-weight, 600);
-	margin-top: var(--lyrics-line-spacing, 8px);
+	margin-top: var(--lyrics-line-spacing, 6px);
+	margin-bottom: 8px;
 	opacity: var(--lyrics-translation-opacity, 0.6);
 	text-shadow: var(--lyrics-text-shadow);
 }

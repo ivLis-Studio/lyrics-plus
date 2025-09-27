@@ -174,18 +174,29 @@ const Utils = {
 	},
 
 	detectLanguage(lyrics) {
-		if (!Array.isArray(lyrics) || lyrics.length === 0) {
+		// Safe array check
+		if (!lyrics || !Array.isArray(lyrics) || lyrics.length === 0) {
 			// Debug logging
 			if (window.lyricsPlusDebug) {
-				console.log("detectLanguage: No lyrics provided", { lyrics });
+				console.log("detectLanguage: No valid lyrics provided", { lyrics, type: typeof lyrics, isArray: Array.isArray(lyrics) });
 			}
 			return null;
 		}
 
-		// Create cache key from lyrics text
-		const rawLyrics = lyrics[0]?.originalText ? 
-			lyrics.map((line) => line?.originalText || "").join(" ") : 
-			lyrics.map((line) => line?.text || "").join(" ");
+		// Safe text extraction
+		const extractTextSafely = (line) => {
+			if (!line) return '';
+			if (typeof line === 'string') return line;
+			if (typeof line === 'object') {
+				// Avoid React elements and other complex objects
+				if (line.$$typeof) return ''; // React element
+				return line.originalText || line.text || '';
+			}
+			return String(line || '');
+		};
+
+		// Create cache key from lyrics text with safe extraction
+		const rawLyrics = lyrics.map(extractTextSafely).join(" ");
 			
 		const cacheKey = rawLyrics.substring(0, 200); // Use first 200 chars as cache key
 		
@@ -259,12 +270,41 @@ const Utils = {
 		return result;
 	},
 	processTranslatedLyrics(translated, original) {
-		return original.map((lyric, index) => ({
-			startTime: lyric?.startTime || 0,
-			// Keep as string so Pages can inject as HTML (furigana) or plain text
-			text: String(translated[index] ?? ""),
-			originalText: lyric?.text || "",
-		}));
+		// Ensure both inputs are arrays
+		if (!Array.isArray(original) || !Array.isArray(translated)) {
+			console.warn('processTranslatedLyrics: Invalid input types', { 
+				original: typeof original, 
+				translated: typeof translated,
+				originalIsArray: Array.isArray(original),
+				translatedIsArray: Array.isArray(translated)
+			});
+			return Array.isArray(original) ? original : [];
+		}
+
+		return original.map((lyric, index) => {
+			// Safe property extraction
+			const startTime = (lyric && typeof lyric === 'object') ? (lyric.startTime || 0) : 0;
+			const originalText = (lyric && typeof lyric === 'object') ? (lyric.text || '') : String(lyric || '');
+			const translatedText = translated[index];
+			
+			// Safe text conversion
+			let safeTranslatedText = '';
+			if (translatedText !== null && translatedText !== undefined) {
+				if (typeof translatedText === 'object' && translatedText.$$typeof) {
+					// React element - extract text content
+					safeTranslatedText = translatedText.props?.children || '';
+				} else {
+					safeTranslatedText = String(translatedText);
+				}
+			}
+
+			return {
+				startTime,
+				// Keep as string so Pages can inject as HTML (furigana) or plain text
+				text: safeTranslatedText,
+				originalText,
+			};
+		});
 	},
 	/** It seems that this function is not being used, but I'll keep it just in case it's needed in the future.*/
 	processTranslatedOriginalLyrics(lyrics, synced) {
@@ -504,7 +544,7 @@ const Utils = {
 	/**
 	 * Current version of the lyrics-plus app
 	 */
-	currentVersion: "1.1.4",
+	currentVersion: "1.1.5",
 
 	/**
 	 * Check for updates from remote repository
@@ -512,13 +552,46 @@ const Utils = {
 	 */
 	async checkForUpdates() {
 		try {
-			const response = await fetch("https://raw.githubusercontent.com/ivLis-Studio/lyrics-plus/refs/heads/main/version.txt");
+			const url = "https://cdn.jsdelivr.net/gh/ivLis-Studio/lyrics-plus@main/version.txt";
+			let latestVersion = null;
 
-			if (!response.ok) {
-				throw new Error(`HTTP ${response.status}`);
+			try {
+				const controller = new AbortController();
+				const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+				const headers = {
+					'Accept': 'text/plain, */*',
+					'Cache-Control': 'no-cache'
+				};
+
+				const response = await fetch(url, {
+					signal: controller.signal,
+					mode: 'cors',
+					headers
+				});
+
+				clearTimeout(timeoutId);
+
+				if (!response.ok) {
+					throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+				}
+
+				latestVersion = (await response.text()).trim();
+
+			} catch (error) {
+				console.warn(`Failed to fetch from ${url}:`, error.message);
+				throw error;
 			}
 
-			const latestVersion = (await response.text()).trim();
+			if (!latestVersion) {
+				throw new Error('Failed to get version from URL');
+			}
+
+			// Validate version format (should be like "1.2.3")
+			if (!/^\d+\.\d+\.\d+$/.test(latestVersion)) {
+				throw new Error(`Invalid version format: ${latestVersion}`);
+			}
+
 			const hasUpdate = this.compareVersions(latestVersion, this.currentVersion) > 0;
 
 			return {
@@ -528,11 +601,25 @@ const Utils = {
 			};
 		} catch (error) {
 			console.warn("Failed to check for updates:", error);
+
+			let errorMessage = "알 수 없는 오류";
+			if (error.name === 'AbortError') {
+				errorMessage = "요청 시간 초과";
+			} else if (error.message.includes('fetch') || error.message.includes('NetworkError')) {
+				errorMessage = "네트워크 연결 실패";
+			} else if (error.message.includes('CORS')) {
+				errorMessage = "브라우저 보안 정책으로 인한 제한";
+			} else if (error.message.includes('HTTP')) {
+				errorMessage = "서버 응답 오류";
+			} else {
+				errorMessage = error.message;
+			}
+
 			return {
 				hasUpdate: false,
 				currentVersion: this.currentVersion,
 				latestVersion: this.currentVersion,
-				error: error.message
+				error: errorMessage
 			};
 		}
 	},
@@ -562,27 +649,44 @@ const Utils = {
 	 * Show update notification if available
 	 */
 	async showUpdateNotificationIfAvailable() {
-		const updateInfo = await this.checkForUpdates();
+		try {
+			const updateInfo = await this.checkForUpdates();
 
-		if (updateInfo.hasUpdate) {
-			const updateKey = `lyrics-plus:update-dismissed:${updateInfo.latestVersion}`;
-			const isDismissed = localStorage.getItem(updateKey);
-
-			if (!isDismissed) {
-				Spicetify.showNotification(
-					`가사 플러스 업데이트 가능: v${updateInfo.latestVersion} (현재: v${updateInfo.currentVersion})`,
-					false,
-					5000
-				);
-
-				// Mark this version as notified, but don't dismiss permanently
-				// Users can still see the notification again after restart
-				setTimeout(() => {
-					localStorage.setItem(updateKey, "notified");
-				}, 5000);
+			// Don't show notification if there was an error
+			if (updateInfo.error) {
+				console.warn('Update check failed, skipping notification:', updateInfo.error);
+				return updateInfo;
 			}
-		}
 
-		return updateInfo;
+			if (updateInfo.hasUpdate) {
+				const updateKey = `lyrics-plus:update-dismissed:${updateInfo.latestVersion}`;
+				const isDismissed = localStorage.getItem(updateKey);
+
+				if (!isDismissed) {
+					Spicetify.showNotification(
+						`가사 플러스 업데이트 가능: v${updateInfo.latestVersion} (현재: v${updateInfo.currentVersion})`,
+						false,
+						5000
+					);
+
+					// Mark this version as notified, but don't dismiss permanently
+					// Users can still see the notification again after restart
+					setTimeout(() => {
+						localStorage.setItem(updateKey, "notified");
+					}, 5000);
+				}
+			}
+
+			return updateInfo;
+		} catch (error) {
+			// Silently fail for automatic update checks to avoid spam
+			console.warn('Automatic update check failed:', error);
+			return {
+				hasUpdate: false,
+				currentVersion: this.currentVersion,
+				latestVersion: this.currentVersion,
+				error: error.message
+			};
+		}
 	},
 };

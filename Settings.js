@@ -67,44 +67,6 @@ const CacheButton = () => {
 	);
 };
 
-const RefreshTokenButton = ({ setTokenCallback }) => {
-	const [buttonText, setButtonText] = useState("토큰 새로고침");
-
-	useEffect(() => {
-		if (buttonText === "Refreshing token...") {
-			Spicetify.CosmosAsync.get("https://apic-desktop.musixmatch.com/ws/1.1/token.get?app_id=web-desktop-app-v1.0", null, {
-				authority: "apic-desktop.musixmatch.com",
-			})
-				.then(({ message: response }) => {
-					if (response.header.status_code === 200 && response.body.user_token) {
-						setTokenCallback(response.body.user_token);
-						setButtonText("토큰 새로고침 완료");
-					} else if (response.header.status_code === 401) {
-						setButtonText("너무 많은 시도");
-					} else {
-						setButtonText("토큰 새로고침 실패");
-						console.error("Failed to refresh token", response);
-					}
-				})
-				.catch((error) => {
-					setButtonText("토큰 새로고침 실패");
-					console.error("Failed to refresh token", error);
-				});
-		}
-	}, [buttonText]);
-
-	return react.createElement(
-		"button",
-		{
-			className: "btn",
-			onClick: () => {
-				setButtonText("토큰 새로고침 중...");
-			},
-			disabled: buttonText !== "토큰 새로고침",
-		},
-		buttonText
-	);
-};
 
 const ConfigButton = ({ name, text, onChange = () => {} }) => {
 	return react.createElement(
@@ -219,6 +181,17 @@ const ConfigSelection = ({ name, defaultValue, options, onChange = () => {} }) =
 					className: "main-dropDown-dropDown",
 					value,
 					onChange: setValueCallback,
+					style: {
+						backgroundColor: "#1a1a1a",
+						border: "2px solid #404040",
+						borderRadius: "8px",
+						padding: "10px 14px",
+						color: "#ffffff",
+						fontSize: "14px",
+						minHeight: "40px",
+						boxSizing: "border-box",
+						width: "100%"
+					}
 				},
 				...Object.keys(options).map((item) =>
 					react.createElement(
@@ -265,8 +238,20 @@ const ConfigInput = ({ name, defaultValue, onChange = () => {} }) => {
 				className: "col action",
 			},
 			react.createElement("input", {
+				type: "text",
 				value,
 				onChange: setValueCallback,
+				style: {
+					backgroundColor: "#1a1a1a",
+					border: "2px solid #404040",
+					borderRadius: "8px",
+					padding: "10px 14px",
+					color: "#ffffff",
+					fontSize: "14px",
+					minHeight: "20px",
+					boxSizing: "border-box",
+					width: "100%"
+				}
 			})
 		)
 	);
@@ -368,9 +353,21 @@ const ConfigHotkey = ({ name, defaultValue, onChange = () => {} }) => {
 				className: "col action",
 			},
 			react.createElement("input", {
+				type: "text",
 				value,
 				onFocus: record,
 				onBlur: finishRecord,
+				style: {
+					backgroundColor: "#1a1a1a",
+					border: "2px solid #404040",
+					borderRadius: "8px",
+					padding: "10px 14px",
+					color: "#ffffff",
+					fontSize: "14px",
+					minHeight: "20px",
+					boxSizing: "border-box",
+					width: "100%"
+				}
 			})
 		)
 	);
@@ -380,8 +377,6 @@ const ServiceAction = ({ item, setTokenCallback }) => {
 	switch (item.name) {
 		case "local":
 			return react.createElement(CacheButton);
-		case "musixmatch":
-			return react.createElement(RefreshTokenButton, { setTokenCallback });
 		default:
 			return null;
 	}
@@ -400,7 +395,6 @@ const ServiceOption = ({ item, onToggle, onSwap, isFirst = false, isLast = false
 	);
 
 	const toggleActive = useCallback(() => {
-		if (item.name === "genius" && spotifyVersion >= "1.2.31") return;
 		const state = !active;
 		setActive(state);
 		onToggle(item.name, state);
@@ -454,9 +448,22 @@ const ServiceOption = ({ item, onToggle, onSwap, isFirst = false, isLast = false
 		}),
 		item.token !== undefined &&
 			react.createElement("input", {
+				type: "text",
 				placeholder: `Place your ${item.name} token here`,
 				value: token,
 				onChange: (event) => setTokenCallback(event.target.value),
+				style: {
+					backgroundColor: "#1a1a1a",
+					border: "2px solid #404040",
+					borderRadius: "8px",
+					padding: "10px 14px",
+					color: "#ffffff",
+					fontSize: "14px",
+					minHeight: "20px",
+					boxSizing: "border-box",
+					width: "100%",
+					marginTop: "8px"
+				}
 			})
 	);
 };
@@ -491,21 +498,6 @@ const ServiceList = ({ itemsList, onListChange = () => {}, onToggle = () => {}, 
 	});
 };
 
-const corsProxyTemplate = () => {
-	const [proxyValue, setProxyValue] = react.useState(localStorage.getItem("spicetify:corsProxyTemplate") || "https://cors-proxy.spicetify.app/{url}");
-
-	return react.createElement("input", {
-		placeholder: "CORS Proxy Template",
-		value: proxyValue,
-		onChange: (event) => {
-			const value = event.target.value;
-			setProxyValue(value);
-
-			if (value === "" || !value) return localStorage.removeItem("spicetify:corsProxyTemplate");
-			localStorage.setItem("spicetify:corsProxyTemplate", value);
-		},
-	});
-};
 
 const OptionList = ({ type, items, onChange }) => {
 	const [itemList, setItemList] = useState(items);
@@ -562,6 +554,12 @@ const languageOptions = languageCodes.reduce((acc, code) => {
 	acc[code] = code === "none" ? "None" : displayNames.of(code);
 	return acc;
 }, {});
+
+// Pre-defined styles to avoid recreation on each render
+const MODAL_STYLES = {
+	header: { margin: 0, fontSize: "18px", fontWeight: "600" },
+	previewTitle: { marginTop: 0, marginBottom: "10px" }
+};
 
 const ConfigModal = () => {
 	const [activeTab, setActiveTab] = react.useState("general");
@@ -629,14 +627,19 @@ const ConfigModal = () => {
 				__html: `
 #${APP_NAME}-config-container {
     padding: 0;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 #${APP_NAME}-config-container .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 24px;
+    padding: 20px 24px;
     border-bottom: 1px solid var(--spice-card-border);
     background-color: var(--spice-card);
+    flex-shrink: 0;
 }
 #${APP_NAME}-config-container h1 {
     font-size: 24px;
@@ -664,6 +667,7 @@ const ConfigModal = () => {
     padding: 0 24px;
     background-color: var(--spice-card);
     border-bottom: 1px solid var(--spice-card-border);
+    flex-shrink: 0;
 }
 #${APP_NAME}-config-container .tab-btn {
     padding: 16px 4px;
@@ -687,6 +691,8 @@ const ConfigModal = () => {
 #${APP_NAME}-config-container .tab-container {
     padding: 24px;
     background-color: var(--spice-main-elevated);
+    flex: 1;
+    overflow-y: auto;
 }
 #${APP_NAME}-config-container .tab-content {
     display: none;
@@ -725,20 +731,54 @@ const ConfigModal = () => {
     align-items: center;
     justify-content: flex-end;
 }
+#${APP_NAME}-config-container input[type="text"],
+#${APP_NAME}-config-container input[type="password"],
+#${APP_NAME}-config-container input[type="number"],
+#${APP_NAME}-config-container input[type="url"],
 #${APP_NAME}-config-container input,
-#${APP_NAME}-config-container select {
-    background-color: var(--spice-main-elevated);
-    border: 1px solid var(--spice-card-border);
-    border-radius: 8px;
-    padding: 8px 12px;
-    width: min(360px, 100%);
-    outline: none;
-    color: var(--spice-text);
-    transition: border-color 0.2s ease;
+#${APP_NAME}-config-container select,
+#${APP_NAME}-config-container textarea {
+    background-color: #1a1a1a !important;
+    border: 2px solid #404040 !important;
+    border-radius: 8px !important;
+    padding: 10px 14px !important;
+    width: min(360px, 100%) !important;
+    outline: none !important;
+    color: #ffffff !important;
+    transition: all 0.2s ease !important;
+    font-size: 14px !important;
+    font-family: var(--font-family, -apple-system, BlinkMacSystemFont, sans-serif) !important;
+    min-height: 20px !important;
+    box-sizing: border-box !important;
 }
+
+#${APP_NAME}-config-container input[type="text"]:hover,
+#${APP_NAME}-config-container input[type="password"]:hover,
+#${APP_NAME}-config-container input[type="number"]:hover,
+#${APP_NAME}-config-container input[type="url"]:hover,
 #${APP_NAME}-config-container input:hover,
-#${APP_NAME}-config-container select:hover {
-    border-color: var(--spice-subtext);
+#${APP_NAME}-config-container select:hover,
+#${APP_NAME}-config-container textarea:hover {
+    border-color: #606060 !important;
+    background-color: #252525 !important;
+}
+
+#${APP_NAME}-config-container input[type="text"]:focus,
+#${APP_NAME}-config-container input[type="password"]:focus,
+#${APP_NAME}-config-container input[type="number"]:focus,
+#${APP_NAME}-config-container input[type="url"]:focus,
+#${APP_NAME}-config-container input:focus,
+#${APP_NAME}-config-container select:focus,
+#${APP_NAME}-config-container textarea:focus {
+    border-color: #1ed760 !important;
+    background-color: #252525 !important;
+    box-shadow: 0 0 0 2px rgba(30, 215, 96, 0.2) !important;
+}
+
+#${APP_NAME}-config-container input::placeholder,
+#${APP_NAME}-config-container textarea::placeholder {
+    color: #909090 !important;
+    opacity: 1 !important;
 }
 #${APP_NAME}-config-container select option {
     background-color: var(--spice-main-elevated);
@@ -777,7 +817,7 @@ const ConfigModal = () => {
 		react.createElement(
 			"div",
 			{ className: "header" },
-			react.createElement("h1", { style: { margin: 0, fontSize: "18px", fontWeight: "600" } }, "가사 플러스"),
+			react.createElement("h1", { style: MODAL_STYLES.header }, "가사 플러스"),
 			react.createElement(GitHubButton)
 		),
 		react.createElement(
@@ -904,46 +944,62 @@ const ConfigModal = () => {
 					key: "check-update",
 					text: "업데이트 확인",
 					type: ConfigButton,
-					onChange: async () => {
-						const updateInfo = await Utils.checkForUpdates();
-						if (updateInfo.hasUpdate) {
+					onChange: async (_, event) => {
+						const button = event?.target;
+						if (!button) return;
+						const originalText = button.textContent;
+
+						// Show loading state
+						button.textContent = "확인 중...";
+						button.disabled = true;
+
+						try {
+							const updateInfo = await Utils.checkForUpdates();
+
+							if (updateInfo.error) {
+								Spicetify.showNotification(
+									`업데이트 확인 실패: ${updateInfo.error}`,
+									true,
+									5000
+								);
+							} else if (updateInfo.hasUpdate) {
+								Spicetify.showNotification(
+									`업데이트 가능: v${updateInfo.latestVersion} (현재: v${updateInfo.currentVersion})\n\nGitHub에서 새 버전을 다운로드하세요.`,
+									false,
+									7000
+								);
+
+								// Open GitHub releases page
+								window.open('https://github.com/ivLis-Studio/lyrics-plus/releases/latest', '_blank');
+							} else {
+								Spicetify.showNotification(
+									`최신 버전입니다: v${updateInfo.currentVersion}`,
+									false,
+									3000
+								);
+							}
+						} catch (error) {
+							console.error("Update check failed:", error);
 							Spicetify.showNotification(
-								`업데이트 가능: v${updateInfo.latestVersion} (현재: v${updateInfo.currentVersion})`,
-								false,
+								`업데이트 확인 실패: 네트워크 연결을 확인하세요.`,
+								true,
 								5000
 							);
-						} else {
-							Spicetify.showNotification(
-								`최신 버전입니다: v${updateInfo.currentVersion}`,
-								false,
-								3000
-							);
+						} finally {
+							// Restore button state
+							button.textContent = originalText;
+							button.disabled = false;
 						}
 					},
 				},
 			],
 			onChange: (name, value) => {
 				CONFIG.visual[name] = value;
-				if (name === "musixmatch-translation-language") {
-					// handled below
-				} else if (name === "gemini-api-key") {
-					// Save GEMINI API key to both Spicetify LocalStorage and regular localStorage for persistence
-					try {
-						Spicetify?.LocalStorage?.set(`${APP_NAME}:visual:${name}`, value);
-					} catch (error) {
-						console.warn(`Failed to save to Spicetify LocalStorage '${name}':`, error);
-					}
-					try {
-						localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
-					} catch (error) {
-						console.warn(`Failed to save to localStorage '${name}':`, error);
-					}
-				} else {
-					localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
-				}
+				// Use StorageManager to handle all storage operations consistently
+				StorageManager.saveConfig(name, value);
 
 				// Reload Lyrics if translation language is changed
-				if (name === "musixmatch-translation-language") {
+				if (false) {
 					if (value === "none") {
 						CONFIG.visual["translate:translated-lyrics-source"] = "none";
 						localStorage.setItem(`${APP_NAME}:visual:translate:translated-lyrics-source`, "none");
@@ -980,7 +1036,7 @@ const ConfigModal = () => {
 						backgroundColor: "rgba(255,255,255,0.02)"
 					}
 				},
-					react.createElement("h3", { style: { marginTop: 0, marginBottom: "10px" } }, "미리보기"),
+					react.createElement("h3", { style: MODAL_STYLES.previewTitle }, "미리보기"),
 					react.createElement("div", {
 						id: "lyrics-preview",
 						style: {
@@ -1234,13 +1290,6 @@ const ConfigModal = () => {
 							step: thresholdSizeLimit.step,
 						},
 						{
-							desc: "Musixmatch 번역 언어",
-							info: "가사를 번역할 언어를 선택하세요. 언어가 변경되면 가사가 다시 로드됩니다.",
-							key: "musixmatch-translation-language",
-							type: ConfigSelection,
-							options: languageOptions,
-						},
-						{
 							desc: "GEMINI API 키",
 							info: "Gemini API를 사용한 가사 번역을 위한 API 키를 입력하세요.",
 							key: "gemini-api-key",
@@ -1249,26 +1298,11 @@ const ConfigModal = () => {
 					],
 					onChange: (name, value) => {
 						CONFIG.visual[name] = value;
-						if (name === "musixmatch-translation-language") {
-							// handled below
-						} else if (name === "gemini-api-key") {
-							// Save GEMINI API key to both Spicetify LocalStorage and regular localStorage for persistence
-							try {
-								Spicetify?.LocalStorage?.set(`${APP_NAME}:visual:${name}`, value);
-							} catch (error) {
-								console.warn(`Failed to save to Spicetify LocalStorage '${name}':`, error);
-							}
-							try {
-								localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
-							} catch (error) {
-								console.warn(`Failed to save to localStorage '${name}':`, error);
-							}
-						} else {
-							localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
-						}
+						// Use StorageManager to handle all storage operations consistently
+						StorageManager.saveConfig(name, value);
 
 						// Reload Lyrics if translation language is changed
-						if (name === "musixmatch-translation-language") {
+						if (false) {
 							if (value === "none") {
 								CONFIG.visual["translate:translated-lyrics-source"] = "none";
 								localStorage.setItem(`${APP_NAME}:visual:translate:translated-lyrics-source`, "none");
@@ -1288,19 +1322,6 @@ const ConfigModal = () => {
 						window.dispatchEvent(configChange);
 					},
 				}),
-				react.createElement("h3", { style: { marginTop: "24px", marginBottom: "10px" } }, "CORS 프록시 템플릿"),
-				react.createElement("span", {
-					dangerouslySetInnerHTML: {
-						__html:
-							"CORS 제한을 우회하는 데 사용됩니다. URL을 원하는 CORS 프록시 서버로 교체하세요. <code>{url}</code>은 요청 URL로 교체됩니다.",
-					},
-				}),
-				react.createElement(corsProxyTemplate),
-				react.createElement("span", {
-					dangerouslySetInnerHTML: {
-						__html: "적용 후 Spotify가 웹뷰를 다시 로드합니다. 기본값으로 복원하려면 비워두세요: <code>https://cors-proxy.spicetify.app/{url}</code>",
-					},
-				})
 			)
 		)
 	);
@@ -1309,9 +1330,54 @@ const ConfigModal = () => {
 function openConfig() {
 	const configContainer = react.createElement(ConfigModal);
 
-	Spicetify.PopupModal.display({
-		title: "가사 플러스",
-		content: configContainer,
-		isLarge: true,
+	// Create a full-screen overlay instead of nested modal
+	const overlay = document.createElement('div');
+	overlay.id = 'lyrics-plus-settings-overlay';
+	overlay.style.cssText = `
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.8);
+		z-index: 9999;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		backdrop-filter: blur(10px);
+	`;
+
+	const modalContainer = document.createElement('div');
+	modalContainer.style.cssText = `
+		background: var(--spice-main);
+		border-radius: 12px;
+		max-width: 90vw;
+		max-height: 90vh;
+		width: 800px;
+		overflow: hidden;
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+		border: 1px solid var(--spice-card-border);
+	`;
+
+	// Close on outside click
+	overlay.addEventListener('click', (e) => {
+		if (e.target === overlay) {
+			document.body.removeChild(overlay);
+		}
 	});
+
+	// Close on escape key
+	const handleEscape = (e) => {
+		if (e.key === 'Escape') {
+			document.body.removeChild(overlay);
+			document.removeEventListener('keydown', handleEscape);
+		}
+	};
+	document.addEventListener('keydown', handleEscape);
+
+	overlay.appendChild(modalContainer);
+	document.body.appendChild(overlay);
+
+	// Render React component
+	reactDOM.render(configContainer, modalContainer);
 }
