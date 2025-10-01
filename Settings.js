@@ -2,12 +2,14 @@ const ButtonSVG = ({ icon, active = true, onClick }) => {
 	return react.createElement(
 		"button",
 		{
-			className: `switch${active ? "" : " disabled"}`,
+			className: `switch-checkbox${active ? " active" : ""}`,
 			onClick,
+			"aria-checked": active,
+			role: "checkbox"
 		},
-		react.createElement("svg", {
-			width: 16,
-			height: 16,
+		active && react.createElement("svg", {
+			width: 12,
+			height: 12,
 			viewBox: "0 0 16 16",
 			fill: "currentColor",
 			dangerouslySetInnerHTML: {
@@ -21,13 +23,13 @@ const SwapButton = ({ icon, disabled, onClick }) => {
 	return react.createElement(
 		"button",
 		{
-			className: "switch small",
+			className: "swap-button",
 			onClick,
 			disabled,
 		},
 		react.createElement("svg", {
-			width: 10,
-			height: 10,
+			width: 12,
+			height: 12,
 			viewBox: "0 0 16 16",
 			fill: "currentColor",
 			dangerouslySetInnerHTML: {
@@ -75,24 +77,24 @@ const ConfigButton = ({ name, text, onChange = () => {} }) => {
 			className: "setting-row",
 		},
 		react.createElement(
-			"label",
-			{
-				className: "col description",
-			},
-			name
-		),
-		react.createElement(
 			"div",
-			{
-				className: "col action",
-			},
+			{ className: "setting-row-content" },
 			react.createElement(
-				"button",
-				{
-					className: "btn",
-					onClick: onChange,
-				},
-				text
+				"div",
+				{ className: "setting-row-left" },
+				react.createElement("div", { className: "setting-name" }, name)
+			),
+			react.createElement(
+				"div",
+				{ className: "setting-row-right" },
+				react.createElement(
+					"button",
+					{
+						className: "btn",
+						onClick: onChange,
+					},
+					text
+				)
 			)
 		)
 	);
@@ -111,29 +113,82 @@ const ConfigSlider = ({ name, defaultValue, onChange = () => {} }) => {
 		onChange(state);
 	}, [active]);
 
+	return react.createElement(ButtonSVG, {
+		icon: Spicetify.SVGIcons.check,
+		active,
+		onClick: toggleState,
+	});
+};
+
+const ConfigSliderRange = ({ name, defaultValue, min = 0, max = 100, step = 1, unit = "", onChange = () => {} }) => {
+	const [value, setValue] = useState(defaultValue);
+
+	useEffect(() => {
+		setValue(defaultValue);
+	}, [defaultValue]);
+
+	const handleChange = useCallback(
+		(event) => {
+			const newValue = Number(event.target.value);
+			setValue(newValue);
+			onChange(newValue);
+		},
+		[onChange]
+	);
+
 	return react.createElement(
 		"div",
-		{
-			className: "setting-row",
-		},
+		{ className: "slider-container" },
+		react.createElement("input", {
+			type: "range",
+			min,
+			max,
+			step,
+			value,
+			onChange: handleChange,
+			className: "config-slider",
+		}),
 		react.createElement(
-			"label",
-			{
-				className: "col description",
-			},
-			name
-		),
-		react.createElement(
-			"div",
-			{
-				className: "col action",
-			},
-			react.createElement(ButtonSVG, {
-				icon: Spicetify.SVGIcons.check,
-				active,
-				onClick: toggleState,
-			})
+			"span",
+			{ className: "slider-value" },
+			`${value}${unit}`
 		)
+	);
+};
+
+const ConfigColorPicker = ({ name, defaultValue, onChange = () => {} }) => {
+	const [value, setValue] = useState(defaultValue);
+
+	useEffect(() => {
+		setValue(defaultValue);
+	}, [defaultValue]);
+
+	const handleChange = useCallback(
+		(event) => {
+			const newValue = event.target.value;
+			setValue(newValue);
+			onChange(newValue);
+		},
+		[onChange]
+	);
+
+	return react.createElement(
+		"div",
+		{ className: "color-picker-container" },
+		react.createElement("input", {
+			type: "color",
+			value,
+			onChange: handleChange,
+			className: "config-color-picker",
+		}),
+		react.createElement("input", {
+			type: "text",
+			value,
+			onChange: handleChange,
+			className: "config-color-input",
+			pattern: "^#[0-9A-Fa-f]{6}$",
+			placeholder: "#000000",
+		})
 	);
 };
 
@@ -159,50 +214,19 @@ const ConfigSelection = ({ name, defaultValue, options, onChange = () => {} }) =
 	if (!Object.keys(options).length) return null;
 
 	return react.createElement(
-		"div",
+		"select",
 		{
-			className: "setting-row",
+			value,
+			onChange: setValueCallback,
 		},
-		react.createElement(
-			"label",
-			{
-				className: "col description",
-			},
-			name
-		),
-		react.createElement(
-			"div",
-			{
-				className: "col action",
-			},
+		...Object.keys(options).map((item) =>
 			react.createElement(
-				"select",
+				"option",
 				{
-					className: "main-dropDown-dropDown",
-					value,
-					onChange: setValueCallback,
-					style: {
-						backgroundColor: "#1a1a1a",
-						border: "2px solid #404040",
-						borderRadius: "8px",
-						padding: "10px 14px",
-						color: "#ffffff",
-						fontSize: "14px",
-						minHeight: "40px",
-						boxSizing: "border-box",
-						width: "100%"
-					}
+					key: item,
+					value: item,
 				},
-				...Object.keys(options).map((item) =>
-					react.createElement(
-						"option",
-						{
-							key: item,
-							value: item,
-						},
-						options[item]
-					)
-				)
+				options[item]
 			)
 		)
 	);
@@ -226,33 +250,22 @@ const ConfigInput = ({ name, defaultValue, onChange = () => {} }) => {
 			className: "setting-row",
 		},
 		react.createElement(
-			"label",
-			{
-				className: "col description",
-			},
-			name
-		),
-		react.createElement(
 			"div",
-			{
-				className: "col action",
-			},
-			react.createElement("input", {
-				type: "text",
-				value,
-				onChange: setValueCallback,
-				style: {
-					backgroundColor: "#1a1a1a",
-					border: "2px solid #404040",
-					borderRadius: "8px",
-					padding: "10px 14px",
-					color: "#ffffff",
-					fontSize: "14px",
-					minHeight: "20px",
-					boxSizing: "border-box",
-					width: "100%"
-				}
-			})
+			{ className: "setting-row-content" },
+			react.createElement(
+				"div",
+				{ className: "setting-row-left" },
+				react.createElement("div", { className: "setting-name" }, name)
+			),
+			react.createElement(
+				"div",
+				{ className: "setting-row-right" },
+				react.createElement("input", {
+					type: "text",
+					value,
+					onChange: setValueCallback,
+				})
+			)
 		)
 	);
 };
@@ -276,39 +289,24 @@ const ConfigAdjust = ({ name, defaultValue, step, min, max, onChange = () => {} 
 	}
 	return react.createElement(
 		"div",
-		{
-			className: "setting-row",
-		},
+		{ className: "adjust-container" },
+		react.createElement("button", {
+			className: "adjust-button",
+			onClick: () => adjust(-1),
+			disabled: value === min,
+			"aria-label": "Decrease"
+		}, "-"),
 		react.createElement(
-			"label",
-			{
-				className: "col description",
-			},
-			name
+			"span",
+			{ className: "adjust-value" },
+			value
 		),
-		react.createElement(
-			"div",
-			{
-				className: "col action",
-			},
-			react.createElement(SwapButton, {
-				icon: `<path d="M2 7h12v2H0z"/>`,
-				onClick: () => adjust(-1),
-				disabled: value === min,
-			}),
-			react.createElement(
-				"p",
-				{
-					className: "adjust-value",
-				},
-				value
-			),
-			react.createElement(SwapButton, {
-				icon: Spicetify.SVGIcons.plus2px,
-				onClick: () => adjust(1),
-				disabled: value === max,
-			})
-		)
+		react.createElement("button", {
+			className: "adjust-button",
+			onClick: () => adjust(1),
+			disabled: value === max,
+			"aria-label": "Increase"
+		}, "+")
 	);
 };
 
@@ -341,34 +339,23 @@ const ConfigHotkey = ({ name, defaultValue, onChange = () => {} }) => {
 			className: "setting-row",
 		},
 		react.createElement(
-			"label",
-			{
-				className: "col description",
-			},
-			name
-		),
-		react.createElement(
 			"div",
-			{
-				className: "col action",
-			},
-			react.createElement("input", {
-				type: "text",
-				value,
-				onFocus: record,
-				onBlur: finishRecord,
-				style: {
-					backgroundColor: "#1a1a1a",
-					border: "2px solid #404040",
-					borderRadius: "8px",
-					padding: "10px 14px",
-					color: "#ffffff",
-					fontSize: "14px",
-					minHeight: "20px",
-					boxSizing: "border-box",
-					width: "100%"
-				}
-			})
+			{ className: "setting-row-content" },
+			react.createElement(
+				"div",
+				{ className: "setting-row-left" },
+				react.createElement("div", { className: "setting-name" }, name)
+			),
+			react.createElement(
+				"div",
+				{ className: "setting-row-right" },
+				react.createElement("input", {
+					type: "text",
+					value,
+					onFocus: record,
+					onBlur: finishRecord,
+				})
+			)
 		)
 	);
 };
@@ -402,23 +389,29 @@ const ServiceOption = ({ item, onToggle, onSwap, isFirst = false, isLast = false
 
 	return react.createElement(
 		"div",
-		null,
+		{
+			className: "setting-row",
+			style: { marginBottom: "16px" }
+		},
 		react.createElement(
 			"div",
-			{
-				className: "setting-row",
-			},
+			{ className: "setting-row-content" },
 			react.createElement(
-				"h3",
-				{
-					className: "col description",
-				},
-				item.name
+				"div",
+				{ className: "setting-row-left" },
+				react.createElement("div", { className: "setting-name" }, item.name),
+				react.createElement("div", {
+					className: "setting-description",
+					dangerouslySetInnerHTML: {
+						__html: item.desc,
+					},
+				})
 			),
 			react.createElement(
 				"div",
 				{
-					className: "col action",
+					className: "setting-row-right",
+					style: { display: "flex", gap: "8px", alignItems: "center" }
 				},
 				react.createElement(ServiceAction, {
 					item,
@@ -441,11 +434,6 @@ const ServiceOption = ({ item, onToggle, onSwap, isFirst = false, isLast = false
 				})
 			)
 		),
-		react.createElement("span", {
-			dangerouslySetInnerHTML: {
-				__html: item.desc,
-			},
-		}),
 		item.token !== undefined &&
 			react.createElement("input", {
 				type: "text",
@@ -456,7 +444,7 @@ const ServiceOption = ({ item, onToggle, onSwap, isFirst = false, isLast = false
 					backgroundColor: "#1a1a1a",
 					border: "2px solid #404040",
 					borderRadius: "8px",
-					padding: "10px 14px",
+					padding: "2px 2.8px",
 					color: "#ffffff",
 					fontSize: "14px",
 					minHeight: "20px",
@@ -515,7 +503,7 @@ const OptionList = ({ type, items, onChange }) => {
 		return () => document.removeEventListener("lyrics-plus", eventListener);
 	}, []);
 
-	return itemList.map((item) => {
+	return itemList.map((item, index) => {
 		if (!item || (item.when && !item.when())) {
 			return;
 		}
@@ -524,22 +512,38 @@ const OptionList = ({ type, items, onChange }) => {
 
 		return react.createElement(
 			"div",
-			null,
-			react.createElement(item.type, {
-				...item,
-				name: item.desc,
-				defaultValue: CONFIG.visual[item.key],
-				onChange: (value) => {
-					onChangeItem(item.key, value);
-					forceUpdate({});
-				},
-			}),
-			item.info &&
-				react.createElement("span", {
-					dangerouslySetInnerHTML: {
-						__html: item.info,
-					},
-				})
+			{ 
+				key: index,
+				className: "setting-row"
+			},
+			react.createElement(
+				"div",
+				{ className: "setting-row-content" },
+				react.createElement(
+					"div",
+					{ className: "setting-row-left" },
+					react.createElement("div", { className: "setting-name" }, item.desc),
+					item.info && react.createElement("div", {
+						className: "setting-description",
+						dangerouslySetInnerHTML: {
+							__html: item.info,
+						},
+					})
+				),
+				react.createElement(
+					"div",
+					{ className: "setting-row-right" },
+					react.createElement(item.type, {
+						...item,
+						name: item.desc,
+						defaultValue: CONFIG.visual[item.key],
+						onChange: (value) => {
+							onChangeItem(item.key, value);
+							forceUpdate({});
+						},
+					})
+				)
+			)
 		);
 	});
 };
@@ -562,41 +566,53 @@ const MODAL_STYLES = {
 };
 
 const ConfigModal = () => {
-	const [activeTab, setActiveTab] = react.useState("general");
+	const [activeTab, setActiveTab] = react.useState("display");
 
 	// Initialize line-spacing if not set
 	if (CONFIG.visual["line-spacing"] === undefined) {
 		CONFIG.visual["line-spacing"] = 8;
 	}
 
-	const GitHubButton = () => {
+	const HeaderSection = () => {
 		return react.createElement(
-			"button",
-			{
-				className: "github-btn",
-				onClick: () => {
-					window.open("https://github.com/ivLis-Studio/lyrics-plus", "_blank");
-				},
-				title: "GitHub에서 보기"
-			},
-			react.createElement("svg", {
-				width: 16,
-				height: 16,
-				viewBox: "0 0 16 16",
-				fill: "currentColor",
-				dangerouslySetInnerHTML: {
-					__html: '<path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>'
-				}
-			}),
-			react.createElement("span", null, "GitHub")
+			"div",
+			{ className: "settings-header" },
+			react.createElement(
+				"div",
+				{ className: "settings-header-content" },
+				react.createElement(
+					"div",
+					{ className: "settings-title-section" },
+					react.createElement("h1", null, "Lyrics Plus"),
+					react.createElement("span", { className: "settings-version" }, `v${Utils.currentVersion}`)
+				),
+				react.createElement(
+					"button",
+					{
+						className: "settings-github-btn",
+						onClick: () => window.open("https://github.com/ivLis-Studio/lyrics-plus", "_blank"),
+						title: "GitHub 저장소 방문"
+					},
+					react.createElement("svg", {
+						width: 16,
+						height: 16,
+						viewBox: "0 0 16 16",
+						fill: "currentColor",
+						dangerouslySetInnerHTML: {
+							__html: '<path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>'
+						}
+					}),
+					react.createElement("span", null, "GitHub")
+				)
+			)
 		);
 	};
 
-	const TabButton = ({ id, label, isActive, onClick }) => {
+	const TabButton = ({ id, label, icon, isActive, onClick }) => {
 		return react.createElement(
 			"button",
 			{
-				className: `tab-btn ${isActive ? "active" : ""}`,
+				className: `settings-tab-btn ${isActive ? "active" : ""}`,
 				onClick: (e) => {
 					e.preventDefault();
 					e.stopPropagation();
@@ -611,9 +627,22 @@ const ConfigModal = () => {
 		return react.createElement(
 			"div",
 			{
-				className: "tab-container"
+				className: "settings-content"
 			},
 			children
+		);
+	};
+
+	const SectionTitle = ({ title, subtitle }) => {
+		return react.createElement(
+			"div",
+			{ className: "section-title" },
+			react.createElement("div", { className: "section-title-content" },
+				react.createElement("div", { className: "section-text" },
+					react.createElement("h3", null, title),
+					subtitle && react.createElement("p", null, subtitle)
+				)
+			)
 		);
 	};
 
@@ -625,131 +654,448 @@ const ConfigModal = () => {
 		react.createElement("style", {
 			dangerouslySetInnerHTML: {
 				__html: `
+/* 전체 컨테이너 - Microsoft Fluent 스타일 */
 #${APP_NAME}-config-container {
     padding: 0;
     height: 90vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background: #1a1a1a;
 }
-#${APP_NAME}-config-container .header {
+
+/* 헤더 영역 */
+#${APP_NAME}-config-container .settings-header {
+    background: #202020;
+    border-bottom: 1px solid #2b2b2b;
+    padding: 20px 32px;
+    flex-shrink: 0;
+}
+
+#${APP_NAME}-config-container .settings-header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--spice-card-border);
-    background-color: var(--spice-card);
-    flex-shrink: 0;
 }
-#${APP_NAME}-config-container h1 {
+
+#${APP_NAME}-config-container .settings-title-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#${APP_NAME}-config-container .settings-title-section h1 {
     font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    color: #ffffff;
+    letter-spacing: -0.01em;
 }
-#${APP_NAME}-config-container .github-btn {
+
+#${APP_NAME}-config-container .settings-version {
+    font-size: 12px;
+    color: #8a8a8a;
+    font-weight: 400;
+    padding: 2px 8px;
+    background: #2b2b2b;
+    border-radius: 2px;
+}
+
+#${APP_NAME}-config-container .settings-github-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 8px 16px;
-    background-color: var(--spice-button-elevated);
-    border: 1px solid var(--spice-button-elevated-border);
-    border-radius: 8px;
-    color: var(--spice-button-elevated-text);
+    background: transparent;
+    border: 1px solid #3d3d3d;
+    border-radius: 2px;
+    color: #ffffff;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.1s ease;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 400;
 }
-#${APP_NAME}-config-container .github-btn:hover {
-    transform: scale(1.03);
-    background-color: var(--spice-button-elevated-hover);
+
+#${APP_NAME}-config-container .settings-github-btn:hover {
+    background: #2b2b2b;
+    border-color: #505050;
 }
-#${APP_NAME}-config-container .tabs {
+
+#${APP_NAME}-config-container .settings-github-btn:active {
+    background: #1f1f1f;
+}
+
+/* 탭 영역 */
+#${APP_NAME}-config-container .settings-tabs {
     display: flex;
-    padding: 0 24px;
-    background-color: var(--spice-card);
-    border-bottom: 1px solid var(--spice-card-border);
+    gap: 0;
+    padding: 0 32px;
+    background: #202020;
+    border-bottom: 1px solid #2b2b2b;
     flex-shrink: 0;
+    overflow-x: auto;
 }
-#${APP_NAME}-config-container .tab-btn {
-    padding: 16px 4px;
-    margin-right: 24px;
-    background: none;
+
+#${APP_NAME}-config-container .settings-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: transparent;
     border: none;
-    color: var(--spice-subtext);
+    border-bottom: 2px solid transparent;
+    color: #8a8a8a;
     cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s ease;
-    font-weight: 600;
-    font-size: 15px;
+    transition: all 0.1s ease;
+    font-weight: 400;
+    font-size: 14px;
+    white-space: nowrap;
 }
-#${APP_NAME}-config-container .tab-btn:hover {
-    color: var(--spice-text);
+
+#${APP_NAME}-config-container .settings-tab-btn:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: #ffffff;
 }
-#${APP_NAME}-config-container .tab-btn.active {
-    color: var(--spice-text);
-    border-bottom-color: var(--spice-accent);
+
+#${APP_NAME}-config-container .settings-tab-btn.active {
+    background: transparent;
+    border-bottom-color: #0078d4;
+    color: #ffffff;
 }
-#${APP_NAME}-config-container .tab-container {
-    padding: 24px;
-    background-color: var(--spice-main-elevated);
+
+#${APP_NAME}-config-container .tab-icon {
+    font-size: 16px;
+}
+
+/* 콘텐츠 영역 */
+#${APP_NAME}-config-container .settings-content {
     flex: 1;
     overflow-y: auto;
+    padding: 24px 32px;
+    background: #1a1a1a;
 }
+
+#${APP_NAME}-config-container .settings-content::-webkit-scrollbar {
+    width: 14px;
+}
+
+#${APP_NAME}-config-container .settings-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#${APP_NAME}-config-container .settings-content::-webkit-scrollbar-thumb {
+    background: #3d3d3d;
+    border: 3px solid #1a1a1a;
+    border-radius: 7px;
+}
+
+#${APP_NAME}-config-container .settings-content::-webkit-scrollbar-thumb:hover {
+    background: #505050;
+}
+
 #${APP_NAME}-config-container .tab-content {
     display: none;
 }
+
 #${APP_NAME}-config-container .tab-content.active {
     display: block;
 }
-#${APP_NAME}-config-container .tab-content > div {
-    padding: 16px 0;
-    border-bottom: 1px solid var(--spice-card-border);
+
+/* 섹션 타이틀 */
+#${APP_NAME}-config-container .section-title {
+    margin: 32px 0 16px;
+    padding: 0;
+    border: none;
 }
-#${APP_NAME}-config-container .tab-content > div:last-child {
-    border-bottom: none;
+
+#${APP_NAME}-config-container .section-title:first-child {
+    margin-top: 0;
 }
-#${APP_NAME}-config-container .setting-row {
-    display: grid;
-    grid-template-columns: minmax(280px, 1fr) auto;
-    gap: 16px;
+
+#${APP_NAME}-config-container .section-title-content {
+    display: flex;
     align-items: center;
+    gap: 0;
 }
-#${APP_NAME}-config-container .col.description {
+
+#${APP_NAME}-config-container .section-icon {
+    display: none;
+}
+
+#${APP_NAME}-config-container .section-text h3 {
+    margin: 0;
+    font-size: 16px;
     font-weight: 600;
-    font-size: 15px;
-    color: var(--spice-text);
+    color: #ffffff;
+    letter-spacing: -0.01em;
 }
-#${APP_NAME}-config-container .tab-content > div > span {
-    display: block;
-    font-size: 13px;
-    color: var(--spice-subtext);
-    margin-top: 8px;
-    max-width: 450px;
+
+#${APP_NAME}-config-container .section-text p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: #8a8a8a;
 }
-#${APP_NAME}-config-container .col.action {
-    display: inline-flex;
-    gap: 8px;
+
+/* 설정 행 */
+#${APP_NAME}-config-container .setting-row {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    transition: background 0.1s ease;
+}
+
+#${APP_NAME}-config-container .setting-row:hover {
+    background: rgba(255,255,255,0.02);
+}
+
+#${APP_NAME}-config-container .setting-row-content {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: flex-end;
+    gap: 32px;
+    padding: 16px 0;
+    min-height: 64px;
 }
+
+#${APP_NAME}-config-container .setting-row-left {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+#${APP_NAME}-config-container .setting-name {
+    font-weight: 500;
+    font-size: 14px;
+    color: #ffffff;
+    line-height: 1.4;
+}
+
+#${APP_NAME}-config-container .setting-description {
+    font-size: 12px;
+    color: #8a8a8a;
+    line-height: 1.5;
+}
+
+#${APP_NAME}-config-container .setting-row-right {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+/* 슬라이더 컨트롤 */
+#${APP_NAME}-config-container .slider-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 280px;
+}
+
+#${APP_NAME}-config-container .config-slider {
+    flex: 1;
+    height: 4px;
+    background: #2b2b2b;
+    border-radius: 2px;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+
+#${APP_NAME}-config-container .config-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #0078d4;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+#${APP_NAME}-config-container .config-slider::-webkit-slider-thumb:hover {
+    background: #106ebe;
+    transform: scale(1.1);
+}
+
+#${APP_NAME}-config-container .config-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #0078d4;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+#${APP_NAME}-config-container .config-slider::-moz-range-thumb:hover {
+    background: #106ebe;
+    transform: scale(1.1);
+}
+
+#${APP_NAME}-config-container .slider-value {
+    min-width: 56px;
+    text-align: right;
+    font-size: 13px;
+    color: #ffffff;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+/* 조정 버튼 (+ -) */
+#${APP_NAME}-config-container .adjust-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#${APP_NAME}-config-container .adjust-button {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #2b2b2b;
+    border: 1px solid #3d3d3d;
+    border-radius: 2px;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    user-select: none;
+}
+
+#${APP_NAME}-config-container .adjust-button:hover {
+    background: #323232;
+    border-color: #0078d4;
+}
+
+#${APP_NAME}-config-container .adjust-button:active {
+    background: #1f1f1f;
+    transform: scale(0.95);
+}
+
+#${APP_NAME}-config-container .adjust-value {
+    min-width: 48px;
+    text-align: center;
+    font-size: 13px;
+    color: #ffffff;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+/* 스왑 버튼 (위 아래 화살표) */
+#${APP_NAME}-config-container .swap-button {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #2b2b2b;
+    border: 1px solid #3d3d3d;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+}
+
+#${APP_NAME}-config-container .swap-button:hover {
+    background: #323232;
+    border-color: #0078d4;
+}
+
+#${APP_NAME}-config-container .swap-button:active {
+    background: #1f1f1f;
+    transform: scale(0.95);
+}
+
+#${APP_NAME}-config-container .swap-button svg {
+    width: 12px;
+    height: 12px;
+    fill: #ffffff;
+}
+
+/* 컬러피커 */
+#${APP_NAME}-config-container .color-picker-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#${APP_NAME}-config-container .config-color-picker {
+    width: 48px;
+    height: 36px;
+    padding: 2px;
+    background: #2b2b2b;
+    border: 1px solid #3d3d3d;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: border-color 0.1s ease;
+}
+
+#${APP_NAME}-config-container .config-color-picker:hover {
+    border-color: #505050;
+}
+
+#${APP_NAME}-config-container .config-color-picker:focus {
+    border-color: #0078d4;
+    outline: none;
+}
+
+#${APP_NAME}-config-container .config-color-input {
+    width: 120px !important;
+    background: #2b2b2b !important;
+    border: 1px solid #3d3d3d !important;
+    border-radius: 2px !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    color: #ffffff !important;
+    font-family: 'Courier New', monospace !important;
+    text-transform: uppercase !important;
+}
+
+/* 입력 필드 */
 #${APP_NAME}-config-container input[type="text"],
 #${APP_NAME}-config-container input[type="password"],
 #${APP_NAME}-config-container input[type="number"],
 #${APP_NAME}-config-container input[type="url"],
 #${APP_NAME}-config-container input,
-#${APP_NAME}-config-container select,
 #${APP_NAME}-config-container textarea {
-    background-color: #1a1a1a !important;
-    border: 2px solid #404040 !important;
-    border-radius: 8px !important;
-    padding: 10px 14px !important;
-    width: min(360px, 100%) !important;
+	background: #2b2b2b !important;
+	border: 1px solid #3d3d3d !important;
+	border-radius: 2px !important;
+	padding: 8px 12px !important;
+    width: min(320px, 100%) !important;
     outline: none !important;
     color: #ffffff !important;
-    transition: all 0.2s ease !important;
-    font-size: 14px !important;
+    transition: border-color 0.1s ease !important;
+    font-size: 13px !important;
     font-family: var(--font-family, -apple-system, BlinkMacSystemFont, sans-serif) !important;
-    min-height: 20px !important;
+    min-height: 36px !important;
     box-sizing: border-box !important;
+}
+
+#${APP_NAME}-config-container select {
+	background: #2b2b2b !important;
+	border: 1px solid #3d3d3d !important;
+	border-radius: 2px !important;
+	padding: 10px 32px 10px 12px !important;
+    width: 200px !important;
+    outline: none !important;
+    color: #ffffff !important;
+    transition: border-color 0.1s ease !important;
+    font-size: 13px !important;
+    font-family: var(--font-family, -apple-system, BlinkMacSystemFont, sans-serif) !important;
+    min-height: 36px !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+    appearance: none !important;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M3 6l5 5.794L13 6z"/></svg>') !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    cursor: pointer !important;
 }
 
 #${APP_NAME}-config-container input[type="text"]:hover,
@@ -759,8 +1105,8 @@ const ConfigModal = () => {
 #${APP_NAME}-config-container input:hover,
 #${APP_NAME}-config-container select:hover,
 #${APP_NAME}-config-container textarea:hover {
-    border-color: #606060 !important;
-    background-color: #252525 !important;
+    border-color: #505050 !important;
+    background: #2b2b2b !important;
 }
 
 #${APP_NAME}-config-container input[type="text"]:focus,
@@ -770,111 +1116,246 @@ const ConfigModal = () => {
 #${APP_NAME}-config-container input:focus,
 #${APP_NAME}-config-container select:focus,
 #${APP_NAME}-config-container textarea:focus {
-    border-color: #1ed760 !important;
-    background-color: #252525 !important;
-    box-shadow: 0 0 0 2px rgba(30, 215, 96, 0.2) !important;
+    border-color: #0078d4 !important;
+    background: #2b2b2b !important;
+    box-shadow: none !important;
 }
 
 #${APP_NAME}-config-container input::placeholder,
 #${APP_NAME}-config-container textarea::placeholder {
-    color: #909090 !important;
+    color: #6d6d6d !important;
     opacity: 1 !important;
 }
+
 #${APP_NAME}-config-container select option {
-    background-color: var(--spice-main-elevated);
-    color: var(--spice-text);
+    background-color: #2b2b2b;
+    color: #ffffff;
+    padding: 8px 12px;
 }
-#${APP_NAME}-config-container h2 {
-    margin: 24px 0 16px;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--spice-text);
-    border-bottom: 1px solid var(--spice-card-border);
-    padding-bottom: 8px;
-}
-#${APP_NAME}-config-container .tab-content > h2:first-child {
-    margin-top: 0;
-}
+
+/* 버튼 스타일 */
 #${APP_NAME}-config-container .adjust-value {
     min-width: 48px;
     text-align: center;
-    font-weight: 600;
+    font-weight: 400;
+    font-size: 14px;
+    color: #ffffff;
 }
+
 #${APP_NAME}-config-container .switch,
 #${APP_NAME}-config-container .btn {
     height: 32px;
     min-width: 32px;
+    border-radius: 2px;
+    background: #2b2b2b;
+    border: 1px solid #3d3d3d;
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
+
+/* 체크박스 스타일 */
+#${APP_NAME}-config-container .switch-checkbox {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    border-radius: 2px;
+    background: #2b2b2b;
+    border: 1px solid #3d3d3d;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    position: relative;
+}
+
+#${APP_NAME}-config-container .switch-checkbox:hover {
+    background: #333333;
+    border-color: #505050;
+}
+
+#${APP_NAME}-config-container .switch-checkbox.active {
+    background: #0078d4;
+    border-color: #0078d4;
+}
+
+#${APP_NAME}-config-container .switch-checkbox.active:hover {
+    background: #106ebe;
+    border-color: #106ebe;
+}
+
+#${APP_NAME}-config-container .switch-checkbox svg {
+    color: #ffffff;
+    opacity: 1;
+}
+    transition: background 0.1s ease, border-color 0.1s ease;
+}
+
+#${APP_NAME}-config-container .switch {
+    background: #2b2b2b;
+    border: 1px solid #3d3d3d;
+}
+
+#${APP_NAME}-config-container .switch:hover {
+    background: #323232;
+    border-color: #505050;
+}
+
+#${APP_NAME}-config-container .switch.disabled {
+    background: #2b2b2b;
+    border-color: #3d3d3d;
+    opacity: 0.4;
+}
+
+#${APP_NAME}-config-container .btn {
+    background: #2b2b2b;
+    border: 1px solid #3d3d3d;
+    color: #ffffff;
+    font-weight: 400;
+    padding: 0 16px;
+}
+
+#${APP_NAME}-config-container .btn:hover:not(:disabled) {
+    background: #323232;
+    border-color: #505050;
+}
+
+#${APP_NAME}-config-container .btn:active:not(:disabled) {
+    background: #1f1f1f;
+}
+
+#${APP_NAME}-config-container .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* 글꼴 미리보기 */
+#${APP_NAME}-config-container .font-preview-container {
+    background: #202020;
+    border: 1px solid #2b2b2b;
+    border-radius: 2px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+#${APP_NAME}-config-container .font-preview-title {
+    margin: 0 0 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 #${APP_NAME}-config-container .font-preview {
-    background-color: var(--spice-card) !important;
-    border-color: var(--spice-card-border) !important;
-    padding: 24px !important;
-    margin-bottom: 24px !important;
+    background: #1a1a1a;
+    border: 1px solid #2b2b2b;
+    border-radius: 2px;
+    padding: 16px;
+}
+
+#${APP_NAME}-config-container #lyrics-preview,
+#${APP_NAME}-config-container #translation-preview {
+    transition: all 0.1s ease;
+}
+
+/* 정보 박스 */
+#${APP_NAME}-config-container .info-box {
+    padding: 20px;
+    background: #202020;
+    border: 1px solid #2b2b2b;
+    border-radius: 2px;
+    margin-bottom: 24px;
+}
+
+#${APP_NAME}-config-container .info-box h3 {
+    margin: 0 0 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+#${APP_NAME}-config-container .info-box p {
+    margin: 0 0 8px;
+    color: #8a8a8a;
+    line-height: 1.6;
+    font-size: 13px;
+}
+
+#${APP_NAME}-config-container .info-box p:last-child {
+    margin-bottom: 0;
 }
 `
 			},
 		}),
+		react.createElement(HeaderSection),
 		react.createElement(
 			"div",
-			{ className: "header" },
-			react.createElement("h1", { style: MODAL_STYLES.header }, "가사 플러스"),
-			react.createElement(GitHubButton)
-		),
-		react.createElement(
-			"div",
-			{ className: "tabs" },
+			{ className: "settings-tabs" },
 			react.createElement(TabButton, {
-				id: "general",
-				label: "일반",
-				isActive: activeTab === "general",
+				id: "display",
+				label: "디스플레이",
+				icon: "",
+				isActive: activeTab === "display",
 				onClick: setActiveTab
 			}),
 			react.createElement(TabButton, {
-				id: "font",
-				label: "글꼴",
-				isActive: activeTab === "font",
+				id: "typography",
+				label: "타이포그래피",
+				icon: "",
+				isActive: activeTab === "typography",
+				onClick: setActiveTab
+			}),
+			react.createElement(TabButton, {
+				id: "behavior",
+				label: "동작",
+				icon: "",
+				isActive: activeTab === "behavior",
 				onClick: setActiveTab
 			}),
 			react.createElement(TabButton, {
 				id: "providers",
-				label: "제공자",
+				label: "가사 제공자",
+				icon: "",
 				isActive: activeTab === "providers",
 				onClick: setActiveTab
 			}),
 			react.createElement(TabButton, {
 				id: "advanced",
 				label: "고급",
+				icon: "",
 				isActive: activeTab === "advanced",
+				onClick: setActiveTab
+			}),
+			react.createElement(TabButton, {
+				id: "about",
+				label: "정보",
+				icon: "",
+				isActive: activeTab === "about",
 				onClick: setActiveTab
 			})
 		),
 		react.createElement(TabContainer, null,
+			// 디스플레이 탭
 			react.createElement(
 				"div",
 				{
-					className: `tab-content ${activeTab === "general" ? "active" : ""}`
+					className: `tab-content ${activeTab === "display" ? "active" : ""}`
 				},
-				react.createElement("h2", null, "일반 설정"),
+				react.createElement(SectionTitle, { title: "시각 효과", subtitle: "가사 화면의 시각적 요소를 커스터마이징하세요" }),
 				react.createElement(OptionList, {
 				items: [
 				{
-					desc: "재생바 버튼",
-					key: "playbar-button",
-					info: "Spotify의 가사 버튼을 Lyrics Plus로 교체합니다.",
-					type: ConfigSlider,
-				},
-				{
-					desc: "전역 지연",
-					info: "모든 트랙에 적용되는 오프셋(ms)입니다.",
-					key: "global-delay",
-					type: ConfigAdjust,
-					min: -10000,
-					max: 10000,
-					step: 250,
-				},
-				{
-					desc: "정렬",
+					desc: "정렬 방식",
 					key: "alignment",
+					info: "가사 텍스트의 정렬 위치를 선택하세요",
 					type: ConfigSelection,
 				options: {
 					left: "왼쪽",
@@ -883,132 +1364,75 @@ const ConfigModal = () => {
 				},
 				},
 				{
-					desc: "전체화면 핫키",
-					key: "fullscreen-key",
-					type: ConfigHotkey,
-				},
-				{
-					desc: "컴팩트 동기화: 이전 줄 수",
-					key: "lines-before",
-					type: ConfigSelection,
-					options: [0, 1, 2, 3, 4],
-				},
-				{
-					desc: "컴팩트 동기화: 이후 줄 수",
-					key: "lines-after",
-					type: ConfigSelection,
-					options: [0, 1, 2, 3, 4],
-				},
-				{
-					desc: "컴팩트 동기화: 페이드아웃 블러",
-					key: "fade-blur",
-					type: ConfigSlider,
-				},
-				{
 					desc: "노이즈 오버레이",
 					key: "noise",
+					info: "배경에 필름 그레인 효과를 추가합니다",
 					type: ConfigSlider,
 				},
 				{
-					desc: "컴러풀 배경",
+					desc: "컬러풀 배경",
 					key: "colorful",
+					info: "앨범 색상 기반의 동적 배경을 활성화합니다",
 					type: ConfigSlider,
 				},
 				{
 					desc: "앨범 커버 배경",
-					info: "풀스크린 모드에서는 제대로 동작하지 않습니다.",
+					info: "현재 재생 중인 앨범 커버를 배경으로 사용합니다 (풀스크린 모드에서는 제대로 동작하지 않을 수 있습니다)",
 					key: "gradient-background",
 					type: ConfigSlider,
 				},
 				{
 					desc: "배경 밝기",
 					key: "background-brightness",
+					info: "배경의 밝기 수준을 조절합니다 (0-100%)",
 					type: ConfigAdjust,
 					min: 0,
 					max: 100,
 					step: 10,
 				},
-				{
-					desc: "메모리 캐시 삭제",
-					info: "로드된 가사는 빠른 재로드를 위해 메모리에 캐시됩니다. 이 버튼을 눌러 Spotify를 다시 시작하지 않고 메모리에서 캐시된 가사를 삭제합니다.",
-					key: "clear-memore-cache",
-					text: "메모리 캐시 삭제",
-					type: ConfigButton,
-					onChange: () => {
-						reloadLyrics?.();
+			],
+			onChange: (name, value) => {
+				CONFIG.visual[name] = value;
+				StorageManager.saveConfig(name, value);
+				lyricContainerUpdate?.();
+				const configChange = new CustomEvent("lyrics-plus", {
+					detail: {
+						type: "config",
+						name: name,
+						value: value,
 					},
+				});
+				window.dispatchEvent(configChange);
+			},
+		}),
+				react.createElement(SectionTitle, { title: "동기화 모드", subtitle: "컴팩트 동기화 모드의 표시 옵션" }),
+				react.createElement(OptionList, {
+				items: [
+				{
+					desc: "표시 줄 수 (이전)",
+					key: "lines-before",
+					info: "현재 재생 중인 가사 이전에 표시할 줄 수",
+					type: ConfigSelection,
+					options: [0, 1, 2, 3, 4],
 				},
 				{
-					desc: "업데이트 확인",
-					info: `현재 버전: v${Utils.currentVersion}. 새로운 버전이 있는지 확인합니다.`,
-					key: "check-update",
-					text: "업데이트 확인",
-					type: ConfigButton,
-					onChange: async (_, event) => {
-						const button = event?.target;
-						if (!button) return;
-						const originalText = button.textContent;
-
-						// Show loading state
-						button.textContent = "확인 중...";
-						button.disabled = true;
-
-						try {
-							const updateInfo = await Utils.checkForUpdates();
-
-							if (updateInfo.error) {
-								Spicetify.showNotification(
-									`업데이트 확인 실패: ${updateInfo.error}`,
-									true,
-									5000
-								);
-							} else if (updateInfo.hasUpdate) {
-								Spicetify.showNotification(
-									`업데이트 가능: v${updateInfo.latestVersion} (현재: v${updateInfo.currentVersion})\n\nGitHub에서 새 버전을 다운로드하세요.`,
-									false,
-									7000
-								);
-
-								// Open GitHub releases page
-								window.open('https://github.com/ivLis-Studio/lyrics-plus/releases/latest', '_blank');
-							} else {
-								Spicetify.showNotification(
-									`최신 버전입니다: v${updateInfo.currentVersion}`,
-									false,
-									3000
-								);
-							}
-						} catch (error) {
-							console.error("Update check failed:", error);
-							Spicetify.showNotification(
-								`업데이트 확인 실패: 네트워크 연결을 확인하세요.`,
-								true,
-								5000
-							);
-						} finally {
-							// Restore button state
-							button.textContent = originalText;
-							button.disabled = false;
-						}
-					},
+					desc: "표시 줄 수 (이후)",
+					key: "lines-after",
+					info: "현재 재생 중인 가사 이후에 표시할 줄 수",
+					type: ConfigSelection,
+					options: [0, 1, 2, 3, 4],
+				},
+				{
+					desc: "페이드아웃 블러 효과",
+					key: "fade-blur",
+					info: "비활성 가사에 블러 효과를 적용합니다",
+					type: ConfigSlider,
 				},
 			],
 			onChange: (name, value) => {
 				CONFIG.visual[name] = value;
-				// Use StorageManager to handle all storage operations consistently
 				StorageManager.saveConfig(name, value);
-
-				// Reload Lyrics if translation language is changed
-				if (false) {
-					if (value === "none") {
-						CONFIG.visual["translate:translated-lyrics-source"] = "none";
-						localStorage.setItem(`${APP_NAME}:visual:translate:translated-lyrics-source`, "none");
-					}
-					reloadLyrics?.();
-				} else {
-					lyricContainerUpdate?.();
-				}
-
+				lyricContainerUpdate?.();
 				const configChange = new CustomEvent("lyrics-plus", {
 					detail: {
 						type: "config",
@@ -1020,230 +1444,320 @@ const ConfigModal = () => {
 			},
 		})
 			),
+			// 타이포그래피 탭
 			react.createElement(
 				"div",
 				{
-					className: `tab-content ${activeTab === "font" ? "active" : ""}`
+					className: `tab-content ${activeTab === "typography" ? "active" : ""}`
 				},
-				react.createElement("h2", null, "글꼴 설정"),
+				react.createElement(SectionTitle, { title: "실시간 미리보기", subtitle: "설정한 스타일을 즉시 확인하세요" }),
 				react.createElement("div", {
-					className: "font-preview",
-					style: {
-						padding: "20px",
-						marginBottom: "20px",
-						border: "1px solid rgba(255,255,255,0.1)",
-						borderRadius: "8px",
-						backgroundColor: "rgba(255,255,255,0.02)"
-					}
+					className: "font-preview-container",
 				},
-					react.createElement("h3", { style: MODAL_STYLES.previewTitle }, "미리보기"),
+					react.createElement("h3", { className: "font-preview-title" }, 
+						"스타일 미리보기"
+					),
 					react.createElement("div", {
-						id: "lyrics-preview",
-						style: {
-							fontSize: `${CONFIG.visual["original-font-size"] || 20}px`,
-							fontWeight: CONFIG.visual["original-font-weight"] || "400",
-							textAlign: CONFIG.visual["alignment"] || "left",
-							lineHeight: "1.5",
-							marginBottom: "10px",
-							opacity: (CONFIG.visual["original-opacity"] || 100) / 100,
-							textShadow: CONFIG.visual["text-shadow-enabled"] ?
-								`0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"}${Math.round((CONFIG.visual["text-shadow-opacity"] || 50) * 2.55).toString(16).padStart(2, '0')}` :
-								"none"
-						}
-					}, "샘플 가사 텍스트입니다"),
-					react.createElement("div", {
-						id: "translation-preview",
-						style: {
-							fontSize: `${CONFIG.visual["translation-font-size"] || 16}px`,
-							fontWeight: CONFIG.visual["translation-font-weight"] || "400",
-							textAlign: CONFIG.visual["alignment"] || "left",
-							lineHeight: "1.4",
-							opacity: (CONFIG.visual["translation-opacity"] || 100) / 100,
-							color: "rgba(255,255,255,0.8)",
-							marginTop: `${parseInt(CONFIG.visual["line-spacing"]) || 8}px`,
-							textShadow: CONFIG.visual["text-shadow-enabled"] ?
-								`0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"}${Math.round((CONFIG.visual["text-shadow-opacity"] || 50) * 2.55).toString(16).padStart(2, '0')}` :
-								"none"
-						}
-					}, "Sample lyrics translation text")
+						className: "font-preview"
+					},
+						react.createElement("div", {
+							id: "lyrics-preview",
+							style: {
+								fontSize: `${CONFIG.visual["original-font-size"] || 20}px`,
+								fontWeight: CONFIG.visual["original-font-weight"] || "400",
+								textAlign: CONFIG.visual["alignment"] || "left",
+								lineHeight: "1.5",
+								marginBottom: "10px",
+								opacity: (CONFIG.visual["original-opacity"] || 100) / 100,
+								textShadow: CONFIG.visual["text-shadow-enabled"] ?
+									`0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"}${Math.round((CONFIG.visual["text-shadow-opacity"] || 50) * 2.55).toString(16).padStart(2, '0')}` :
+									"none"
+							}
+						}, "샘플 가사 텍스트입니다"),
+						react.createElement("div", {
+							id: "translation-preview",
+							style: {
+								fontSize: `${CONFIG.visual["translation-font-size"] || 16}px`,
+								fontWeight: CONFIG.visual["translation-font-weight"] || "400",
+								textAlign: CONFIG.visual["alignment"] || "left",
+								lineHeight: "1.4",
+								opacity: (CONFIG.visual["translation-opacity"] || 100) / 100,
+								color: "rgba(255,255,255,0.7)",
+								marginTop: `${parseInt(CONFIG.visual["line-spacing"]) || 8}px`,
+								textShadow: CONFIG.visual["text-shadow-enabled"] ?
+									`0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"}${Math.round((CONFIG.visual["text-shadow-opacity"] || 50) * 2.55).toString(16).padStart(2, '0')}` :
+									"none"
+							}
+						}, "Sample lyrics translation text")
+					)
 				),
+				react.createElement(SectionTitle, { title: "원문 스타일", subtitle: "가사 원문의 글꼴 설정" }),
 				react.createElement(OptionList, {
 					items: [
 						{
-							desc: "원문 글꼴 두께",
-							info: "가사 원문의 글꼴 두께를 설정합니다.",
+							desc: "글꼴 크기",
+							info: "원문 가사의 글꼴 크기 (픽셀)",
+							key: "original-font-size",
+							type: ConfigSliderRange,
+							min: 12,
+							max: 128,
+							step: 2,
+							unit: "px",
+						},
+						{
+							desc: "글꼴 두께",
+							info: "원문 가사의 글꼴 굵기",
 							key: "original-font-weight",
 							type: ConfigSelection,
 							options: {
-								"100": "얇게 (100)",
-								"200": "매우 가늘게 (200)",
-								"300": "가늘게 (300)",
-								"400": "보통 (400)",
-								"500": "중간 (500)",
-								"600": "두껍게 (600)",
-								"700": "굵게 (700)",
-								"800": "매우 굵게 (800)",
-								"900": "가장 굵게 (900)",
+								"100": "Thin (100)",
+								"200": "Extra Light (200)",
+								"300": "Light (300)",
+								"400": "Regular (400)",
+								"500": "Medium (500)",
+								"600": "Semi Bold (600)",
+								"700": "Bold (700)",
+								"800": "Extra Bold (800)",
+								"900": "Black (900)",
 							},
 						},
 						{
-							desc: "원문 글꼴 크기",
-							info: "가사 원문의 글꼴 크기를 설정합니다.",
-							key: "original-font-size",
-							type: ConfigAdjust,
-							min: 12,
-							max: 128,
-							step: 2,
-						},
-						{
-							desc: "번역문 글꼴 두께",
-							info: "번역된 가사의 글꼴 두께를 설정합니다.",
-							key: "translation-font-weight",
-							type: ConfigSelection,
-							options: {
-								"100": "얇게 (100)",
-								"200": "매우 가늘게 (200)",
-								"300": "가늘게 (300)",
-								"400": "보통 (400)",
-								"500": "중간 (500)",
-								"600": "두껍게 (600)",
-								"700": "굵게 (700)",
-								"800": "매우 굵게 (800)",
-								"900": "가장 굵게 (900)",
-							},
-						},
-						{
-							desc: "번역문 글꼴 크기",
-							info: "번역된 가사의 글꼴 크기를 설정합니다.",
-							key: "translation-font-size",
-							type: ConfigAdjust,
-							min: 12,
-							max: 128,
-							step: 2,
-						},
-						{
-							desc: "원문 투명도",
-							info: "가사 원문의 투명도를 설정합니다 (0-100%).",
+							desc: "투명도",
+							info: "원문 가사의 불투명도 (0-100%)",
 							key: "original-opacity",
-							type: ConfigAdjust,
+							type: ConfigSliderRange,
 							min: 0,
 							max: 100,
 							step: 5,
-						},
-						{
-							desc: "번역문 투명도",
-							info: "번역된 가사의 투명도를 설정합니다 (0-100%).",
-							key: "translation-opacity",
-							type: ConfigAdjust,
-							min: 0,
-							max: 100,
-							step: 5,
-						},
-						{
-							desc: "원문과 번역문 간격",
-							info: "원문과 번역문 사이의 여백을 설정합니다 (픽셀).",
-							key: "line-spacing",
-							type: ConfigAdjust,
-							min: 0,
-							max: 30,
-							step: 2,
-						},
-						{
-							desc: "텍스트 그림자 활성화",
-							info: "가사에 그림자 효과를 적용합니다.",
-							key: "text-shadow-enabled",
-							type: ConfigSlider,
-						},
-						{
-							desc: "그림자 색상",
-							info: "텍스트 그림자의 색상을 설정합니다.",
-							key: "text-shadow-color",
-							type: ConfigInput,
-						},
-						{
-							desc: "그림자 투명도",
-							info: "텍스트 그림자의 투명도를 설정합니다 (0-100%).",
-							key: "text-shadow-opacity",
-							type: ConfigAdjust,
-							min: 0,
-							max: 100,
-							step: 5,
-						},
-						{
-							desc: "그림자 블러",
-							info: "텍스트 그림자의 블러 정도를 설정합니다.",
-							key: "text-shadow-blur",
-							type: ConfigAdjust,
-							min: 0,
-							max: 10,
-							step: 1,
+							unit: "%",
 						},
 					],
 					onChange: (name, value) => {
 						CONFIG.visual[name] = value;
 						localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
-
-						// Update preview in real-time
+						const lyricsPreview = document.getElementById("lyrics-preview");
+						if (lyricsPreview) {
+							if (name === "original-font-size") lyricsPreview.style.fontSize = `${value}px`;
+							if (name === "original-font-weight") lyricsPreview.style.fontWeight = value;
+							if (name === "original-opacity") lyricsPreview.style.opacity = value / 100;
+						}
+						lyricContainerUpdate?.();
+						window.dispatchEvent(new CustomEvent("lyrics-plus", {
+							detail: { type: "config", name, value },
+						}));
+					},
+				}),
+				react.createElement(SectionTitle, { title: "번역문 스타일", subtitle: "번역된 가사의 글꼴 설정" }),
+				react.createElement(OptionList, {
+					items: [
+						{
+							desc: "글꼴 크기",
+							info: "번역 가사의 글꼴 크기 (픽셀)",
+							key: "translation-font-size",
+							type: ConfigSliderRange,
+							min: 12,
+							max: 128,
+							step: 2,
+							unit: "px",
+						},
+						{
+							desc: "글꼴 두께",
+							info: "번역 가사의 글꼴 굵기",
+							key: "translation-font-weight",
+							type: ConfigSelection,
+							options: {
+								"100": "Thin (100)",
+								"200": "Extra Light (200)",
+								"300": "Light (300)",
+								"400": "Regular (400)",
+								"500": "Medium (500)",
+								"600": "Semi Bold (600)",
+								"700": "Bold (700)",
+								"800": "Extra Bold (800)",
+								"900": "Black (900)",
+							},
+						},
+						{
+							desc: "투명도",
+							info: "번역 가사의 불투명도 (0-100%)",
+							key: "translation-opacity",
+							type: ConfigSliderRange,
+							min: 0,
+							max: 100,
+							step: 5,
+							unit: "%",
+						},
+						{
+							desc: "원문과의 간격",
+							info: "원문과 번역문 사이의 여백 (픽셀)",
+							key: "line-spacing",
+							type: ConfigSliderRange,
+							min: 0,
+							max: 30,
+							step: 2,
+							unit: "px",
+						},
+					],
+					onChange: (name, value) => {
+						CONFIG.visual[name] = value;
+						localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
+						const translationPreview = document.getElementById("translation-preview");
+						const lyricsPreview = document.getElementById("lyrics-preview");
+						if (translationPreview) {
+							if (name === "translation-font-size") translationPreview.style.fontSize = `${value}px`;
+							if (name === "translation-font-weight") translationPreview.style.fontWeight = value;
+							if (name === "translation-opacity") translationPreview.style.opacity = value / 100;
+							if (name === "line-spacing") translationPreview.style.marginTop = `${parseInt(value) || 0}px`;
+						}
+						lyricContainerUpdate?.();
+						window.dispatchEvent(new CustomEvent("lyrics-plus", {
+							detail: { type: "config", name, value },
+						}));
+					},
+				}),
+				react.createElement(SectionTitle, { title: "텍스트 그림자", subtitle: "가독성을 높이는 그림자 효과" }),
+				react.createElement(OptionList, {
+					items: [
+						{
+							desc: "그림자 효과",
+							info: "가사 텍스트에 그림자 효과를 적용합니다",
+							key: "text-shadow-enabled",
+							type: ConfigSlider,
+						},
+						{
+							desc: "그림자 색상",
+							info: "그림자의 색상 (HEX 코드)",
+							key: "text-shadow-color",
+							type: ConfigColorPicker,
+						},
+						{
+							desc: "그림자 투명도",
+							info: "그림자의 불투명도 (0-100%)",
+							key: "text-shadow-opacity",
+							type: ConfigSliderRange,
+							min: 0,
+							max: 100,
+							step: 5,
+							unit: "%",
+						},
+						{
+							desc: "블러 강도",
+							info: "그림자의 흐림 정도",
+							key: "text-shadow-blur",
+							type: ConfigSliderRange,
+							min: 0,
+							max: 10,
+							step: 1,
+							unit: "px",
+						},
+					],
+					onChange: (name, value) => {
+						CONFIG.visual[name] = value;
+						localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
 						const lyricsPreview = document.getElementById("lyrics-preview");
 						const translationPreview = document.getElementById("translation-preview");
-
+						
 						if (lyricsPreview && translationPreview) {
-							if (name === "original-font-size") {
-								lyricsPreview.style.fontSize = `${value}px`;
-							}
-							if (name === "original-font-weight") {
-								lyricsPreview.style.fontWeight = value;
-							}
-							if (name === "translation-font-size") {
-								translationPreview.style.fontSize = `${value}px`;
-							}
-							if (name === "translation-font-weight") {
-								translationPreview.style.fontWeight = value;
-							}
-							if (name === "alignment") {
-								lyricsPreview.style.textAlign = value;
-								translationPreview.style.textAlign = value;
-							}
-							if (name === "original-opacity") {
-								lyricsPreview.style.opacity = value / 100;
-							}
-							if (name === "translation-opacity") {
-								translationPreview.style.opacity = value / 100;
-							}
-							if (name === "line-spacing") {
-								translationPreview.style.marginTop = `${parseInt(value) || 0}px`;
-							}
-							if (name === "text-shadow-enabled" || name === "text-shadow-color" || name === "text-shadow-opacity" || name === "text-shadow-blur") {
-								const shadowEnabled = CONFIG.visual["text-shadow-enabled"];
-								const shadowColor = CONFIG.visual["text-shadow-color"] || "#000000";
-								const shadowOpacity = CONFIG.visual["text-shadow-opacity"] || 50;
-								const shadowBlur = CONFIG.visual["text-shadow-blur"] || 2;
-								const shadowAlpha = Math.round(shadowOpacity * 2.55).toString(16).padStart(2, '0');
-								const shadow = shadowEnabled ? `0 0 ${shadowBlur}px ${shadowColor}${shadowAlpha}` : "none";
-								lyricsPreview.style.textShadow = shadow;
-								translationPreview.style.textShadow = shadow;
-							}
+							const shadowEnabled = CONFIG.visual["text-shadow-enabled"];
+							const shadowColor = CONFIG.visual["text-shadow-color"] || "#000000";
+							const shadowOpacity = CONFIG.visual["text-shadow-opacity"] || 50;
+							const shadowBlur = CONFIG.visual["text-shadow-blur"] || 2;
+							const shadowAlpha = Math.round(shadowOpacity * 2.55).toString(16).padStart(2, '0');
+							const shadow = shadowEnabled ? `0 0 ${shadowBlur}px ${shadowColor}${shadowAlpha}` : "none";
+							lyricsPreview.style.textShadow = shadow;
+							translationPreview.style.textShadow = shadow;
 						}
-
 						lyricContainerUpdate?.();
-
-						const configChange = new CustomEvent("lyrics-plus", {
-							detail: {
-								type: "config",
-								name: name,
-								value: value,
-							},
-						});
-						window.dispatchEvent(configChange);
+						window.dispatchEvent(new CustomEvent("lyrics-plus", {
+							detail: { type: "config", name, value },
+						}));
 					},
 				})
 			),
+			// 동작 탭
+			react.createElement(
+				"div",
+				{
+					className: `tab-content ${activeTab === "behavior" ? "active" : ""}`
+				},
+				react.createElement(SectionTitle, { title: "재생 동작", subtitle: "재생 관련 기능 설정" }),
+				react.createElement(OptionList, {
+					items: [
+						{
+							desc: "재생바 버튼 대체",
+							key: "playbar-button",
+							info: "Spotify의 기본 가사 버튼을 Lyrics Plus로 교체합니다",
+							type: ConfigSlider,
+						},
+						{
+							desc: "전역 지연 시간",
+							info: "모든 곡에 적용되는 가사 동기화 오프셋 (밀리초)",
+							key: "global-delay",
+							type: ConfigAdjust,
+							min: -10000,
+							max: 10000,
+							step: 250,
+						},
+						{
+							desc: "전체화면 단축키",
+							key: "fullscreen-key",
+							info: "가사 전체화면 모드를 위한 키보드 단축키",
+							type: ConfigHotkey,
+						},
+					],
+					onChange: (name, value) => {
+						CONFIG.visual[name] = value;
+						StorageManager.saveConfig(name, value);
+						lyricContainerUpdate?.();
+						window.dispatchEvent(new CustomEvent("lyrics-plus", {
+							detail: { type: "config", name, value },
+						}));
+					},
+				}),
+				react.createElement(SectionTitle, { title: "가라오케 모드", subtitle: "노래방 스타일 가사 표시" }),
+				react.createElement(OptionList, {
+					items: [
+						{
+							desc: "글자 바운스 효과",
+							info: "가라오케 모드에서 현재 부르는 글자에 통통 튀는 애니메이션을 적용합니다",
+							key: "karaoke-bounce",
+							type: ConfigSlider,
+						},
+					],
+					onChange: (name, value) => {
+						CONFIG.visual[name] = value;
+						StorageManager.saveConfig(name, value);
+						lyricContainerUpdate?.();
+						window.dispatchEvent(new CustomEvent("lyrics-plus", {
+							detail: { type: "config", name, value },
+						}));
+					},
+				}),
+				react.createElement(SectionTitle, { title: "캐시 관리", subtitle: "저장된 데이터 관리" }),
+				react.createElement(OptionList, {
+					items: [
+						{
+							desc: "메모리 캐시 초기화",
+							info: "로드된 가사는 빠른 재로드를 위해 메모리에 임시 저장됩니다. Spotify를 재시작하지 않고 메모리 캐시를 비웁니다",
+							key: "clear-memory-cache",
+							text: "캐시 비우기",
+							type: ConfigButton,
+							onChange: () => {
+								reloadLyrics?.();
+								Spicetify.showNotification("✓ 메모리 캐시가 초기화되었습니다", false, 2000);
+							},
+						},
+					],
+					onChange: () => {},
+				})
+			),
+			// 가사 제공자 탭
 			react.createElement(
 				"div",
 				{
 					className: `tab-content ${activeTab === "providers" ? "active" : ""}`
 				},
-				react.createElement("h2", null, "가사 제공자"),
+				react.createElement(SectionTitle, { title: "가사 제공자", subtitle: "가사 소스의 우선순위와 설정을 관리하세요" }),
 				react.createElement(ServiceList, {
 					itemsList: CONFIG.providersOrder,
 					onListChange: (list) => {
@@ -1263,65 +1777,253 @@ const ConfigModal = () => {
 					},
 				})
 			),
+			// 고급 탭
 			react.createElement(
 				"div",
 				{
 					className: `tab-content ${activeTab === "advanced" ? "active" : ""}`
 				},
-				react.createElement("h2", null, "고급 설정"),
+				react.createElement(SectionTitle, { title: "언어 감지", subtitle: "텍스트 변환을 위한 언어 감지 설정" }),
 				react.createElement(OptionList, {
 					items: [
 						{
-							desc: "텍스트 변환: 일본어 감지 임계값",
-							info: "가사에서 가나가 지배적인지 확인합니다. 결과가 임계값을 통과하면 일본어일 가능성이 높습니다. 이 설정은 백분율로 나타냅니다.",
+							desc: "일본어 감지 임계값",
+							info: "가사에서 가나 문자의 비율로 일본어를 감지합니다. 값이 높을수록 더 엄격하게 감지합니다 (백분율)",
 							key: "ja-detect-threshold",
-							type: ConfigAdjust,
+							type: ConfigSliderRange,
 							min: thresholdSizeLimit.min,
 							max: thresholdSizeLimit.max,
 							step: thresholdSizeLimit.step,
+							unit: "%",
 						},
 						{
-							desc: "텍스트 변환: 번체-간체 감지 임계값",
-							info: "가사에서 번체 또는 간체가 지배적인지 확인합니다. 결과가 임계값을 통과하면 간체일 가능성이 높습니다. 이 설정은 백분율로 나타냅니다.",
+							desc: "중국어 감지 임계값",
+							info: "번체자와 간체자의 비율로 중국어 종류를 감지합니다. 값이 높을수록 더 엄격하게 감지합니다 (백분율)",
 							key: "hans-detect-threshold",
-							type: ConfigAdjust,
+							type: ConfigSliderRange,
 							min: thresholdSizeLimit.min,
 							max: thresholdSizeLimit.max,
 							step: thresholdSizeLimit.step,
+							unit: "%",
 						},
+					],
+					onChange: (name, value) => {
+						CONFIG.visual[name] = value;
+						StorageManager.saveConfig(name, value);
+						lyricContainerUpdate?.();
+						window.dispatchEvent(new CustomEvent("lyrics-plus", {
+							detail: { type: "config", name, value },
+						}));
+					},
+				}),
+				react.createElement(SectionTitle, { title: "API 설정", subtitle: "외부 서비스 연동을 위한 API 키" }),
+				react.createElement(OptionList, {
+					items: [
 						{
-							desc: "GEMINI API 키",
-							info: "Gemini API를 사용한 가사 번역을 위한 API 키를 입력하세요.",
+							desc: "Gemini API 키",
+							info: "Google Gemini AI를 활용한 가사 번역 기능을 사용하려면 API 키가 필요합니다",
 							key: "gemini-api-key",
 							type: ConfigInput,
 						},
 					],
 					onChange: (name, value) => {
 						CONFIG.visual[name] = value;
-						// Use StorageManager to handle all storage operations consistently
 						StorageManager.saveConfig(name, value);
-
-						// Reload Lyrics if translation language is changed
-						if (false) {
-							if (value === "none") {
-								CONFIG.visual["translate:translated-lyrics-source"] = "none";
-								localStorage.setItem(`${APP_NAME}:visual:translate:translated-lyrics-source`, "none");
-							}
-							reloadLyrics?.();
-						} else {
-							lyricContainerUpdate?.();
-						}
-
-						const configChange = new CustomEvent("lyrics-plus", {
-							detail: {
-								type: "config",
-								name: name,
-								value: value,
-							},
-						});
-						window.dispatchEvent(configChange);
+						lyricContainerUpdate?.();
+						window.dispatchEvent(new CustomEvent("lyrics-plus", {
+							detail: { type: "config", name, value },
+						}));
 					},
+				})
+			),
+			// 정보 탭
+			react.createElement(
+				"div",
+				{
+					className: `tab-content ${activeTab === "about" ? "active" : ""}`
+				},
+				react.createElement(SectionTitle, { title: "앱 정보", subtitle: "Lyrics Plus에 대해" }),
+				react.createElement("div", {
+					style: {
+						padding: "20px",
+						background: "#202020",
+						border: "1px solid #2b2b2b",
+						borderRadius: "2px",
+						marginBottom: "24px"
+					}
+				},
+					react.createElement("h3", { 
+						style: { 
+							margin: "0 0 12px", 
+							fontSize: "18px", 
+							color: "#ffffff",
+							display: "flex",
+							alignItems: "center",
+							gap: "8px"
+						} 
+					}, 
+						react.createElement("span", null, "🎵"),
+						"Lyrics Plus"
+					),
+					react.createElement("p", { 
+						style: { 
+							margin: "0 0 8px", 
+							color: "rgba(255,255,255,0.7)", 
+							lineHeight: "1.6" 
+						} 
+					}, 
+						"Spicetify를 위한 한국어 대응 가사 확장 프로그램."
+					),
+					react.createElement("p", { 
+						style: { 
+							margin: "0", 
+							color: "rgba(255,255,255,0.5)", 
+							fontSize: "14px" 
+						} 
+					}, 
+						`버전: ${Utils.currentVersion}`
+					)
+				),
+				react.createElement(SectionTitle, { title: "업데이트", subtitle: "최신 버전 확인" }),
+				react.createElement("div", {
+					id: "update-result-container",
+					style: { marginBottom: "16px" }
 				}),
+				react.createElement(OptionList, {
+					items: [
+						{
+							desc: "최신 버전 확인",
+							info: `현재 버전: v${Utils.currentVersion}. GitHub에서 새로운 업데이트가 있는지 확인합니다`,
+							key: "check-update",
+							text: "업데이트 확인",
+							type: ConfigButton,
+							onChange: async (_, event) => {
+								const button = event?.target;
+								if (!button) return;
+								const originalText = button.textContent;
+								button.textContent = "확인 중...";
+								button.disabled = true;
+
+								const resultContainer = document.getElementById('update-result-container');
+								if (resultContainer) resultContainer.innerHTML = '';
+
+								try {
+									const updateInfo = await Utils.checkForUpdates();
+									
+									if (resultContainer) {
+										let bgColor, borderColor, textColor, message, showLink = false;
+										
+										if (updateInfo.error) {
+											bgColor = '#3d1a1a';
+											borderColor = '#8b2e2e';
+											textColor = '#ff6b6b';
+											message = `❌ 업데이트 확인 실패: ${updateInfo.error}`;
+										} else if (updateInfo.hasUpdate) {
+											bgColor = '#1a3d2e';
+											borderColor = '#2e8b57';
+											textColor = '#4ade80';
+											message = `✨ 업데이트 가능: v${updateInfo.latestVersion} (현재: v${updateInfo.currentVersion})`;
+											showLink = true;
+										} else {
+											bgColor = '#1a2d3d';
+											borderColor = '#2e5a8b';
+											textColor = '#60a5fa';
+											message = `✓ 최신 버전입니다: v${updateInfo.currentVersion}`;
+										}
+										
+										resultContainer.innerHTML = `
+											<div style="
+												padding: 16px;
+												background: ${bgColor};
+												border: 1px solid ${borderColor};
+												border-radius: 2px;
+												color: ${textColor};
+												font-size: 13px;
+												line-height: 1.6;
+												margin-bottom: 16px;
+											">
+												<div style="font-weight: 600; margin-bottom: 8px;">${message}</div>
+												${showLink ? `
+													<a href="https://github.com/ivLis-Studio/lyrics-plus/releases/latest" 
+													   target="_blank" 
+													   style="
+														   color: #4ade80;
+														   text-decoration: underline;
+														   cursor: pointer;
+													   ">
+														→ GitHub에서 다운로드하기
+													</a>
+												` : ''}
+											</div>
+										`;
+									}
+								} catch (error) {
+									console.error("Update check failed:", error);
+									if (resultContainer) {
+										resultContainer.innerHTML = `
+											<div style="
+												padding: 16px;
+												background: #3d1a1a;
+												border: 1px solid #8b2e2e;
+												border-radius: 2px;
+												color: #ff6b6b;
+												font-size: 13px;
+												margin-bottom: 16px;
+											">
+												<div style="font-weight: 600;">❌ 업데이트 확인 실패</div>
+												<div style="margin-top: 4px; opacity: 0.9;">네트워크 연결을 확인하세요.</div>
+											</div>
+										`;
+									}
+								} finally {
+									button.textContent = originalText;
+									button.disabled = false;
+								}
+							},
+						},
+					],
+					onChange: () => {},
+				}),
+				react.createElement(SectionTitle, { title: "크레딧", subtitle: "개발자 및 기여자" }),
+				react.createElement("div", {
+					style: {
+						padding: "20px",
+						background: "rgba(255, 255, 255, 0.03)",
+						border: "1px solid rgba(255, 255, 255, 0.08)",
+						borderRadius: "12px",
+					}
+				},
+					react.createElement("p", { 
+						style: { 
+							margin: "0 0 12px", 
+							color: "rgba(255,255,255,0.9)", 
+							lineHeight: "1.6" 
+						} 
+					}, 
+						react.createElement("strong", null, "개발:"),
+						" ivLis Studio"
+					),
+					react.createElement("p", { 
+						style: { 
+							margin: "0 0 12px", 
+							color: "rgba(255,255,255,0.9)", 
+							lineHeight: "1.6" 
+						} 
+					}, 
+						react.createElement("strong", null, "원본 프로젝트:"),
+						" lyrics-plus by khanhas"
+					),
+					react.createElement("p", { 
+						style: { 
+							margin: "0", 
+							color: "rgba(255,255,255,0.7)", 
+							fontSize: "14px",
+							lineHeight: "1.6"
+						} 
+					}, 
+						"오픈소스 프로젝트에 기여해주신 모든 분들께 감사드립니다."
+					)
+				)
 			)
 		)
 	);

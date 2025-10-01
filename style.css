@@ -196,6 +196,7 @@
 	color: var(--lyrics-color-inactive);
 	/* Smooth easing with gentle bounce */
 	transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	/* animation-index is 0 for lines moving down (instant), >0 for lines moving up (animated) */
 	transition-duration: calc(var(--animation-index) * var(--animation-tempo) + 0.3s);
 	transition-property: transform, color, opacity, filter;
 	/* Ensure lyrics are visible */
@@ -375,7 +376,7 @@
 	background-color: #1a1a1a !important;
 	border: 2px solid #404040 !important;
 	border-radius: 8px !important;
-	padding: 10px 14px !important;
+	padding: 2px 3px !important;
 	color: #ffffff !important;
 	font-size: 14px !important;
 	min-height: 20px !important;
@@ -430,239 +431,39 @@ div.lyrics-tabBar-headerItemLink {
 	transition-timing-function: linear;
 }
 
-/* Enhanced karaoke syllable styling inspired by beautiful-lyrics */
-.lyrics-lyricsContainer-Karaoke-Syllable {
-	color: var(--lyrics-color-inactive);
+/* 새로운 가라오케 스타일 - synced 모드 기반 */
+.lyrics-karaoke-line {
 	display: inline;
-	white-space: pre-wrap;
+	letter-spacing: -0.06em; /* 글자 간격 더 좁게 */
+}
+
+.lyrics-karaoke-char {
+	display: inline-block;
 	position: relative;
-
-	/* Prevent character clipping during scaling */
-	overflow: visible;
-	padding: 2px 1px;
-
-	/* Setup for gradient and glow effects */
-	background-clip: text;
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
-
-	/* Default state - solid color */
-	background-image: linear-gradient(
-		90deg,
-		var(--lyrics-color-inactive),
-		var(--lyrics-color-inactive)
-	);
-}
-
-.lyrics-lyricsContainer-Karaoke-SyllableActive {
-	/* Enhanced gradient fill effect */
-	background-image: linear-gradient(
-		90deg,
-		var(--lyrics-color-active) var(--gradient-progress, 0%),
-		var(--lyrics-color-active) calc(var(--gradient-progress, 0%) + 20%),
-		var(--lyrics-color-inactive) calc(var(--gradient-progress, 0%) + 20%)
-	) !important;
-
-	/* Color fallback for browsers without gradient support */
-	color: var(--lyrics-color-active) !important;
-}
-
-/* Emphasis styling for longer syllables */
-.lyrics-lyricsContainer-Karaoke-Emphasis {
-	/* Font settings are handled by global configuration */
-}
-
-/* Enhanced effects for all active syllables */
-.lyrics-lyricsContainer-Karaoke-SyllableActive {
-	text-shadow: 0 0 var(--text-shadow-blur-radius, 6px) rgba(255, 255, 255, var(--text-shadow-opacity, 70%)) !important;
-	/* Add subtle glow behind the text */
-	position: relative;
-}
-
-.lyrics-lyricsContainer-Karaoke-SyllableActive::before {
-	content: '';
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	width: 120%;
-	height: 120%;
-	background: radial-gradient(circle, rgba(var(--spice-rgb-accent), 0.1) 0%, transparent 70%);
-	transform: translate(-50%, -50%);
-	border-radius: 50%;
-	z-index: -1;
-	pointer-events: none;
-	opacity: 0;
-	transition: opacity 0.3s ease-out;
-}
-
-.lyrics-lyricsContainer-LyricsLine-active .lyrics-lyricsContainer-Karaoke-SyllableActive::before {
-	opacity: 1;
-}
-
-/* Enhanced effects for emphasized syllables (kept for compatibility) */
-.lyrics-lyricsContainer-Karaoke-Emphasis.lyrics-lyricsContainer-Karaoke-SyllableActive {
-	text-shadow: 0 0 var(--text-shadow-blur-radius, 6px) rgba(255, 255, 255, var(--text-shadow-opacity, 70%)) !important;
-}
-
-/* Multi-vocal karaoke styling */
-.lyrics-lyricsContainer-Karaoke-MultiVocal {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	/* Prevent clipping of scaled characters */
-	overflow: visible;
-	padding: 4px 0;
-}
-
-.lyrics-lyricsContainer-Karaoke-Lead {
-	font-size: var(--lyrics-font-size);
-	font-weight: 700;
-	/* Prevent clipping of scaled characters */
-	overflow: visible;
-	padding: 2px 0;
-}
-
-.lyrics-lyricsContainer-Karaoke-BackgroundTrack {
-	margin-left: 20px;
-	font-size: calc(var(--lyrics-font-size) * 0.85);
-	font-weight: 500;
-	/* Prevent clipping of scaled characters */
-	overflow: visible;
-	padding: 2px 0;
-}
-
-.lyrics-lyricsContainer-Karaoke-Background {
-	opacity: 0.8;
 	color: var(--lyrics-color-inactive);
-}
-
-/* Word-level karaoke styling for grouping */
-.lyrics-lyricsContainer-Karaoke-Word {
-	display: inline-flex;
-	white-space: nowrap;
-}
-
-/* Enhanced visual feedback for active lines */
-.lyrics-lyricsContainer-LyricsLine-active .lyrics-lyricsContainer-Karaoke-Syllable {
-	/* Slightly enhance inactive syllables in active lines */
-	filter: brightness(1.15) contrast(1.05);
-	/* Add subtle upward animation when line becomes active */
-	animation: lineActivate 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-@keyframes lineActivate {
-	0% {
-		transform: translateY(2px);
-		opacity: 0.8;
-	}
-	100% {
-		transform: translateY(0px);
-		opacity: 1;
-	}
-}
-
-/* Beautiful-lyrics inspired blur effect for inactive states */
-.lyrics-lyricsContainer-LyricsLine:not(.lyrics-lyricsContainer-LyricsLine-active) .lyrics-lyricsContainer-Karaoke-Syllable {
-	/* Subtle blur for non-active lines */
-	filter: blur(0.3px) brightness(0.75) saturate(0.8);
-	transition: filter 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-	/* Add subtle fade-in effect for upcoming lines */
-	animation: fadeInLine 0.8s ease-out forwards;
-}
-
-@keyframes fadeInLine {
-	0% {
-		opacity: 0;
-		transform: translateY(10px);
-	}
-	100% {
-		opacity: 1;
-		transform: translateY(0px);
-	}
-}
-
-/* Remove blur on hover */
-.lyrics-lyricsContainer-LyricsLine:hover .lyrics-lyricsContainer-Karaoke-Syllable {
-	filter: none !important;
-}
-
-/* Enhanced spacing between syllables */
-.lyrics-lyricsContainer-Karaoke-Syllable:not(:last-child)::after {
-	content: "";
-	margin-right: 0.05em;
-}
-
-/* Character spacing within syllables */
-.lyrics-lyricsContainer-Karaoke-Character {
-	margin-right: 0.01em;
-}
-
-/* Prevent extra spacing on last character */
-.lyrics-lyricsContainer-Karaoke-Character:last-child {
-	margin-right: 0;
-}
-
-/* Beautiful-lyrics inspired animation easing */
-.lyrics-lyricsContainer-Karaoke-SyllableActive {
-	animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* Character-level karaoke styling */
-.lyrics-lyricsContainer-Karaoke-Character {
-	display: inline-block; /* Enable transform support */
-	position: relative;
-
-	/* Setup for gradient and glow effects */
-	background-clip: text;
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
-
-	/* Default state - solid color */
-	background-image: linear-gradient(
-		90deg,
-		var(--lyrics-color-inactive),
-		var(--lyrics-color-inactive)
-	);
-
-	/* Reduced blur for better clarity */
-	filter: blur(0.05px);
-
-	/* Performance optimization - GPU acceleration */
-	will-change: transform, background-position, filter, text-shadow;
+	transform-origin: center center;
+	/* synced 모드보다 더 좁은 letter-spacing 적용 */
+	letter-spacing: -0.06em;
+	/* 부드러운 transition은 inline style에서 처리 */
+	/* GPU 가속 활성화 */
+	will-change: transform, color;
 	backface-visibility: hidden;
-
-	/* Smooth transitions - natural and flowing */
-	transition: transform 0.25s cubic-bezier(0.4, 0.0, 0.2, 1),
-	           filter 0.3s ease-out,
-	           background-position 0.1s linear,
-	           text-shadow 0.2s ease-out;
-
-	/* Add subtle character spacing for better rhythm */
-	margin-right: 0.02em;
+	-webkit-font-smoothing: antialiased;
 }
 
-.lyrics-lyricsContainer-Karaoke-CharacterActive {
-	/* Enhanced gradient fill effect for characters */
-	background-image: linear-gradient(
-		90deg,
-		var(--lyrics-color-active) var(--gradient-progress, 0%),
-		var(--lyrics-color-active) calc(var(--gradient-progress, 0%) + 10%),
-		var(--lyrics-color-inactive) calc(var(--gradient-progress, 0%) + 25%),
-		var(--lyrics-color-inactive) calc(var(--gradient-progress, 0%) + 35%)
-	) !important;
-
-	/* Remove blur when active to maintain clarity */
-	filter: blur(0px);
-
-	/* Color fallback for browsers without gradient support */
-	color: var(--lyrics-color-active) !important;
+.lyrics-karaoke-space {
+	display: inline-block;
+	width: 0.1em; /* 띄어쓰기 너비 더 좁게 (0.2em -> 0.1em) */
+	letter-spacing: 0;
 }
 
-/* Performance optimization - GPU acceleration */
-.lyrics-lyricsContainer-Karaoke-Syllable {
-	will-change: background-position;
-	backface-visibility: hidden;
-	transform-style: preserve-3d;
+.lyrics-karaoke-char.active {
+	color: var(--lyrics-color-active);
+	text-shadow: 0 0 8px var(--lyrics-color-active);
+}
+
+.lyrics-karaoke-char.sung {
+	color: var(--lyrics-color-active);
 }
 
 .lyrics-lyricsContainer-LyricsLine a {
@@ -1084,12 +885,18 @@ div.lyrics-tabBar-headerItemLink {
 	font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
 }
 
+/* Remove default p tag margins */
+.lyrics-lyricsContainer-LyricsLine > p {
+	margin: 0;
+	padding: 0;
+}
+
 /* Make translated text smaller than original */
 .lyrics-lyricsContainer-LyricsLine-sub {
 	font-size: var(--lyrics-translation-font-size, calc(var(--lyrics-font-size) * 0.7));
 	font-weight: var(--lyrics-translation-font-weight, 600);
-	margin-top: var(--lyrics-line-spacing, 6px);
-	margin-bottom: 8px;
+	margin-top: var(--lyrics-line-spacing, 0px);
+	margin-bottom: 0px;
 	opacity: var(--lyrics-translation-opacity, 0.6);
 	text-shadow: var(--lyrics-text-shadow);
 }

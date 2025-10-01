@@ -116,10 +116,12 @@ const CONFIG = {
 		"translate:translated-lyrics-source": localStorage.getItem("lyrics-plus:visual:translate:translated-lyrics-source") || "geminiKo",
 		"translate:display-mode": localStorage.getItem("lyrics-plus:visual:translate:display-mode") || "replace",
 		"translate:detect-language-override": localStorage.getItem("lyrics-plus:visual:translate:detect-language-override") || "off",
+		"translation-mode:english": localStorage.getItem("lyrics-plus:visual:translation-mode:english") || "none",
 		"translation-mode:japanese": localStorage.getItem("lyrics-plus:visual:translation-mode:japanese") || "none",
 		"translation-mode:korean": localStorage.getItem("lyrics-plus:visual:translation-mode:korean") || "none",
 		"translation-mode:chinese": localStorage.getItem("lyrics-plus:visual:translation-mode:chinese") || "none",
 		"translation-mode:gemini": localStorage.getItem("lyrics-plus:visual:translation-mode:gemini") || "none",
+		"translation-mode-2:english": localStorage.getItem("lyrics-plus:visual:translation-mode-2:english") || "none",
 		"translation-mode-2:japanese": localStorage.getItem("lyrics-plus:visual:translation-mode-2:japanese") || "none",
 		"translation-mode-2:korean": localStorage.getItem("lyrics-plus:visual:translation-mode-2:korean") || "none",
 		"translation-mode-2:chinese": localStorage.getItem("lyrics-plus:visual:translation-mode-2:chinese") || "none",
@@ -130,6 +132,7 @@ const CONFIG = {
 		"ja-detect-threshold": localStorage.getItem("lyrics-plus:visual:ja-detect-threshold") || "40",
 		"hans-detect-threshold": localStorage.getItem("lyrics-plus:visual:hans-detect-threshold") || "40",
 		"fade-blur": StorageManager.get("lyrics-plus:visual:fade-blur"),
+		"karaoke-bounce": StorageManager.get("lyrics-plus:visual:karaoke-bounce", true),
 		"fullscreen-key": localStorage.getItem("lyrics-plus:visual:fullscreen-key") || "f12",
 			"synced-compact": StorageManager.get("lyrics-plus:visual:synced-compact"),
 		"global-delay": Number(localStorage.getItem("lyrics-plus:visual:global-delay")) || 0,
@@ -158,7 +161,7 @@ const CONFIG = {
 		},
 	},
 	providersOrder: localStorage.getItem("lyrics-plus:services-order"),
-	modes: ["karaoke", "synced", "unsynced"],
+	modes: ["노래방", "동기화", "일반가사"],
 	locked: localStorage.getItem("lyrics-plus:lock-mode") || "-1",
 };
 
@@ -853,7 +856,11 @@ class LyricsContainer extends react.Component {
 	 * @returns {Array} Optimized lyrics with smart deduplication
 	 */
 	optimizeTranslations(originalLyrics, mode1, mode2) {
-		if (!Array.isArray(originalLyrics)) return originalLyrics;
+		// React 31 방지: 배열 유효성 검사
+		if (!originalLyrics || !Array.isArray(originalLyrics)) {
+			console.warn('optimizeTranslations: Invalid originalLyrics', { originalLyrics, type: typeof originalLyrics });
+			return [];
+		}
 
 		// Helper: note/placeholder-only line (e.g., ♪, …)
 		const isNoteLine = (text) => {
@@ -888,16 +895,21 @@ class LyricsContainer extends react.Component {
 
 		// Process each line to determine what to display
 		const processedLyrics = originalLyrics.map((line, i) => {
+			// React 31 방지: null/undefined 체크 및 안전한 텍스트 추출
+			if (!line) {
+				return { text: null, text2: null, originalText: '' };
+			}
+
 			// Safely extract original text
-			const originalText = (line && typeof line === 'object') ? (line.text || '') : String(line || '');
+			const originalText = (typeof line === 'object') ? (line.text || '') : String(line || '');
 			let translation1 = '';
 			let translation2 = '';
-			
-			// Safely extract translations
-			if (mode1 && Array.isArray(mode1) && mode1[i]) {
+
+			// Safely extract translations with boundary check
+			if (mode1 && Array.isArray(mode1) && i < mode1.length && mode1[i]) {
 				translation1 = (typeof mode1[i] === 'object') ? (mode1[i].text || '') : String(mode1[i] || '');
 			}
-			if (mode2 && Array.isArray(mode2) && mode2[i]) {
+			if (mode2 && Array.isArray(mode2) && i < mode2.length && mode2[i]) {
 				translation2 = (typeof mode2[i] === 'object') ? (mode2[i].text || '') : String(mode2[i] || '');
 			}
 

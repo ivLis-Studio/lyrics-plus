@@ -85,21 +85,28 @@ const getLyricsDisplayMode = (isKara, line, text, originalText, text2) => {
 	if (isKara) {
 		// For karaoke mode, safely handle the line object
 		mainText = line; // Keep as object for KaraokeLine component
-		subText = originalText ? safeRenderText(text) : null;
+		subText = text ? safeRenderText(text) : null;
 		subText2 = safeRenderText(text2);
 	} else {
-		mainText = safeRenderText(text);
-		subText = null;
-		subText2 = null;
-
-		if (showTranslatedBelow && originalText) {
+		// Default: show original text
+		// originalText is the actual original lyrics
+		// text is the first translation (can be null)
+		// text2 is the second translation (can be null)
+		
+		if (showTranslatedBelow) {
+			// Show original as main, translations below
 			mainText = safeRenderText(originalText);
-			subText = safeRenderText(text);
-			subText2 = safeRenderText(text2);
-		} else if (replaceOriginal) {
-			// When replacing original, show translations
-			mainText = safeRenderText(text) || safeRenderText(originalText);
-			subText = safeRenderText(text2); // Show Mode 2 translation as sub-text
+			subText = text ? safeRenderText(text) : null;
+			subText2 = text2 ? safeRenderText(text2) : null;
+		} else if (replaceOriginal && text) {
+			// Replace original with translation (only if translation exists)
+			mainText = safeRenderText(text);
+			subText = text2 ? safeRenderText(text2) : null;
+			subText2 = null;
+		} else {
+			// Default: just show original
+			mainText = safeRenderText(originalText);
+			subText = null;
 			subText2 = null;
 		}
 	}
@@ -239,665 +246,196 @@ const useTrackPosition = (callback) => {
 	}, []);
 };
 
-const KaraokeLine = react.memo(({ text, isActive, position, startTime }) => {
-	// Stabilize position to reduce unnecessary re-renders - handle edge cases
-	const stablePosition = useMemo(() => {
-		if (typeof position !== 'number' || isNaN(position)) return 0;
-		// Reduced granularity for better performance - update every 32ms instead of 16ms
-		return Math.floor(position / 32) * 32;
-	}, [position]);
-
-	// Safe text extraction helper - 안전한 텍스트 추출
-	const extractTextSafely = useCallback((textObj) => {
-		if (!textObj) return "";
-		if (typeof textObj === "string") return textObj;
-		if (typeof textObj === "object") {
-			if (textObj.syllables && Array.isArray(textObj.syllables)) {
-				return textObj.syllables.map(s => s?.text || "").join("");
-			}
-			if (textObj.vocals && textObj.vocals.lead && textObj.vocals.lead.syllables) {
-				const leadText = textObj.vocals.lead.syllables.map(s => s?.text || "").join("");
-				const backgroundTexts = (textObj.vocals.background || [])
-					.filter(bg => bg && bg.syllables)
-					.map(bg => bg.syllables.map(s => s?.text || "").join(""));
-				return leadText + (backgroundTexts.length > 0 ? " (" + backgroundTexts.join(", ") + ")" : "");
-			}
-			if (textObj.text) return String(textObj.text);
-		}
-		return String(textObj || "");
-	}, []);
-
-	// 비활성 카라오케 처리
-	const inactiveText = useMemo(() => {
-		if (isActive) return null;
-		return extractTextSafely(text);
-	}, [isActive, text, extractTextSafely]);
-
-	if (inactiveText !== null) {
-		return inactiveText;
+// 새로운 가라오케 컴포넌트 - synced 모드 기반의 간단한 구조
+const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0, activeGlobalCharIndex = -1 }) => {
+	if (!line || !line.syllables || !Array.isArray(line.syllables)) {
+		return line?.text || "";
 	}
 
-	// Early return for invalid inputs
-	if (!text) {
-		return "";
-	}
-
-	// Handle ivLyrics word_by_word format with syllables
-	// Check if this is the ivLyrics format (has syllables or vocals property)
-	if (text && typeof text === 'object') {
-		const lineStartTime = text.startTime || startTime || 0;
-
-		// Check if this has multiple vocals (lead + background)
-		if (text.vocals && text.vocals.lead && text.vocals.lead.syllables) {
-			if (!isActive) {
-				const leadText = text.vocals.lead.syllables.map(s => s.text || "").join("");
-				const backgroundTexts = (text.vocals.background || [])
-					.filter(bg => bg && bg.syllables)
-					.map(bg => bg.syllables.map(s => s.text || "").join(""));
-				return leadText + (backgroundTexts.length > 0 ? " (" + backgroundTexts.join(", ") + ")" : "");
-			}
-
-			const renderVocalTrack = (vocal, isBackground = false) => {
-				if (!vocal || !vocal.syllables || !Array.isArray(vocal.syllables)) {
-					return react.createElement(react.Fragment, { key: `empty-vocal-${isBackground ? 'bg' : 'lead'}` });
-				}
-				const syllableElements = vocal.syllables.map((syllable, index) => {
-					const syllableStart = syllable?.startTime || 0;
-					const syllableEnd = syllable?.endTime || (syllableStart + 500);
-					const syllableDuration = syllableEnd - syllableStart;
-					const syllableText = syllable?.text || "";
-				
-					// Skip empty syllables
-					if (!syllableText) {
-						return react.createElement(
-							"span",
-							{
-								key: `${isBackground ? 'bg' : 'lead'}-empty-${index}`,
-								className: `lyrics-lyricsContainer-Karaoke-Syllable${isBackground ? " lyrics-lyricsContainer-Karaoke-Background" : ""}`,
-							},
-							""
-						);
-					}
-
-					let syllableState = 'inactive';
-					const minThreshold = Math.max(lineStartTime + 100, 100);
-					const adjustedSyllableStart = Math.max(syllableStart, minThreshold);
-
-					const isWordActive = isActive && stablePosition >= adjustedSyllableStart && stablePosition <= syllableEnd;
-					const isSyllableCompleted = isActive && stablePosition > syllableEnd;
-					const isEmphasized = syllableDuration >= 1000 && syllableText.length <= 12;
-
-					// If syllable is not active and not completed, return simple text
-					if (!isWordActive && !isSyllableCompleted) {
-						return react.createElement(
-							"span",
-							{
-								key: `${isBackground ? 'bg' : 'lead'}-${index}`,
-								className: `lyrics-lyricsContainer-Karaoke-Syllable${isBackground ? " lyrics-lyricsContainer-Karaoke-Background" : ""}${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
-							},
-							syllableText
-						);
-					}
-
-					// If syllable is completed, show all characters as fully sung
-					if (isSyllableCompleted) {
-						const characters = Array.from(syllableText || "");
-						if (characters.length === 0) {
-							return react.createElement(
-								"span",
-								{
-									key: `${isBackground ? 'bg' : 'lead'}-${index}`,
-									className: `lyrics-lyricsContainer-Karaoke-Syllable${isBackground ? " lyrics-lyricsContainer-Karaoke-Background" : ""} lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
-								},
-								syllableText
-							);
-						}
-
-						const characterElements = characters.map((char, charIndex) => {
-							// All characters are fully sung - keep them white without glow
-							const charStyleProps = {
-								"--gradient-progress": "100%",
-								"--text-shadow-opacity": "0%",
-								"--text-shadow-blur-radius": "0px",
-								transform: "translateY(0) scale(1)",
-								transformOrigin: "center center",
-								transition: "all 0.4s ease-out"
-							};
-
-							return react.createElement(
-								"span",
-								{
-									key: `completed-char-${index}-${charIndex}`,
-									className: "lyrics-lyricsContainer-Karaoke-Character lyrics-lyricsContainer-Karaoke-CharacterActive",
-									style: charStyleProps,
-								},
-								char
-							);
-						});
-
-						return react.createElement(
-							"span",
-							{
-								key: `${isBackground ? 'bg' : 'lead'}-${index}`,
-								className: `lyrics-lyricsContainer-Karaoke-Syllable${isBackground ? " lyrics-lyricsContainer-Karaoke-Background" : ""} lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
-							},
-							...characterElements
-						);
-					}
-
-					// Calculate progress within syllable for character-by-character animation
-					const syllableProgress = (stablePosition - adjustedSyllableStart) / (syllableEnd - adjustedSyllableStart);
-					const clampedProgress = Math.min(1, Math.max(0, syllableProgress));
-
-					// Split text into individual characters for animation
-					const characters = Array.from(syllableText || "");
-
-					// Safety check for empty text
-					if (characters.length === 0 || !syllableText) {
-						return react.createElement(
-							"span",
-							{
-								key: `${isBackground ? 'bg' : 'lead'}-${index}`,
-								className: `lyrics-lyricsContainer-Karaoke-Syllable${isBackground ? " lyrics-lyricsContainer-Karaoke-Background" : ""} lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
-							},
-							syllableText
-						);
-					}
-
-					const characterElements = characters.map((char, charIndex) => {
-						// Safety check: ensure char is a string
-						if (typeof char !== 'string' || char === null || char === undefined) {
-							return null; // Skip invalid characters
-						}
-
-						// Calculate per-character timing with overlap for smoother flow
-						const overlap = 0.3; // 30% overlap between characters
-						const charDuration = (1 + overlap) / characters.length;
-						const charStartProgress = (charIndex * charDuration) - (overlap * charIndex / characters.length);
-						const charEndProgress = charStartProgress + charDuration;
-
-						// Clamp to valid range
-						const clampedCharStart = Math.max(0, charStartProgress);
-						const clampedCharEnd = Math.min(1, charEndProgress);
-
-						// Determine if this character is active
-						let charTimeScale = 0;
-						let charGlowTimeScale = 0;
-
-						if (clampedProgress > clampedCharStart) {
-							if (clampedProgress >= clampedCharEnd) {
-								// Character is fully sung - keep it visible and active
-								charTimeScale = 1;
-								charGlowTimeScale = 0; // No glow effect
-							} else {
-								// Character is currently active
-								const charProgress = (clampedProgress - clampedCharStart) / (clampedCharEnd - clampedCharStart);
-								charTimeScale = Math.min(1, Math.max(0, charProgress));
-								charGlowTimeScale = charProgress; // Enable glow during active phase
-							}
-						}
-
-						// Beautiful-lyrics gradient formula: -20 + (120 * timeScale)
-						const gradientProgress = -20 + (120 * charTimeScale);
-
-						// Enhanced character scaling with beautiful smooth animation
-						let scaleValue = 1.0;
-						let yOffset = 0;
-
-						if (charTimeScale > 0 && charTimeScale < 1) {
-							// Use sin curve for natural scaling animation (0 → 1 → 0)
-							const progress = charTimeScale; // 0 to 1
-							const scaleFactor = Math.sin(progress * Math.PI); // Smooth bell curve
-
-							// Enhanced scaling with different intensities based on syllable emphasis
-							const maxScale = isEmphasized ? 0.25 : 0.15; // 25% or 15% max scaling
-							scaleValue = 1.0 + (maxScale * scaleFactor);
-
-							// Subtle bounce effect - characters rise slightly when scaling
-							const bounceFactor = Math.sin(progress * Math.PI * 2) * 0.5 + 0.5; // 0 to 1
-							yOffset = -(scaleFactor * 0.03 * (isEmphasized ? 1.5 : 1));
-
-							// Add slight rotation for extra dynamism on emphasized syllables
-							if (isEmphasized && scaleFactor > 0.3) {
-								const rotationAngle = Math.sin(progress * Math.PI * 2) * 2; // -2 to +2 degrees
-								yOffset += Math.sin(progress * Math.PI) * 0.01; // Extra lift
-							}
-						}
-
-						const isCharActive = charTimeScale > 0;
-
-						// Style properties for individual character with enhanced animations
-						const charStyleProps = {
-							"--gradient-progress": `${gradientProgress}%`,
-							"--text-shadow-opacity": `${charGlowTimeScale * 100}%`,
-							"--text-shadow-blur-radius": `${6 + (4 * charGlowTimeScale * 3)}px`,
-							transform: `translateY(calc(var(--lyrics-font-size) * ${yOffset * 2})) scale(${scaleValue})`,
-							transformOrigin: "center bottom", // Better anchor point for scaling
-							transition: charTimeScale > 0 && charTimeScale < 1 ?
-								"transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)" : // Active: Quick response
-								"all 0.4s cubic-bezier(0.23, 1, 0.32, 1)", // Inactive: Smooth ease-out
-							// Add subtle filter effects for active characters
-							filter: charTimeScale > 0 ?
-								`blur(0px) brightness(${1 + (charGlowTimeScale * 0.2)}) saturate(${1 + (charGlowTimeScale * 0.3)})` :
-								"blur(0.05px) brightness(1) saturate(1)"
-						};
-
-						return react.createElement(
-							"span",
-							{
-								key: `active-char-${index}-${charIndex}`,
-								className: `lyrics-lyricsContainer-Karaoke-Character${isCharActive ? " lyrics-lyricsContainer-Karaoke-CharacterActive" : ""}`,
-								style: charStyleProps,
-							},
-							char
-						);
-					});
-
-					return react.createElement(
-						"span",
-						{
-							key: `${isBackground ? 'bg' : 'lead'}-${index}`,
-							className: `lyrics-lyricsContainer-Karaoke-Syllable${isBackground ? " lyrics-lyricsContainer-Karaoke-Background" : ""} lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
-						},
-						...characterElements
-					);
-				});
-				return react.createElement(react.Fragment, { key: `vocal-fragment-${isBackground ? 'bg' : 'lead'}` }, ...syllableElements);
-			};
-
-			return react.createElement(
-				"div",
-				{ className: "lyrics-lyricsContainer-Karaoke-MultiVocal" },
-				react.createElement(
-					"div",
-					{ className: "lyrics-lyricsContainer-Karaoke-Lead" },
-					renderVocalTrack(text.vocals.lead)
-				),
-				...((text.vocals.background || []).filter(bg => bg && bg.syllables).map((bgVocal, bgIndex) =>
-					react.createElement(
-						"div",
-						{
-							key: `bg-track-${bgIndex}`,
-							className: "lyrics-lyricsContainer-Karaoke-BackgroundTrack"
-						},
-						renderVocalTrack(bgVocal, true)
-					)
-				))
-			);
-		}
-
-		// Single vocal track (original format)
-		if (text.syllables && Array.isArray(text.syllables)) {
-			const lineSyllables = text.syllables.filter(s => s && typeof s === 'object');
-
-			if (!isActive) {
-				return lineSyllables.map(syllable => syllable.text || "").join("");
-			}
-
-			if (lineSyllables.length === 0) {
-				// return text.text || "";
-				const lyricString = text.text || "";
-				if (isActive && typeof lyricString === 'string' && lyricString) {
-					const characters = Array.from(lyricString);
-					const characterElements = characters.map((char, charIndex) => {
-						if (char === '\n') {
-							return react.createElement('br', { key: `br-${charIndex}` });
-						}
-						// Simple character-by-character animation for string text
-						const charStartProgress = charIndex / characters.length;
-						const charEndProgress = (charIndex + 1) / characters.length;
-
-						// Simulate progress (this would normally come from timing data)
-						const currentProgress = (stablePosition % 5000) / 5000; // 5 second cycle for demo
-
-						let charTimeScale = 0;
-						if (currentProgress > charStartProgress) {
-							if (currentProgress >= charEndProgress) {
-								charTimeScale = 1;
-							} else {
-								const charProgress = (currentProgress - charStartProgress) / (charEndProgress - charStartProgress);
-								charTimeScale = Math.min(1, Math.max(0, charProgress));
-							}
-						}
-
-						const gradientProgress = -20 + (120 * charTimeScale);
-
-						// Beautiful-lyrics inspired character scaling when gradient line passes
-						let scaleValue = 1.0;
-						if (charTimeScale > 0 && charTimeScale <= 1) {
-							const gradientPos = gradientProgress + 20;
-							if (gradientPos >= 0 && gradientPos <= 120) {
-								const scaleProgress = Math.min(1, gradientPos / 100);
-								const scaleFactor = scaleProgress <= 0.5
-									? scaleProgress * 2
-									: 2 - (scaleProgress * 2);
-								scaleValue = 1.0 + (0.08 * scaleFactor);
-							}
-						}
-
-						const charStyleProps = {
-							"--gradient-progress": `${gradientProgress}%`,
-							"--text-shadow-opacity": "0%",
-							"--text-shadow-blur-radius": "0px",
-							transform: `scale(${scaleValue})`,
-							transformOrigin: "center center",
-							transition: "transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)"
-						};
-
-						return react.createElement(
-							"span",
-							{
-								key: `fallback-char-${charIndex}`,
-								className: `lyrics-lyricsContainer-Karaoke-Character${charTimeScale > 0 ? " lyrics-lyricsContainer-Karaoke-CharacterActive" : ""}`,
-								style: charStyleProps,
-							},
-							char
-						);
-					});
-
-					return react.createElement(react.Fragment, { key: `fallback-char-fragment-${text?.startTime || 'unknown'}` }, ...characterElements);
-				}
-				return text.text || "";
-			}
-
-			const syllableElements = lineSyllables.map((syllable, index) => {
-				const syllableStart = syllable.startTime || 0;
-				const syllableEnd = syllable.endTime || (syllableStart + 500);
-				const syllableDuration = syllableEnd - syllableStart;
-				const syllableText = syllable.text || "";
-
-				let syllableState = 'inactive';
-				const minThreshold = Math.max(lineStartTime + 100, 100);
-				const adjustedSyllableStart = Math.max(syllableStart, minThreshold);
-
-				const isWordActive = isActive && stablePosition >= adjustedSyllableStart && stablePosition <= syllableEnd;
-				const isSyllableCompleted = isActive && stablePosition > syllableEnd;
-				const isEmphasized = syllableDuration >= 1000 && syllableText.length <= 12;
-
-				// If syllable is not active and not completed, return simple text
-				if (!isWordActive && !isSyllableCompleted) {
-					return react.createElement(
-						"span",
-						{
-							key: index,
-							className: `lyrics-lyricsContainer-Karaoke-Syllable${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
-						},
-						syllableText
-					);
-				}
-
-				// If syllable is completed, show all characters as fully sung
-				if (isSyllableCompleted) {
-					const characters = Array.from(syllableText || "");
-					if (characters.length === 0) {
-						return react.createElement(
-							"span",
-							{
-								key: index,
-								className: `lyrics-lyricsContainer-Karaoke-Syllable lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
-							},
-							syllableText
-						);
-					}
-
-					const characterElements = characters.map((char, charIndex) => {
-						// All characters are fully sung - keep them white without glow
-						const charStyleProps = {
-							"--gradient-progress": "100%",
-							"--text-shadow-opacity": "0%",
-							"--text-shadow-blur-radius": "0px",
-							transform: "translateY(0) scale(1)",
-							transformOrigin: "center center",
-							transition: "all 0.4s ease-out"
-						};
-
-						return react.createElement(
-							"span",
-							{
-								key: `single-completed-char-${index}-${charIndex}`,
-								className: "lyrics-lyricsContainer-Karaoke-Character lyrics-lyricsContainer-Karaoke-CharacterActive",
-								style: charStyleProps,
-							},
-							char
-						);
-					});
-
-					return react.createElement(
-						"span",
-						{
-							key: index,
-							className: `lyrics-lyricsContainer-Karaoke-Syllable lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
-						},
-						...characterElements
-					);
-				}
-
-				// Calculate progress within syllable for character-by-character animation
-				const syllableProgress = (stablePosition - adjustedSyllableStart) / (syllableEnd - adjustedSyllableStart);
-				const clampedProgress = Math.min(1, Math.max(0, syllableProgress));
-
-				// Split text into individual characters for animation
-				const characters = Array.from(syllableText || "");
-
-				// Safety check for empty text
-				if (characters.length === 0) {
-					return react.createElement(
-						"span",
-						{
-							key: `${isBackground ? 'bg' : 'lead'}-${index}`,
-							className: `lyrics-lyricsContainer-Karaoke-Syllable${isBackground ? " lyrics-lyricsContainer-Karaoke-Background" : ""} lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
-						},
-						syllableText
-					);
-				}
-
-				const characterElements = characters.map((char, charIndex) => {
-					// Safety check: ensure char is a string
-					if (typeof char !== 'string' || char === null || char === undefined) {
-						return null; // Skip invalid characters
-					}
-
-					// Calculate per-character timing with overlap for smoother flow
-					const overlap = 0.3; // 30% overlap between characters
-					const charDuration = (1 + overlap) / characters.length;
-					const charStartProgress = (charIndex * charDuration) - (overlap * charIndex / characters.length);
-					const charEndProgress = charStartProgress + charDuration;
-
-					// Clamp to valid range
-					const clampedCharStart = Math.max(0, charStartProgress);
-					const clampedCharEnd = Math.min(1, charEndProgress);
-
-					// Determine if this character is active
-					let charTimeScale = 0;
-					let charGlowTimeScale = 0;
-
-					if (clampedProgress > clampedCharStart) {
-						if (clampedProgress >= clampedCharEnd) {
-							// Character is fully sung - keep it visible and active
-							charTimeScale = 1;
-							charGlowTimeScale = 0; // No glow effect for completed
-						} else {
-							// Character is currently active
-							const charProgress = (clampedProgress - clampedCharStart) / (clampedCharEnd - clampedCharStart);
-							charTimeScale = Math.min(1, Math.max(0, charProgress));
-							charGlowTimeScale = charProgress; // Enable glow during active phase
-						}
-					}
-
-					// Beautiful-lyrics gradient formula: -20 + (120 * timeScale)
-					const gradientProgress = -20 + (120 * charTimeScale);
-
-					// Enhanced character scaling with beautiful smooth animation
-					let scaleValue = 1.0;
-					let yOffset = 0;
-
-					if (charTimeScale > 0 && charTimeScale < 1) {
-						// Use sin curve for natural scaling animation (0 → 1 → 0)
-						const progress = charTimeScale; // 0 to 1
-						const scaleFactor = Math.sin(progress * Math.PI); // Smooth bell curve
-
-						// Enhanced scaling with different intensities based on syllable emphasis
-						const maxScale = isEmphasized ? 0.25 : 0.15; // 25% or 15% max scaling
-						scaleValue = 1.0 + (maxScale * scaleFactor);
-
-						// Subtle bounce effect - characters rise slightly when scaling
-						const bounceFactor = Math.sin(progress * Math.PI * 2) * 0.5 + 0.5; // 0 to 1
-						yOffset = -(scaleFactor * 0.03 * (isEmphasized ? 1.5 : 1));
-
-						// Add slight rotation for extra dynamism on emphasized syllables
-						if (isEmphasized && scaleFactor > 0.3) {
-							const rotationAngle = Math.sin(progress * Math.PI * 2) * 2; // -2 to +2 degrees
-							yOffset += Math.sin(progress * Math.PI) * 0.01; // Extra lift
-						}
-					}
-
-					const isCharActive = charTimeScale > 0;
-
-					// Style properties for individual character with enhanced animations
-					const charStyleProps = {
-						"--gradient-progress": `${gradientProgress}%`,
-						"--text-shadow-opacity": `${charGlowTimeScale * 100}%`,
-						"--text-shadow-blur-radius": `${6 + (4 * charGlowTimeScale * 3)}px`,
-						transform: `translateY(calc(var(--lyrics-font-size) * ${yOffset * 2})) scale(${scaleValue})`,
-						transformOrigin: "center bottom", // Better anchor point for scaling
-						transition: charTimeScale > 0 && charTimeScale < 1 ?
-							"transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)" : // Active: Quick response
-							"all 0.4s cubic-bezier(0.23, 1, 0.32, 1)", // Inactive: Smooth ease-out
-						// Add subtle filter effects for active characters
-						filter: charTimeScale > 0 ?
-							`blur(0px) brightness(${1 + (charGlowTimeScale * 0.2)}) saturate(${1 + (charGlowTimeScale * 0.3)})` :
-							"blur(0.05px) brightness(1) saturate(1)"
-					};
-
-					return react.createElement(
-						"span",
-						{
-							key: `single-active-char-${index}-${charIndex}`,
-							className: `lyrics-lyricsContainer-Karaoke-Character${isCharActive ? " lyrics-lyricsContainer-Karaoke-CharacterActive" : ""}`,
-							style: charStyleProps,
-						},
-						char
-					);
-				});
-
-				return react.createElement(
-					"span",
-					{
-						key: index,
-						className: `lyrics-lyricsContainer-Karaoke-Syllable lyrics-lyricsContainer-Karaoke-SyllableActive${isEmphasized ? " lyrics-lyricsContainer-Karaoke-Emphasis" : ""}`,
-					},
-					...characterElements
-				);
+	const elements = [];
+	let localCharIndex = 0;
+
+	// 전체 글자 정보를 먼저 수집
+	const allChars = [];
+	line.syllables.forEach((syllable, syllableIndex) => {
+		if (!syllable || !syllable.text) return;
+
+		const syllableStart = syllable.startTime || 0;
+		const syllableEnd = syllable.endTime || syllableStart + 500;
+		const syllableText = syllable.text || "";
+		const charArray = Array.from(syllableText);
+
+		charArray.forEach((char, charIndex) => {
+			const charDuration = (syllableEnd - syllableStart) / charArray.length;
+			const charStart = syllableStart + (charIndex * charDuration);
+			const charEnd = charStart + charDuration;
+
+			allChars.push({
+				char,
+				charStart,
+				charEnd,
+				syllableIndex,
+				charIndex,
+				localIndex: localCharIndex,
+				globalIndex: globalCharOffset + localCharIndex
 			});
-				return react.createElement(react.Fragment, { key: `syllable-fragment-${text?.startTime || 'unknown'}` }, ...syllableElements);
+			localCharIndex++;
+		});
+	});
+
+	// 현재 활성 글자 찾기 (이 줄에서만)
+	let activeLocalIndex = -1;
+	if (isActive) {
+		for (let i = 0; i < allChars.length; i++) {
+			if (position >= allChars[i].charStart && position < allChars[i].charEnd) {
+				activeLocalIndex = i;
+				break;
+			}
 		}
 	}
 
-	// Fallback to original karaoke format
-	if (!isActive) {
-		return Array.isArray(text) ? text.map(({ word }) => word).join("") : (text?.text || text || "");
-	}
+	// 글자들을 렌더링
+	localCharIndex = 0;
+	line.syllables.forEach((syllable, syllableIndex) => {
+		if (!syllable || !syllable.text) return;
 
-	if (Array.isArray(text)) {
-		let currentStartTime = startTime;
-		const wordElements = text.map(({ word, time }, index) => {
-			const isWordActive = stablePosition >= currentStartTime;
-			const wordElement = react.createElement(
-				"span",
-				{
-					key: index,
-					className: `lyrics-lyricsContainer-Karaoke-Word${isWordActive ? " lyrics-lyricsContainer-Karaoke-WordActive" : ""}`,
-					style: {
-						"--word-duration": `${time}ms`,
-						transition: !isWordActive ? "all 0s linear" : "",
-					},
-				},
-				word
-			);
-			currentStartTime += time;
-			return wordElement;
-		});
-			return react.createElement(react.Fragment, { key: `word-fragment-${index}` }, ...wordElements);
-	}
+		const syllableText = syllable.text || "";
+		const charArray = Array.from(syllableText);
 
-	// Fallback for simple string karaoke (when text is string or object with text property)
-	const lyricString = (typeof text === 'string') ? text : text?.text;
-	if (isActive && typeof lyricString === 'string' && lyricString) {
-		const characters = Array.from(lyricString);
-		const characterElements = characters.map((char, charIndex) => {
-			if (char === '\n') {
-				return react.createElement('br', { key: `br-${charIndex}` });
-			}
-			// Simple character-by-character animation for string text
-			const charStartProgress = charIndex / characters.length;
-			const charEndProgress = (charIndex + 1) / characters.length;
+		charArray.forEach((char, charIndex) => {
+			const charInfo = allChars[localCharIndex];
+			const isCharActive = activeLocalIndex === localCharIndex;
+			const isCharSung = isActive && position > charInfo.charEnd;
 
-			// Simulate progress (this would normally come from timing data)
-			const currentProgress = (stablePosition % 5000) / 5000; // 5 second cycle for demo
-
-			let charTimeScale = 0;
-			if (currentProgress > charStartProgress) {
-				if (currentProgress >= charEndProgress) {
-					charTimeScale = 1;
-				} else {
-					const charProgress = (currentProgress - charStartProgress) / (charEndProgress - charStartProgress);
-					charTimeScale = Math.min(1, Math.max(0, charProgress));
+			// 전체 가사에서의 글로벌 위치를 기준으로 거리 계산
+			const currentGlobalIndex = charInfo.globalIndex;
+			let waveOffset = 0;
+			let waveScale = 1;
+			let transitionDelay = 0;
+			
+			// 가라오케 바운스 설정 확인
+			const karaokeBounceEnabled = CONFIG.visual["karaoke-bounce"];
+			
+			// 전체 가사의 현재 활성 글자와 비교 (바운스 효과가 활성화된 경우에만)
+			if (karaokeBounceEnabled && activeGlobalCharIndex >= 0) {
+				const distance = Math.abs(currentGlobalIndex - activeGlobalCharIndex);
+				
+				// 앞뒤 2글자까지 영향받도록 제한
+				if (distance <= 2) {
+					// 매우 부드러운 시간 기반 순차적 애니메이션
+					transitionDelay = distance * 0.05; // 각 글자마다 50ms 딜레이
+					
+					// 더 부드러운 이차함수 곡선: y = -(x/2)^2 + 1
+					const normalizedDistance = distance / 2;
+					const waveStrength = Math.max(0, 1 - normalizedDistance * normalizedDistance);
+					
+					// 더 섬세한 움직임
+					waveOffset = -10 * waveStrength; // 최대 -10px 위로
+					waveScale = 1 + 0.12 * waveStrength; // 최대 1.12배 확대
 				}
 			}
 
-			const gradientProgress = -20 + (120 * charTimeScale);
-
-			// Beautiful-lyrics inspired character scaling when gradient line passes
-			let scaleValue = 1.0;
-			if (charTimeScale > 0 && charTimeScale <= 1) {
-				const gradientPos = gradientProgress + 20;
-				if (gradientPos >= 0 && gradientPos <= 120) {
-					const scaleProgress = Math.min(1, gradientPos / 100);
-					const scaleFactor = scaleProgress <= 0.5
-						? scaleProgress * 2
-						: 2 - (scaleProgress * 2);
-					scaleValue = 1.0 + (0.08 * scaleFactor);
-				}
+			let className = "lyrics-karaoke-char";
+			if (isCharActive) {
+				className += " active";
+			} else if (isCharSung) {
+				className += " sung";
 			}
 
-			const charStyleProps = {
-				"--gradient-progress": `${gradientProgress}%`,
-				"--text-shadow-opacity": "0%",
-				"--text-shadow-blur-radius": "0px",
-				transform: `scale(${scaleValue})`,
-				transformOrigin: "center center",
-				transition: "transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)"
+			const style = (karaokeBounceEnabled && activeGlobalCharIndex >= 0) ? {
+				transform: `translateY(${waveOffset}px) scale(${waveScale})`,
+				// 더 부드러운 easing 함수 사용
+				transition: `transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${transitionDelay}s, color 0.2s ease-out`,
+				transitionDelay: `${transitionDelay}s`
+			} : {
+				// 바운스 비활성화 시 색상 전환만
+				transition: 'color 0.2s ease-out'
 			};
 
-			return react.createElement(
+			elements.push(react.createElement(
 				"span",
 				{
-					key: `fallback-char-${charIndex}`,
-					className: `lyrics-lyricsContainer-Karaoke-Character${charTimeScale > 0 ? " lyrics-lyricsContainer-Karaoke-CharacterActive" : ""}`,
-					style: charStyleProps,
+					key: `${syllableIndex}-${charIndex}`,
+					className,
+					style
 				},
 				char
-			);
+			));
+
+			localCharIndex++;
 		});
 
-		return react.createElement(react.Fragment, { key: `string-char-fragment-${text?.startTime || 'unknown'}` }, ...characterElements);
-	}
+		// 음절 뒤에 좁은 공백 추가 (마지막 음절 제외)
+		if (syllableIndex < line.syllables.length - 1) {
+			// 좁은 공백 추가
+			elements.push(react.createElement(
+				"span",
+				{
+					key: `space-${syllableIndex}`,
+					className: "lyrics-karaoke-space"
+				},
+				" "
+			));
+		}
+	});
 
-	return extractTextSafely(text);
+	return react.createElement("span", { className: "lyrics-karaoke-line" }, elements);
 });
 
 const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara }) => {
+	// 유효성 검사를 Hook 호출 전에 수행하지 않음 - Hook은 항상 같은 순서로 호출되어야 함
 	const [position, setPosition] = useState(0);
 	const activeLineEle = useRef();
 	const lyricContainerEle = useRef();
 
-	// Hook은 항상 같은 순서로 호출되어야 함
 	useTrackPosition(() => {
 		const newPos = Spicetify.Player.getProgress();
 		const delay = CONFIG.visual["global-delay"] + CONFIG.visual.delay;
 		// Always update position for smoother karaoke animation
 		setPosition(newPos + delay);
 	});
+
+	// 전체 가사의 글로벌 캐릭터 인덱스와 현재 활성 글자 계산
+	const { globalCharOffsets, activeGlobalCharIndex } = useMemo(() => {
+		const offsets = [];
+		let totalChars = 0;
+		let activeCharIndex = -1;
+
+		for (let i = 0; i < lyrics.length; i++) {
+			const line = lyrics[i];
+			offsets.push(totalChars);
+
+			if (line?.syllables && Array.isArray(line.syllables)) {
+				// 이 줄이 활성 상태인지 확인
+				const isLineActive = position >= (line.startTime || 0) && 
+					(i === lyrics.length - 1 || position < (lyrics[i + 1]?.startTime || Infinity));
+
+				for (const syllable of line.syllables) {
+					if (!syllable || !syllable.text) continue;
+
+					const syllableText = syllable.text || "";
+					const charArray = Array.from(syllableText);
+					const syllableStart = syllable.startTime || 0;
+					const syllableEnd = syllable.endTime || syllableStart + 500;
+
+					for (let charIdx = 0; charIdx < charArray.length; charIdx++) {
+						const charDuration = (syllableEnd - syllableStart) / charArray.length;
+						const charStart = syllableStart + (charIdx * charDuration);
+						const charEnd = charStart + charDuration;
+
+						// 현재 재생 중인 글자 찾기
+						if (isLineActive && position >= charStart && position < charEnd) {
+							activeCharIndex = totalChars;
+						}
+
+						totalChars++;
+					}
+				}
+			}
+		}
+
+		return { globalCharOffsets: offsets, activeGlobalCharIndex: activeCharIndex };
+	}, [lyrics, position]);
 
 	const lyricWithEmptyLines = useMemo(
 		() =>
@@ -1011,7 +549,8 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 						style: {
 							cursor: "pointer",
 							"--position-index": animationIndex,
-							"--animation-index": (animationIndex < 0 ? 0 : animationIndex) + 1,
+							// Lines moving down (animationIndex > 0) should not animate transform
+							"--animation-index": animationIndex > 0 ? 0 : (animationIndex < 0 ? 0 : animationIndex) + 1,
 							"--blur-index": Math.abs(animationIndex),
 						},
 						dir: "auto",
@@ -1032,18 +571,24 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 									.then(() => Spicetify.showNotification("✓ 가사가 클립보드에 복사되었습니다", false, 2000))
 									.catch(() => Spicetify.showNotification("가사 클립보드 복사 실패", true, 2000));
 							},
-							// For Furigana/Hiragana HTML strings
-							...(typeof mainText === "string" && !isKara ? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(mainText) } } : {}),
+							// For Furigana/Hiragana HTML strings - React 310 방지를 위한 안전한 검증
+							...(typeof mainText === "string" && !isKara && mainText ? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(mainText) } } : {}),
 						},
 						// Safe rendering for main text
 						(() => {
 							if (isKara) {
-								// 카라오케 모드에서는 KaraokeLine 컴포넌트 사용
+								// 새로운 가라오케 모드 - 전역 글자 인덱스 전달
+								const currentLineIndex = lineNumber - 2; // emptyLine 2개 제외
+								const globalOffset = currentLineIndex >= 0 && currentLineIndex < globalCharOffsets.length 
+									? globalCharOffsets[currentLineIndex] 
+									: 0;
+								
 								return react.createElement(KaraokeLine, {
-									text: mainText,
-									startTime,
+									line,
 									position,
-									isActive: i === activeElementIndex
+									isActive: i === activeElementIndex,
+									globalCharOffset: globalOffset,
+									activeGlobalCharIndex: activeGlobalCharIndex
 								});
 							} else {
 								// 비카라오케 모드에서는 문자열이면 dangerouslySetInnerHTML 사용
@@ -1062,7 +607,8 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 							className: "lyrics-lyricsContainer-LyricsLine-sub",
 							style: { "--sub-lyric-color": CONFIG.visual["inactive-color"] },
 						};
-						if (typeof subText === "string") {
+						// React 310 방지: 문자열이고 빈 문자열이 아닐 때만 dangerouslySetInnerHTML 사용
+						if (typeof subText === "string" && subText) {
 							props.dangerouslySetInnerHTML = { __html: Utils.rubyTextToHTML(subText) };
 							return react.createElement("p", props);
 						}
@@ -1074,7 +620,8 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 							className: "lyrics-lyricsContainer-LyricsLine-sub",
 							style: { "--sub-lyric-color": CONFIG.visual["inactive-color"] },
 						};
-						if (typeof subText2 === "string") {
+						// React 310 방지: 문자열이고 빈 문자열이 아닐 때만 dangerouslySetInnerHTML 사용
+						if (typeof subText2 === "string" && subText2) {
 							props2.dangerouslySetInnerHTML = { __html: Utils.rubyTextToHTML(subText2) };
 							return react.createElement("p", props2);
 						}
@@ -1316,11 +863,11 @@ function isInViewport(element) {
 }
 
 const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara }) => {
+	// Hook은 항상 먼저 호출되어야 함 - React 130 방지
 	const [position, setPosition] = useState(0);
 	const activeLineRef = useRef(null);
 	const pageRef = useRef(null);
 
-	// Hook은 항상 같은 순서로 호출되어야 함
 	useTrackPosition(() => {
 		const newPos = Spicetify.Player.getProgress();
 		const delay = CONFIG.visual["global-delay"] + CONFIG.visual.delay;
@@ -1428,7 +975,8 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 					style: {
 						cursor: "pointer",
 						"--position-index": animationIndex,
-						"--animation-index": (animationIndex < 0 ? 0 : animationIndex) + 1,
+						// Lines moving down (animationIndex > 0) should not animate transform
+						"--animation-index": animationIndex > 0 ? 0 : (animationIndex < 0 ? 0 : animationIndex) + 1,
 						"--blur-index": Math.abs(animationIndex),
 					},
 					dir: "auto",
@@ -1449,8 +997,8 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 								.then(() => Spicetify.showNotification("✓ 가사가 클립보드에 복사되었습니다", false, 2000))
 								.catch(() => Spicetify.showNotification("가사 클립보드 복사 실패", true, 2000));
 						},
-						// For Furigana/Hiragana HTML strings
-						...(typeof mainText === "string" && !isKara ? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(mainText) } } : {}),
+						// For Furigana/Hiragana HTML strings - React 310 방지
+						...(typeof mainText === "string" && !isKara && mainText ? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(mainText) } } : {}),
 					},
 					// Safe rendering for main text
 					(() => {
@@ -1473,7 +1021,8 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 						}
 					})()
 				),
-				subText && react.createElement("p", {
+				// React 310 방지: subText가 문자열이고 비어있지 않을 때만 렌더링
+				subText && typeof subText === "string" && subText && react.createElement("p", {
 					className: "lyrics-lyricsContainer-LyricsLine-sub",
 					style: {
 						"--sub-lyric-color": CONFIG.visual["inactive-color"],
@@ -1482,7 +1031,8 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 						__html: Utils.rubyTextToHTML(subText),
 					},
 				}),
-				subText2 && react.createElement("p", {
+				// React 310 방지: subText2가 문자열이고 비어있지 않을 때만 렌더링
+				subText2 && typeof subText2 === "string" && subText2 && react.createElement("p", {
 					className: "lyrics-lyricsContainer-LyricsLine-sub",
 					style: {
 						"--sub-lyric-color": CONFIG.visual["inactive-color"],
@@ -1505,11 +1055,16 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 });
 
 const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => {
-	// Hook은 항상 같은 순서로 호출되어야 함
+	// Hook은 항상 같은 순서로 호출되어야 함 - React 130 방지
 	const lyricsArray = useMemo(() => {
-		// 안전한 배열 변환
+		// React 31 방지: 안전한 배열 변환 및 유효성 검사
+		if (!lyrics) {
+			console.warn('UnsyncedLyricsPage: No lyrics provided');
+			return [];
+		}
 		if (Array.isArray(lyrics)) {
-			return lyrics;
+			// 배열의 각 요소가 유효한지 확인
+			return lyrics.filter(item => item !== null && item !== undefined);
 		}
 		if (typeof lyrics === "string") {
 			return lyrics.split("\n").map((text, index) => ({ text, index }));
@@ -1574,8 +1129,8 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 								.then(() => Spicetify.showNotification("✓ 가사가 클립보드에 복사되었습니다", false, 2000))
 								.catch(() => Spicetify.showNotification("가사 클립보드 복사 실패", true, 2000));
 						},
-						// Use HTML for ruby when string
-						...(typeof lineText === "string"
+						// React 310 방지: 문자열이고 비어있지 않을 때만 dangerouslySetInnerHTML 사용
+						...(typeof lineText === "string" && lineText
 							? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(lineText) } }
 							: {}),
 					},
@@ -1592,7 +1147,8 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 									.then(() => Spicetify.showNotification("✓ Translation copied to clipboard", false, 2000))
 									.catch(() => Spicetify.showNotification("번역 클립보드 복사 실패", true, 2000));
 							},
-							...(typeof subText === "string"
+							// React 310 방지: 문자열이고 비어있지 않을 때만 dangerouslySetInnerHTML 사용
+							...(typeof subText === "string" && subText
 								? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(subText) } }
 								: {}),
 						},
@@ -1609,7 +1165,8 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 									.then(() => Spicetify.showNotification("✓ Second translation copied to clipboard", false, 2000))
 									.catch(() => Spicetify.showNotification("두 번째 번역 클립보드 복사 실패", true, 2000));
 							},
-							...(typeof showMode2Translation === "string"
+							// React 310 방지: 문자열이고 비어있지 않을 때만 dangerouslySetInnerHTML 사용
+							...(typeof showMode2Translation === "string" && showMode2Translation
 								? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(showMode2Translation) } }
 								: {}),
 						},

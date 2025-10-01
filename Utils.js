@@ -358,7 +358,10 @@ const Utils = {
 		return react.createElement("p1", null, reactChildren);
 	},
 	rubyTextToHTML(s) {
-		if (!s || typeof s !== "string") return "";
+		// React 310 방지: null/undefined/빈 문자열 체크
+		if (!s || typeof s !== "string" || s.trim() === "") {
+			return "";
+		}
 		// Allow only ruby-related tags we generate; escape others
 		let out = s
 			.replace(/</g, "&lt;")
@@ -544,7 +547,7 @@ const Utils = {
 	/**
 	 * Current version of the lyrics-plus app
 	 */
-	currentVersion: "1.1.5",
+	currentVersion: "1.1.6",
 
 	/**
 	 * Check for updates from remote repository
@@ -552,44 +555,58 @@ const Utils = {
 	 */
 	async checkForUpdates() {
 		try {
-			const url = "https://cdn.jsdelivr.net/gh/ivLis-Studio/lyrics-plus@main/version.txt";
+			// Try multiple CDN URLs to avoid CORS issues
+			const urls = [
+				"https://raw.githubusercontent.com/ivLis-Studio/lyrics-plus/main/version.txt",
+				"https://cdn.jsdelivr.net/gh/ivLis-Studio/lyrics-plus@main/version.txt",
+				"https://ghfast.top/https://raw.githubusercontent.com/ivLis-Studio/lyrics-plus/main/version.txt",
+				"https://corsproxy.io/?url=https://raw.githubusercontent.com/ivLis-Studio/lyrics-plus/main/version.txt"
+			];
+			
 			let latestVersion = null;
+			let lastError = null;
 
-			try {
-				const controller = new AbortController();
-				const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+			for (const url of urls) {
+				try {
+					const controller = new AbortController();
+					const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout per attempt
 
-				const headers = {
-					'Accept': 'text/plain, */*',
-					'Cache-Control': 'no-cache'
-				};
+					const response = await fetch(url, {
+						signal: controller.signal,
+						cache: 'no-cache',
+						headers: {
+							'Accept': 'text/plain, */*',
+						}
+					});
 
-				const response = await fetch(url, {
-					signal: controller.signal,
-					mode: 'cors',
-					headers
-				});
+					clearTimeout(timeoutId);
 
-				clearTimeout(timeoutId);
+					if (!response.ok) {
+						throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+					}
 
-				if (!response.ok) {
-					throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+					latestVersion = (await response.text()).trim();
+					
+					// If we successfully got a version, break the loop
+					if (latestVersion && /^\d+\.\d+\.\d+$/.test(latestVersion)) {
+						break;
+					}
+
+				} catch (error) {
+					console.warn(`Failed to fetch from ${url}:`, error.message);
+					lastError = error;
+					// Continue to next URL
+					continue;
 				}
-
-				latestVersion = (await response.text()).trim();
-
-			} catch (error) {
-				console.warn(`Failed to fetch from ${url}:`, error.message);
-				throw error;
 			}
 
 			if (!latestVersion) {
-				throw new Error('Failed to get version from URL');
+				throw lastError || new Error('모든 URL에서 버전 정보를 가져오지 못했습니다');
 			}
 
 			// Validate version format (should be like "1.2.3")
 			if (!/^\d+\.\d+\.\d+$/.test(latestVersion)) {
-				throw new Error(`Invalid version format: ${latestVersion}`);
+				throw new Error(`잘못된 버전 형식: ${latestVersion}`);
 			}
 
 			const hasUpdate = this.compareVersions(latestVersion, this.currentVersion) > 0;
@@ -611,6 +628,8 @@ const Utils = {
 				errorMessage = "브라우저 보안 정책으로 인한 제한";
 			} else if (error.message.includes('HTTP')) {
 				errorMessage = "서버 응답 오류";
+			} else if (error.message.includes('모든 URL')) {
+				errorMessage = error.message;
 			} else {
 				errorMessage = error.message;
 			}

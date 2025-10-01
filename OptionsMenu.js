@@ -13,16 +13,20 @@ const OptionsMenuItemIcon = react.createElement(
 
 // Optimized OptionsMenuItem with better performance
 const OptionsMenuItem = react.memo(({ onSelect, value, isSelected }) => {
+	// React 130 방지: Hook 순서 일관성 유지
 	const menuItemProps = useMemo(() => ({
 		onClick: onSelect,
 		icon: isSelected ? OptionsMenuItemIcon : null,
 		trailingIcon: isSelected ? OptionsMenuItemIcon : null,
 	}), [onSelect, isSelected]);
 
+	// React 31 방지: value가 유효한지 확인
+	const safeValue = value || '';
+
 	return react.createElement(
 		Spicetify.ReactComponent.MenuItem,
 		menuItemProps,
-		value
+		safeValue
 	);
 });
 
@@ -37,15 +41,21 @@ const OptionsMenu = react.memo(({ options, onSelect, selected, defaultValue, bol
 	 *      </button>
 	 * </Spicetify.ReactComponent.ContextMenu>
 	 */
+	// React 130 방지: Hook은 항상 같은 순서로 호출
 	const menuRef = react.useRef(null);
+
+	// React 31 방지: options 배열 유효성 검사
+	const safeOptions = Array.isArray(options) ? options : [];
+
 	return react.createElement(
 		Spicetify.ReactComponent.ContextMenu,
 		{
 			menu: react.createElement(
 				Spicetify.ReactComponent.Menu,
 				{},
-				options.map(({ key, value }) =>
+				safeOptions.map(({ key, value }) =>
 					react.createElement(OptionsMenuItem, {
+						key: key, // React warning 방지를 위한 key prop 추가
 						value,
 						onSelect: () => {
 							onSelect(key);
@@ -100,14 +110,15 @@ const SettingRowDescription = ({ icon, text }) => {
 	return react.createElement(
 		"div",
 		{ className: "setting-row-with-icon" },
-		react.createElement("svg", {
+		// React 310 방지: icon이 문자열이고 비어있지 않을 때만 렌더링
+		icon && typeof icon === "string" && icon && react.createElement("svg", {
 			width: 16,
 			height: 16,
 			viewBox: "0 0 16 16",
 			fill: "currentColor",
 			dangerouslySetInnerHTML: { __html: icon },
 		}),
-		react.createElement("span", null, text)
+		react.createElement("span", null, text || '')
 	);
 };
 
@@ -120,50 +131,147 @@ function openOptionsModal(title, items, onChange, eventType = null) {
 		react.createElement("style", {
 			dangerouslySetInnerHTML: {
 				__html: `
-#${APP_NAME}-config-container { padding: 12px 16px; }
-#${APP_NAME}-config-container .setting-row {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto;
-	gap: 12px;
-	align-items: center;
-	padding: 8px 0;
-	border-bottom: 1px solid rgba(255,255,255,.06);
+/* Microsoft Fluent Design - 변환 설정 모달 */
+#${APP_NAME}-config-container {
+	padding: 24px;
+	background: #1a1a1a;
+	color: #ffffff;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
+
+#${APP_NAME}-config-container .setting-row {
+	padding: 0;
+	margin: 0;
+	background: transparent;
+	border: none;
+	border-bottom: 1px solid #2b2b2b;
+	border-radius: 0;
+	transition: background 0.1s ease;
+}
+
+#${APP_NAME}-config-container .setting-row:hover {
+	background: rgba(255,255,255,0.02);
+}
+
+#${APP_NAME}-config-container .setting-row:last-child {
+	border-bottom: none;
+}
+
+#${APP_NAME}-config-container .setting-row-content {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 32px;
+	padding: 16px 0;
+	min-height: 64px;
+}
+
+#${APP_NAME}-config-container .setting-row-left {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+#${APP_NAME}-config-container .setting-row-right {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+}
+
+#${APP_NAME}-config-container .setting-name {
+	font-weight: 500;
+	font-size: 14px;
+	color: #ffffff;
+	line-height: 1.4;
+}
+
+#${APP_NAME}-config-container .setting-description {
+	font-size: 12px;
+	color: #8a8a8a;
+	line-height: 1.5;
+}
+
 #${APP_NAME}-config-container .setting-row-with-icon {
 	display: flex;
 	align-items: center;
 	gap: 12px;
+	color: #ffffff;
+	font-weight: 500;
+	font-size: 14px;
 }
-#${APP_NAME}-config-container .setting-row:last-child { border-bottom: none; }
-#${APP_NAME}-config-container .col.description { font-weight: 600; opacity: .9; }
-#${APP_NAME}-config-container .col.action { display: inline-flex; gap: 8px; align-items: center; justify-content: flex-end; }
-#${APP_NAME}-config-container input, #${APP_NAME}-config-container select {
-	background: rgba(255,255,255,.04);
-	border: 1px solid rgba(255,255,255,.08);
-	border-radius: 4px;
-	padding: 8px 12px;
-	width: min(320px, 100%);
-	outline: none;
-	transition: background .2s ease;
-	color: rgba(255,255,255,.95);
+
+#${APP_NAME}-config-container .setting-row-with-icon svg {
+	flex-shrink: 0;
+	opacity: 0.9;
 }
+
+/* Select dropdown */
+#${APP_NAME}-config-container select {
+	background: #2b2b2b !important;
+	border: 1px solid #3d3d3d !important;
+	border-radius: 2px !important;
+	padding: 10px 32px 10px 12px !important;
+	width: 200px !important;
+	outline: none !important;
+	color: #ffffff !important;
+	transition: border-color 0.1s ease !important;
+	font-size: 13px !important;
+	font-family: var(--font-family, -apple-system, BlinkMacSystemFont, sans-serif) !important;
+	min-height: 36px !important;
+	height: auto !important;
+	box-sizing: border-box !important;
+	appearance: none !important;
+	background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M3 6l5 5.794L13 6z"/></svg>') !important;
+	background-repeat: no-repeat !important;
+	background-position: right 10px center !important;
+	cursor: pointer !important;
+}
+
 #${APP_NAME}-config-container select:hover {
-	background: rgba(255,255,255,.1);
+	border-color: #505050 !important;
+	background: #2b2b2b !important;
 }
+
+#${APP_NAME}-config-container select:focus {
+	border-color: #0078d4 !important;
+	background: #2b2b2b !important;
+	box-shadow: none !important;
+}
+
 #${APP_NAME}-config-container select option {
-	background-color: #121212;
-	color: #f2f2f2;
+	background-color: #2b2b2b;
+	color: #ffffff;
+	padding: 8px;
 }
-#${APP_NAME}-config-container select option:hover {
-	background-color: #2a2a2a;
-	color: #fff;
+
+/* Button */
+#${APP_NAME}-config-container .btn {
+	background: #2b2b2b;
+	border: 1px solid #3d3d3d;
+	border-radius: 2px;
+	color: #ffffff;
+	font-weight: 400;
+	padding: 0 16px;
+	min-height: 36px;
+	cursor: pointer;
+	transition: all 0.1s ease;
 }
-#${APP_NAME}-config-container select option:checked {
-	background-color: #2a2a2a;
-	color: #fff;
+
+#${APP_NAME}-config-container .btn:hover:not(:disabled) {
+	background: #323232;
+	border-color: #505050;
 }
-#${APP_NAME}-config-container .adjust-value { min-width: 48px; text-align: center; }
-#${APP_NAME}-config-container .switch, #${APP_NAME}-config-container .btn { height: 28px; }
+
+#${APP_NAME}-config-container .btn:active:not(:disabled) {
+	background: #1f1f1f;
+}
+
+#${APP_NAME}-config-container .btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
 `
 			}
 		}),
