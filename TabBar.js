@@ -84,7 +84,7 @@ const ResizeObserverManager = {
 						try {
 							cb(entries[0]);
 						} catch (error) {
-							console.error('Error in resize callback:', error);
+							// Error ignored
 						}
 					});
 				}
@@ -204,7 +204,6 @@ const ContainerManager = {
 					setTimeout(search, 100);
 				} else {
 					this.promise = null;
-					console.warn("TabBarContext: Could not find topbar container after max attempts");
 					reject(new Error("Container not found"));
 				}
 			};
@@ -227,7 +226,37 @@ const ContainerManager = {
 
 const TabBarContext = ({ children }) => {
 	const [container, setContainer] = useState(null);
+	const [portalHost, setPortalHost] = useState(() => (window.lyricsPlusEnsureReactDOM?.() || (typeof reactDOM !== "undefined" ? reactDOM : null)));
 	const callbackRef = useRef(null);
+
+	useEffect(() => {
+		if (portalHost?.createPortal) {
+			return;
+		}
+
+		let cancelled = false;
+		let attempts = 0;
+		const maxAttempts = 60;
+
+		const checkPortalHost = () => {
+			if (cancelled) return;
+			const resolved = window.lyricsPlusEnsureReactDOM?.() || (typeof reactDOM !== "undefined" ? reactDOM : window.Spicetify?.ReactDOM ?? window.ReactDOM ?? null);
+			if (resolved?.createPortal) {
+				setPortalHost(resolved);
+				return;
+			}
+			if (attempts < maxAttempts) {
+				attempts++;
+				setTimeout(checkPortalHost, 50);
+			}
+		};
+
+		checkPortalHost();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [portalHost]);
 
 	useEffect(() => {
 		callbackRef.current = (foundContainer) => {
@@ -245,11 +274,11 @@ const TabBarContext = ({ children }) => {
 		};
 	}, []);
 
-	if (!container) {
+	if (!container || !portalHost?.createPortal) {
 		return null;
 	}
 
-	return reactDOM.createPortal(
+	return portalHost.createPortal(
 		react.createElement(
 			"div",
 			{

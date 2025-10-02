@@ -153,10 +153,6 @@ const ProviderIvLyrics = (() => {
 				}
 			});
 
-			if (window.lyricsPlusDebug) {
-				console.log("ivLyrics karaoke data:", result);
-			}
-
 			return result;
 		}
 

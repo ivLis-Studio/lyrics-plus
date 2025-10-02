@@ -1958,7 +1958,6 @@ const ConfigModal = () => {
 										`;
 									}
 								} catch (error) {
-									console.error("Update check failed:", error);
 									if (resultContainer) {
 										resultContainer.innerHTML = `
 											<div style="
@@ -2081,5 +2080,9 @@ function openConfig() {
 	document.body.appendChild(overlay);
 
 	// Render React component
-	reactDOM.render(configContainer, modalContainer);
+	const dom = window.lyricsPlusEnsureReactDOM?.() || (typeof reactDOM !== "undefined" ? reactDOM : window.Spicetify?.ReactDOM ?? window.ReactDOM ?? null);
+	if (!dom?.render) {
+		return;
+	}
+	dom.render(configContainer, modalContainer);
 }

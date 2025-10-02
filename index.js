@@ -5,8 +5,24 @@
 /** @type {React} */
 const react = Spicetify.React;
 const { useState, useEffect, useCallback, useMemo, useRef } = react;
-/** @type {import("react").ReactDOM} */
-const reactDOM = Spicetify.ReactDOM;
+/** @type {import("react").ReactDOM | null} */
+let reactDOM = Spicetify.ReactDOM;
+
+function ensureReactDOM() {
+	if (reactDOM && (typeof reactDOM.render === "function" || typeof reactDOM.createPortal === "function")) {
+		return reactDOM;
+	}
+
+	const resolved = (window?.Spicetify?.ReactDOM) || window?.ReactDOM || null;
+	if (resolved && resolved !== reactDOM) {
+		reactDOM = resolved;
+		window.reactDOM = resolved;
+	}
+
+	return reactDOM;
+}
+
+window.lyricsPlusEnsureReactDOM = ensureReactDOM;
 const spotifyVersion = Spicetify.Platform.version;
 
 // Define a function called "render" to specify app entry point
@@ -22,7 +38,6 @@ const StorageManager = {
 			const value = localStorage.getItem(key);
 			return value !== null ? value === "true" : defaultVal;
 		} catch (error) {
-			console.warn(`Failed to read config '${key}':`, error);
 			return defaultVal;
 		}
 	},
@@ -33,14 +48,14 @@ const StorageManager = {
 			const value = Spicetify?.LocalStorage?.get(key);
 			if (typeof value === "string") return value;
 		} catch (error) {
-			console.warn(`Failed to read from Spicetify LocalStorage '${key}':`, error);
+			// Error ignored
 		}
 
 		// Fallback to regular localStorage
 		try {
 			return localStorage.getItem(key);
 		} catch (error) {
-			console.warn(`Failed to read from localStorage '${key}':`, error);
+			// Error ignored
 		}
 
 		return null;
@@ -55,7 +70,7 @@ const StorageManager = {
 			Spicetify?.LocalStorage?.set(key, stringValue);
 			success = true;
 		} catch (error) {
-			console.warn(`Failed to write to Spicetify LocalStorage '${key}':`, error);
+			// Error ignored
 		}
 
 		// Fallback to regular localStorage
@@ -63,11 +78,11 @@ const StorageManager = {
 			localStorage.setItem(key, stringValue);
 			success = true;
 		} catch (error) {
-			console.warn(`Failed to write to localStorage '${key}':`, error);
+			// Error ignored
 		}
 
 		if (!success) {
-			console.error(`Failed to persist data for key '${key}'`);
+			// Failed to persist data
 		}
 	},
 
@@ -334,8 +349,6 @@ const CacheManager = {
 		for (let i = 0; i < toRemove; i++) {
 			this._cache.delete(entries[i][0]);
 		}
-
-		console.log(`LyricsPlus: Performed aggressive cache cleanup, removed ${toRemove} entries`);
 	},
 
 	_estimateSize(data) {
@@ -561,7 +574,6 @@ class LyricsContainer extends react.Component {
 			try {
 				data = await Providers[id](trackInfo);
 			} catch (e) {
-				console.error(e);
 				continue;
 			}
 
@@ -678,16 +690,6 @@ class LyricsContainer extends react.Component {
 				defaultLanguage = Utils.detectLanguage(tempState.unsynced);
 			}
 
-			// Debug logging
-			if (window.lyricsPlusDebug) {
-				console.log("fetchLyrics language detection:", {
-					uri: tempState.uri,
-					defaultLanguage,
-					hasSynced: !!tempState.synced,
-					hasUnsynced: !!tempState.unsynced,
-				});
-			}
-
 			// reset and apply - preserve cached translations if available
 			this.setState({
 				furigana: null,
@@ -712,7 +714,6 @@ class LyricsContainer extends react.Component {
 			...this.applyTranslationStates(tempState)
 		});
 		} catch (error) {
-			console.error("Error in fetchLyrics:", error);
 			this.setState({
 				error: `Failed to fetch lyrics: ${error.message}`,
 				isLoading: false,
@@ -757,20 +758,8 @@ class LyricsContainer extends react.Component {
 			try {
 				friendlyLanguage = new Intl.DisplayNames(["en"], { type: "language" }).of(originalLanguage.split("-")[0])?.toLowerCase();
 			} catch (error) {
-				console.warn("Failed to get friendly language name:", error);
+				// Error ignored
 			}
-		}
-		
-		// Debug logging for troubleshooting
-		if (window.lyricsPlusDebug) {
-			console.log("Language detection debug:", {
-				originalLanguage,
-				friendlyLanguage,
-				lyricsLength: lyrics?.length,
-				firstLineText: lyrics?.[0]?.text?.substring(0, 50),
-				languageOverride: CONFIG.visual["translate:detect-language-override"],
-				stateLanguage: this.state.language
-			});
 		}
 		
 		// For Gemini mode, use generic keys if no specific language detected
@@ -832,7 +821,6 @@ class LyricsContainer extends react.Component {
 			this._dmResults[currentUri].mode1 = result;
 			updateCombinedLyrics();
 		}).catch(error => {
-			console.warn("Display Mode 1 translation failed:", error.message);
 			// Still update UI even if one mode fails
 			updateCombinedLyrics();
 		});
@@ -842,7 +830,6 @@ class LyricsContainer extends react.Component {
 			this._dmResults[currentUri].mode2 = result;
 			updateCombinedLyrics();
 		}).catch(error => {
-			console.warn("Display Mode 2 translation failed:", error.message);
 			// Still update UI even if one mode fails
 			updateCombinedLyrics();
 		});
@@ -858,7 +845,6 @@ class LyricsContainer extends react.Component {
 	optimizeTranslations(originalLyrics, mode1, mode2) {
 		// React 31 방지: 배열 유효성 검사
 		if (!originalLyrics || !Array.isArray(originalLyrics)) {
-			console.warn('optimizeTranslations: Invalid originalLyrics', { originalLyrics, type: typeof originalLyrics });
 			return [];
 		}
 
@@ -1055,11 +1041,6 @@ class LyricsContainer extends react.Component {
 						!Utils.isSectionHeader(line.trim())
 					);
 					
-					// Log debug info
-					console.log(`[LyricsPlus] Original non-section lines: ${originalNonSectionLines.length}, Translation lines: ${cleanTranslationLines.length}`);
-					console.log(`[LyricsPlus] Original lines sample:`, originalNonSectionLines.slice(0, 3));
-					console.log(`[LyricsPlus] Translation lines sample:`, cleanTranslationLines.slice(0, 3));
-					
 					// Use the clean translation lines for mapping
 					lines = cleanTranslationLines;
 					
@@ -1088,11 +1069,6 @@ class LyricsContainer extends react.Component {
 						// Find the translation index for this non-section, non-empty line
 						const positionInNonSectionLines = originalNonSectionIndices.indexOf(i);
 						const translatedText = lines[positionInNonSectionLines]?.trim() || "";
-						
-						// Debug logging for more lines to see the pattern
-						if (i < 20) {
-							console.log(`[LyricsPlus] Line ${i}: "${originalText}" -> position: ${positionInNonSectionLines}, translation: "${translatedText || 'N/A'}"`);
-						}
 						
 						return {
 							...line,
@@ -1160,23 +1136,11 @@ class LyricsContainer extends react.Component {
 		if (provider === "geminiKo") {
 			// If we have a cached language in state, use it
 			if (this.state.language) {
-				if (window.lyricsPlusDebug) {
-					console.log("Gemini mode - Using cached language:", this.state.language);
-				}
 				return this.state.language;
 			}
 			
 			// Otherwise, detect language from lyrics
 			const detectedLanguage = Utils.detectLanguage(lyrics);
-			
-			// Debug logging
-			if (window.lyricsPlusDebug) {
-				console.log("Gemini mode - Language detection result:", {
-					detectedLanguage,
-					lyricsLength: lyrics?.length,
-					firstLineText: lyrics?.[0]?.text?.substring(0, 50)
-				});
-			}
 			
 			return detectedLanguage;
 		}
@@ -1184,32 +1148,16 @@ class LyricsContainer extends react.Component {
 		// For Kuromoji mode, use language override if set
 		if (CONFIG.visual["translate:detect-language-override"] !== "off") {
 			const overrideLanguage = CONFIG.visual["translate:detect-language-override"];
-			// Debug logging
-			if (window.lyricsPlusDebug) {
-				console.log("Traditional mode - Using language override:", overrideLanguage);
-			}
 			return overrideLanguage;
 		}
 		
 		// If we have a cached language in state, use it
 		if (this.state.language) {
-			if (window.lyricsPlusDebug) {
-				console.log("Traditional mode - Using cached language:", this.state.language);
-			}
 			return this.state.language;
 		}
 		
 		// Otherwise, detect language from lyrics
 		const detectedLanguage = Utils.detectLanguage(lyrics);
-		
-		// Debug logging
-		if (window.lyricsPlusDebug) {
-			console.log("Kuromoji mode - Language detection result:", {
-				detectedLanguage,
-				lyricsLength: lyrics?.length,
-				firstLineText: lyrics?.[0]?.text?.substring(0, 50)
-			});
-		}
 		
 		return detectedLanguage;
 	}
@@ -1304,7 +1252,6 @@ class LyricsContainer extends react.Component {
 			return res;
 		} catch (error) {
 			Spicetify.showNotification(`Conversion failed: ${error.message || "Unknown error"}`, true, 3000);
-			console.error("Translation error:", error);
 		}
 	}
 
@@ -1455,13 +1402,11 @@ class LyricsContainer extends react.Component {
 
 				Spicetify.showNotification(`✓ Successfully loaded ${parsedKeys.join(", ")} lyrics from file`, false, 3000);
 			} catch (e) {
-				console.error(e);
 				Spicetify.showNotification("Failed to load lyrics: Invalid file format", true, 3000);
 			}
 		};
 
 		reader.onerror = (e) => {
-			console.error(e);
 			Spicetify.showNotification("Failed to read file: File may be corrupted", true, 3000);
 		};
 
@@ -1477,7 +1422,6 @@ class LyricsContainer extends react.Component {
 	componentDidMount() {
 		// Prevent duplicate global registration
 		if (window.lyricContainer && window.lyricContainer !== this) {
-			console.warn('Multiple LyricsContainer instances detected, cleaning up previous instance');
 			if (typeof window.lyricContainer.componentWillUnmount === 'function') {
 				window.lyricContainer.componentWillUnmount();
 			}
@@ -1496,51 +1440,9 @@ class LyricsContainer extends react.Component {
 		// Check for updates when app starts
 		setTimeout(() => {
 			Utils.showUpdateNotificationIfAvailable().catch(error => {
-				console.warn("Failed to check for updates:", error);
+				// Error ignored
 			});
 		}, 3000); // Delay to avoid interfering with app startup
-
-		// Enable debug mode for troubleshooting
-		window.lyricsPlusDebug = localStorage.getItem("lyrics-plus:debug") === "true";
-
-		// Add global function to toggle debug mode
-		window.toggleLyricsPlusDebug = () => {
-			window.lyricsPlusDebug = !window.lyricsPlusDebug;
-			localStorage.setItem("lyrics-plus:debug", window.lyricsPlusDebug.toString());
-			console.log("Lyrics Plus debug mode:", window.lyricsPlusDebug ? "ON" : "OFF");
-		};
-
-		// Performance monitoring utilities
-		if (!window.lyricsPerformance) {
-			window.lyricsPerformance = {
-				getCacheStats: () => CacheManager.getStats(),
-				enableCacheStats: () => CacheManager.enableStats(),
-				clearCache: () => {
-					CacheManager.clear();
-					CACHE = {};
-					console.log("All caches cleared");
-				},
-				getMemoryUsage: () => {
-					if (performance.memory) {
-						const { usedJSHeapSize, totalJSHeapSize, jsHeapSizeLimit } = performance.memory;
-						return {
-							used: `${(usedJSHeapSize / 1024 / 1024).toFixed(2)} MB`,
-							total: `${(totalJSHeapSize / 1024 / 1024).toFixed(2)} MB`,
-							limit: `${(jsHeapSizeLimit / 1024 / 1024).toFixed(2)} MB`,
-							percentage: `${(usedJSHeapSize / jsHeapSizeLimit * 100).toFixed(2)}%`
-						};
-					}
-					return "Memory API not available";
-				},
-				getAnimationStats: () => {
-					return {
-						activeCallbacks: window.AnimationManager?.callbacks?.size || 0,
-						isActive: window.AnimationManager?.active || false,
-						visibilityListeners: window.VisibilityManager?.listeners?.size || 0
-					};
-				}
-			};
-		}
 
 		// Initialize enhanced cache system only once
 		if (!CacheManager._initialized) {
@@ -1914,7 +1816,27 @@ class LyricsContainer extends react.Component {
 
 		this.state.mode = mode;
 
-		const out = react.createElement(
+		const topBarProps = {
+			links: CONFIG.modes,
+			activeLink: CONFIG.modes[mode] || CONFIG.modes[0],
+			lockLink: CONFIG.locked !== -1 ? CONFIG.modes[CONFIG.locked] : null,
+			switchCallback: (selectedMode) => {
+				const modeIndex = CONFIG.modes.indexOf(selectedMode);
+				if (modeIndex !== -1) {
+					this.switchTo(modeIndex);
+				}
+			},
+			lockCallback: (selectedMode) => {
+				const modeIndex = CONFIG.modes.indexOf(selectedMode);
+				if (modeIndex !== -1) {
+					this.lockIn(modeIndex);
+				}
+			}
+		};
+
+	const topBarContent = typeof TopBarContent === "function"
+		? react.createElement(TopBarContent, topBarProps)
+		: null;		const out = react.createElement(
 			"div",
 			{
 				className: `lyrics-lyricsContainer-LyricsContainer${CONFIG.visual["fade-blur"] ? " blur-enabled" : ""}${
@@ -1927,23 +1849,7 @@ class LyricsContainer extends react.Component {
 				},
 			},
 			// Tab bar for mode switching
-			react.createElement(TopBarContent, {
-				links: CONFIG.modes,
-				activeLink: CONFIG.modes[mode] || CONFIG.modes[0],
-				lockLink: CONFIG.locked !== -1 ? CONFIG.modes[CONFIG.locked] : null,
-				switchCallback: (selectedMode) => {
-					const modeIndex = CONFIG.modes.indexOf(selectedMode);
-					if (modeIndex !== -1) {
-						this.switchTo(modeIndex);
-					}
-				},
-				lockCallback: (selectedMode) => {
-					const modeIndex = CONFIG.modes.indexOf(selectedMode);
-					if (modeIndex !== -1) {
-						this.lockIn(modeIndex);
-					}
-				}
-			}),
+			topBarContent,
 			react.createElement("div", {
 				id: "lyrics-plus-gradient-background",
 				style: backgroundStyle,
@@ -2054,15 +1960,6 @@ class LyricsContainer extends react.Component {
 				// Reset Translation button - show when there are lyrics and potential translations
 				(() => {
 					const hasLyrics = this.state.synced || this.state.unsynced;
-					if (window.lyricsPlusDebug) {
-						console.log("Reset button debug:", {
-							hasLyrics,
-							synced: !!this.state.synced,
-							unsynced: !!this.state.unsynced,
-							romaji: !!this.state.romaji,
-							furigana: !!this.state.furigana,
-						});
-					}
 					return hasLyrics;
 				})() &&
 				react.createElement(
@@ -2095,8 +1992,13 @@ class LyricsContainer extends react.Component {
 			activeItem
 		);
 
-		if (this.state.isFullscreen) return reactDOM.createPortal(out, this.fullscreenContainer);
-		if (fadLyricsContainer) return reactDOM.createPortal(out, fadLyricsContainer);
+		const dom = ensureReactDOM();
+		if (this.state.isFullscreen && dom?.createPortal && this.fullscreenContainer) {
+			return dom.createPortal(out, this.fullscreenContainer);
+		}
+		if (fadLyricsContainer && dom?.createPortal) {
+			return dom.createPortal(out, fadLyricsContainer);
+		}
 		return out;
 	}
 

@@ -176,10 +176,6 @@ const Utils = {
 	detectLanguage(lyrics) {
 		// Safe array check
 		if (!lyrics || !Array.isArray(lyrics) || lyrics.length === 0) {
-			// Debug logging
-			if (window.lyricsPlusDebug) {
-				console.log("detectLanguage: No valid lyrics provided", { lyrics, type: typeof lyrics, isArray: Array.isArray(lyrics) });
-			}
 			return null;
 		}
 
@@ -222,13 +218,6 @@ const Utils = {
 
 		// CJKE 언어 감지 로직: CJK 또는 영어가 있는지 확인
 		if (!cjkMatch && !englishMatch) {
-			// Debug logging for non-CJKE languages
-			if (window.lyricsPlusDebug) {
-				console.log("detectLanguage: No CJKE characters found", { 
-					rawLyrics: rawLyrics.substring(0, 100),
-					lyricsLength: lyrics.length 
-				});
-			}
 			// Return null instead of undefined for non-CJKE languages
 			this._cacheLanguageResult(cacheKey, null);
 			return null;
@@ -272,12 +261,6 @@ const Utils = {
 	processTranslatedLyrics(translated, original) {
 		// Ensure both inputs are arrays
 		if (!Array.isArray(original) || !Array.isArray(translated)) {
-			console.warn('processTranslatedLyrics: Invalid input types', { 
-				original: typeof original, 
-				translated: typeof translated,
-				originalIsArray: Array.isArray(original),
-				translatedIsArray: Array.isArray(translated)
-			});
 			return Array.isArray(original) ? original : [];
 		}
 
@@ -547,7 +530,7 @@ const Utils = {
 	/**
 	 * Current version of the lyrics-plus app
 	 */
-	currentVersion: "1.1.6",
+	currentVersion: "1.1.7",
 
 	/**
 	 * Check for updates from remote repository
@@ -593,7 +576,6 @@ const Utils = {
 					}
 
 				} catch (error) {
-					console.warn(`Failed to fetch from ${url}:`, error.message);
 					lastError = error;
 					// Continue to next URL
 					continue;
@@ -617,8 +599,6 @@ const Utils = {
 				latestVersion
 			};
 		} catch (error) {
-			console.warn("Failed to check for updates:", error);
-
 			let errorMessage = "알 수 없는 오류";
 			if (error.name === 'AbortError') {
 				errorMessage = "요청 시간 초과";
@@ -667,13 +647,12 @@ const Utils = {
 	/**
 	 * Show update notification if available
 	 */
-	async showUpdateNotificationIfAvailable() {
+		async showUpdateNotificationIfAvailable() {
 		try {
 			const updateInfo = await this.checkForUpdates();
 
 			// Don't show notification if there was an error
 			if (updateInfo.error) {
-				console.warn('Update check failed, skipping notification:', updateInfo.error);
 				return updateInfo;
 			}
 
@@ -699,7 +678,6 @@ const Utils = {
 			return updateInfo;
 		} catch (error) {
 			// Silently fail for automatic update checks to avoid spam
-			console.warn('Automatic update check failed:', error);
 			return {
 				hasUpdate: false,
 				currentVersion: this.currentVersion,

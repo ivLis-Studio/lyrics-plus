@@ -32,7 +32,6 @@ class Translator {
 			await this.injectExternals(lang);
 			await this.createTranslator(lang);
 		} catch (error) {
-			console.error(`Failed to initialize translator for language ${lang}:`, error);
 			throw error;
 		}
 	}
@@ -63,8 +62,6 @@ class Translator {
 		};
 
 		const tryFetch = async (url) => {
-			console.log("[LyricsPlus] Trying endpoint:", url);
-			
 			const controller = new AbortController();
 			const timeoutId = setTimeout(() => controller.abort(), 800000);
 
@@ -89,8 +86,6 @@ class Translator {
 		};
 
 		try {
-			console.log("[LyricsPlus] Request body:", { artist, title, textLength: text.length, wantSmartPhonetic });
-			
 			let res;
 			let lastError;
 
@@ -98,11 +93,9 @@ class Translator {
 				try {
 					res = await tryFetch(url);
 					if (res.ok) {
-						console.log("[LyricsPlus] Successful endpoint:", url);
 						break;
 					}
 				} catch (error) {
-					console.warn("[LyricsPlus] Failed endpoint:", url, error.message);
 					lastError = error;
 					continue;
 				}
@@ -151,13 +144,6 @@ class Translator {
 
 			const data = await res.json();
 			
-			console.log("[LyricsPlus] API Response:", { 
-				cached: data.cached, 
-				hasVi: !!data.vi, 
-				hasPhonetic: !!data.phonetic,
-				error: data.error 
-			});
-			
 			if (data.error) {
 				// 서버에서 반환된 오류 코드별 처리
 				const errorMessage = data.message || "번역에 실패했습니다";
@@ -179,8 +165,6 @@ class Translator {
 			
 			return data;
 		} catch (error) {
-			console.error("[LyricsPlus] API Error:", error);
-			
 			if (error.name === 'AbortError') {
 				throw new Error("번역 요청이 시간 초과되었습니다. 다시 시도해주세요.");
 			}
@@ -231,14 +215,11 @@ class Translator {
 					this.includeExternal(pinyinProPath).catch(() => {});
 					this.includeExternal(tinyPinyinPath).catch(() => {});
 					break;
-			}
-		} catch (error) {
-			console.error(`Failed to load external scripts for language ${langCode}:`, error);
-			throw error;
 		}
+	} catch (error) {
+		throw error;
 	}
-
-	async awaitFinished(language) {
+}	async awaitFinished(language) {
 		const langCode = language?.slice(0, 2);
 		if (this.initializationPromise) {
 			await this.initializationPromise;

@@ -437,11 +437,22 @@ div.lyrics-tabBar-headerItemLink {
 	letter-spacing: -0.06em; /* 글자 간격 더 좁게 */
 }
 
-.lyrics-karaoke-char {
+.lyrics-karaoke-word {
 	display: inline-block;
+	white-space: nowrap;
+}
+
+.lyrics-karaoke-word-space {
+	display: inline;
+	white-space: pre-wrap;
+	letter-spacing: 0;
+	min-width: 0.3em;
+}
+
+.lyrics-karaoke-char {
+	display: inline;
 	position: relative;
 	color: var(--lyrics-color-inactive);
-	transform-origin: center center;
 	/* synced 모드보다 더 좁은 letter-spacing 적용 */
 	letter-spacing: -0.06em;
 	/* 부드러운 transition은 inline style에서 처리 */

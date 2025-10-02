@@ -158,7 +158,7 @@ const AnimationManager = {
 					try {
 						callback();
 					} catch (error) {
-						console.error('Error in animation callback:', error);
+						// Error ignored
 					}
 				});
 				this.lastTime = currentTime;
@@ -195,7 +195,7 @@ const VisibilityManager = {
 			try {
 				callback(isVisible);
 			} catch (error) {
-				console.error('Error in visibility callback:', error);
+				// Error ignored
 			}
 		});
 	}
@@ -294,90 +294,175 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 		}
 	}
 
-	// 글자들을 렌더링
-	localCharIndex = 0;
-	line.syllables.forEach((syllable, syllableIndex) => {
-		if (!syllable || !syllable.text) return;
+	const karaokeBounceEnabled = CONFIG.visual["karaoke-bounce"];
 
-		const syllableText = syllable.text || "";
-		const charArray = Array.from(syllableText);
+	const charRenderData = allChars.map((charInfo, index) => {
+		const isCharActive = activeLocalIndex === index;
+		const isCharSung = isActive && position > charInfo.charEnd;
 
-		charArray.forEach((char, charIndex) => {
-			const charInfo = allChars[localCharIndex];
-			const isCharActive = activeLocalIndex === localCharIndex;
-			const isCharSung = isActive && position > charInfo.charEnd;
+		const currentGlobalIndex = charInfo.globalIndex;
+		let waveOffset = 0;
+		let waveScale = 1;
+		let transitionDelay = 0;
 
-			// 전체 가사에서의 글로벌 위치를 기준으로 거리 계산
-			const currentGlobalIndex = charInfo.globalIndex;
-			let waveOffset = 0;
-			let waveScale = 1;
-			let transitionDelay = 0;
-			
-			// 가라오케 바운스 설정 확인
-			const karaokeBounceEnabled = CONFIG.visual["karaoke-bounce"];
-			
-			// 전체 가사의 현재 활성 글자와 비교 (바운스 효과가 활성화된 경우에만)
-			if (karaokeBounceEnabled && activeGlobalCharIndex >= 0) {
-				const distance = Math.abs(currentGlobalIndex - activeGlobalCharIndex);
-				
-				// 앞뒤 2글자까지 영향받도록 제한
-				if (distance <= 2) {
-					// 매우 부드러운 시간 기반 순차적 애니메이션
-					transitionDelay = distance * 0.05; // 각 글자마다 50ms 딜레이
-					
-					// 더 부드러운 이차함수 곡선: y = -(x/2)^2 + 1
-					const normalizedDistance = distance / 2;
-					const waveStrength = Math.max(0, 1 - normalizedDistance * normalizedDistance);
-					
-					// 더 섬세한 움직임
-					waveOffset = -10 * waveStrength; // 최대 -10px 위로
-					waveScale = 1 + 0.12 * waveStrength; // 최대 1.12배 확대
+		if (karaokeBounceEnabled && activeGlobalCharIndex >= 0) {
+			const distance = Math.abs(currentGlobalIndex - activeGlobalCharIndex);
+			if (distance <= 2) {
+				transitionDelay = distance * 0.05;
+				const normalizedDistance = distance / 2;
+				const waveStrength = Math.max(0, 1 - normalizedDistance * normalizedDistance);
+				waveOffset = -10 * waveStrength;
+				waveScale = 1 + 0.12 * waveStrength;
+			}
+		}
+
+		let className = "lyrics-karaoke-char";
+		if (isCharActive) {
+			className += " active";
+		} else if (isCharSung) {
+			className += " sung";
+		}
+
+		const style = (karaokeBounceEnabled && activeGlobalCharIndex >= 0) ? {
+			transform: `translateY(${waveOffset}px) scale(${waveScale})`,
+			transition: `transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${transitionDelay}s, color 0.2s ease-out`,
+			transitionDelay: `${transitionDelay}s`
+		} : {
+			transition: "color 0.2s ease-out"
+		};
+
+		return {
+			char: charInfo.char,
+			className,
+			style,
+			key: `char-${charInfo.globalIndex}`,
+			syllableIndex: charInfo.syllableIndex
+		};
+	});
+
+	// Build the actual text from syllables (not line.text which might be translated)
+	const rawLineText = line.syllables
+		.map(syllable => syllable?.text || "")
+		.join("");
+	const tokens = [];
+	const whitespacePattern = /([\s\u00a0\u1680\u2000-\u200b\u202f\u205f\u3000]+)/gu;
+	let lastIndex = 0;
+	let match;
+
+	while ((match = whitespacePattern.exec(rawLineText)) !== null) {
+		if (match.index > lastIndex) {
+			tokens.push({ type: "word", value: rawLineText.slice(lastIndex, match.index) });
+		}
+		tokens.push({ type: "space", value: match[0] });
+		lastIndex = match.index + match[0].length;
+	}
+
+	if (lastIndex < rawLineText.length) {
+		tokens.push({ type: "word", value: rawLineText.slice(lastIndex) });
+	}
+
+	const hasWhitespaceToken = tokens.some(token => token.type === "space");
+	// Count only actual characters from charRenderData (no spaces)
+	const actualCharCount = charRenderData.length;
+	// Count characters in word tokens (excluding space tokens)
+	const wordTokenChars = tokens
+		.filter(token => token.type === "word")
+		.reduce((sum, token) => sum + Array.from(token.value).length, 0);
+
+	// Word grouping only works if syllable text matches token words exactly
+	let useWordGrouping = hasWhitespaceToken && wordTokenChars === actualCharCount;
+
+	if (useWordGrouping) {
+		let charCursor = 0;
+		let mappingFailed = false;
+
+		tokens.forEach((token, tokenIndex) => {
+			if (mappingFailed) {
+				return;
+			}
+
+			if (token.type === "word") {
+				const wordChars = Array.from(token.value);
+				const wordCharData = charRenderData.slice(charCursor, charCursor + wordChars.length);
+
+				if (wordCharData.length !== wordChars.length) {
+					mappingFailed = true;
+					return;
 				}
+
+				const wordChildren = wordCharData.map(charData =>
+					react.createElement(
+						"span",
+						{
+							key: charData.key,
+							className: charData.className,
+							style: charData.style
+						},
+						charData.char
+					)
+				);
+
+				elements.push(
+					react.createElement(
+						"span",
+						{
+							key: `word-${tokenIndex}`,
+							className: "lyrics-karaoke-word"
+						},
+						wordChildren
+					)
+				);
+
+				charCursor += wordChars.length;
+			} else {
+				elements.push(
+					react.createElement(
+						"span",
+						{
+							key: `space-${tokenIndex}`,
+							className: "lyrics-karaoke-word-space"
+						},
+						token.value
+					)
+				);
 			}
-
-			let className = "lyrics-karaoke-char";
-			if (isCharActive) {
-				className += " active";
-			} else if (isCharSung) {
-				className += " sung";
-			}
-
-			const style = (karaokeBounceEnabled && activeGlobalCharIndex >= 0) ? {
-				transform: `translateY(${waveOffset}px) scale(${waveScale})`,
-				// 더 부드러운 easing 함수 사용
-				transition: `transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${transitionDelay}s, color 0.2s ease-out`,
-				transitionDelay: `${transitionDelay}s`
-			} : {
-				// 바운스 비활성화 시 색상 전환만
-				transition: 'color 0.2s ease-out'
-			};
-
-			elements.push(react.createElement(
-				"span",
-				{
-					key: `${syllableIndex}-${charIndex}`,
-					className,
-					style
-				},
-				char
-			));
-
-			localCharIndex++;
 		});
 
-		// 음절 뒤에 좁은 공백 추가 (마지막 음절 제외)
-		if (syllableIndex < line.syllables.length - 1) {
-			// 좁은 공백 추가
-			elements.push(react.createElement(
-				"span",
-				{
-					key: `space-${syllableIndex}`,
-					className: "lyrics-karaoke-space"
-				},
-				" "
-			));
+		if (mappingFailed || charCursor !== charRenderData.length) {
+			useWordGrouping = false;
+			elements.length = 0;
 		}
-	});
+	}
+
+	if (!useWordGrouping) {
+		charRenderData.forEach((charData, index) => {
+			elements.push(
+				react.createElement(
+					"span",
+					{
+						key: charData.key,
+						className: charData.className,
+						style: charData.style
+					},
+					charData.char
+				)
+			);
+
+			const nextCharData = charRenderData[index + 1];
+			if (nextCharData && nextCharData.syllableIndex !== charData.syllableIndex) {
+				elements.push(
+					react.createElement(
+						"span",
+						{
+							key: `space-${charData.key}`,
+							className: "lyrics-karaoke-space"
+						},
+						" "
+					)
+				);
+			}
+		});
+	}
 
 	return react.createElement("span", { className: "lyrics-karaoke-line" }, elements);
 });
@@ -467,7 +552,6 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 
 	// 유효성 검사는 Hook 호출 후에 수행
 	if (!Array.isArray(lyrics) || lyrics.length === 0) {
-		console.warn('SyncedLyricsPage: Invalid lyrics provided', { lyrics, type: typeof lyrics });
 		return react.createElement(
 			"div",
 			{ className: "lyrics-lyricsContainer-SyncedLyricsPage" },
@@ -905,7 +989,6 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 
 	// 유효성 검사는 Hook 호출 후에 수행
 	if (!Array.isArray(lyrics) || lyrics.length === 0) {
-		console.warn('SyncedExpandedLyricsPage: Invalid lyrics provided', { lyrics, type: typeof lyrics });
 		return react.createElement(
 			"div",
 			{ className: "lyrics-lyricsContainer-UnsyncedLyricsPage" },
@@ -1059,7 +1142,6 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 	const lyricsArray = useMemo(() => {
 		// React 31 방지: 안전한 배열 변환 및 유효성 검사
 		if (!lyrics) {
-			console.warn('UnsyncedLyricsPage: No lyrics provided');
 			return [];
 		}
 		if (Array.isArray(lyrics)) {
@@ -1070,7 +1152,6 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 			return lyrics.split("\n").map((text, index) => ({ text, index }));
 		}
 		// 비어있거나 잘못된 데이터인 경우 빈 배열 반환
-		console.warn('UnsyncedLyricsPage: Invalid lyrics provided', { lyrics, type: typeof lyrics });
 		return [];
 	}, [lyrics]);
 
@@ -1267,26 +1348,32 @@ const LyricsPage = ({ lyricsContainer }) => {
 	const activeMode = lyricsContainer.getCurrentMode();
 	const lockMode = CONFIG.locked;
 
+	const topBarProps = {
+		links: modes,
+		activeLink: modes[activeMode] || modes[0],
+		lockLink: lockMode !== -1 ? modes[lockMode] : null,
+		switchCallback: (mode) => {
+			const modeIndex = modes.indexOf(mode);
+			if (modeIndex !== -1) {
+				lyricsContainer.switchTo(modeIndex);
+			}
+		},
+		lockCallback: (mode) => {
+			const modeIndex = modes.indexOf(mode);
+			if (modeIndex !== -1) {
+				lyricsContainer.lockIn(modeIndex);
+			}
+		}
+	};
+
+	const topBarContent = typeof TopBarContent === "function"
+		? react.createElement(TopBarContent, topBarProps)
+		: null;
+
 	return react.createElement(
 		react.Fragment,
 		null,
-		react.createElement(TopBarContent, {
-			links: modes,
-			activeLink: modes[activeMode] || modes[0],
-			lockLink: lockMode !== -1 ? modes[lockMode] : null,
-			switchCallback: (mode) => {
-				const modeIndex = modes.indexOf(mode);
-				if (modeIndex !== -1) {
-					lyricsContainer.switchTo(modeIndex);
-				}
-			},
-			lockCallback: (mode) => {
-				const modeIndex = modes.indexOf(mode);
-				if (modeIndex !== -1) {
-					lyricsContainer.lockIn(modeIndex);
-				}
-			}
-		}),
+		topBarContent,
 		lyricsContainer.render()
 	);
 };
