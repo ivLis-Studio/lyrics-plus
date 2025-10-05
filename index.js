@@ -2,6 +2,319 @@
 /// <reference types="react" />
 /// <reference path="../../globals.d.ts" />
 
+// Furigana Converter Module for Lyrics Plus
+const FuriganaConverter = (() => {
+	let kuromojiInstance = null;
+	let isInitializing = false;
+	let initPromise = null;
+	const conversionCache = new Map();
+
+	// Patch XMLHttpRequest to fix URL issues
+	const originalXHROpen = XMLHttpRequest.prototype.open;
+	XMLHttpRequest.prototype.open = function(method, url, ...args) {
+		// Fix Kuromoji dictionary URLs
+		if (typeof url === 'string' && url.includes('/dict/') && url.includes('.dat.gz')) {
+			// If URL doesn't start with http/https, fix it
+			if (!url.startsWith('http://') && !url.startsWith('https://')) {
+				url = 'https://unpkg.com/kuromoji@0.1.2/dict/' + url.split('/dict/').pop();
+				console.log('[FuriganaConverter] Fixed URL to:', url);
+			}
+			// If URL has wrong host, fix it
+			else if (url.includes('xpui.app.spotify.com')) {
+				const filename = url.split('/dict/').pop();
+				url = 'https://unpkg.com/kuromoji@0.1.2/dict/' + filename;
+				console.log('[FuriganaConverter] Fixed wrong host URL to:', url);
+			}
+		}
+		return originalXHROpen.call(this, method, url, ...args);
+	};
+
+	const init = async () => {
+		console.log('[FuriganaConverter] init() called');
+
+		if (kuromojiInstance) {
+			console.log('[FuriganaConverter] ✓ Already initialized');
+			return Promise.resolve();
+		}
+
+		if (isInitializing) {
+			console.log('[FuriganaConverter] ⏳ Already initializing, waiting...');
+			return initPromise;
+		}
+
+		console.log('[FuriganaConverter] 🔄 Starting initialization...');
+		isInitializing = true;
+		initPromise = new Promise((resolve, reject) => {
+			if (typeof window.kuromoji === 'undefined') {
+				console.error('[FuriganaConverter] ❌ Kuromoji library not found in window');
+				reject(new Error('Kuromoji library not loaded'));
+				return;
+			}
+
+			console.log('[FuriganaConverter] ✓ Kuromoji library found, building...');
+
+			// Use any path - our XHR patch will fix it
+			const dicPath = '/dict';
+			console.log('[FuriganaConverter] Using dictionary path:', dicPath);
+
+			window.kuromoji.builder({
+				dicPath: dicPath
+			}).build((err, tokenizer) => {
+				if (err) {
+					console.error('[FuriganaConverter] ❌ Build failed:', err);
+					isInitializing = false;
+					reject(err);
+					return;
+				}
+
+				kuromojiInstance = tokenizer;
+				isInitializing = false;
+				console.log('[FuriganaConverter] ✅ Initialization complete!');
+
+				// Trigger re-render by dispatching a custom event
+				setTimeout(() => {
+					window.dispatchEvent(new CustomEvent('furigana-ready'));
+				}, 100);
+
+				resolve();
+			});
+		});
+
+		return initPromise;
+	};
+
+	const containsKanji = (text) => {
+		const kanjiRegex = /[\u4E00-\u9FAF\u3400-\u4DBF]/;
+		return kanjiRegex.test(text);
+	};
+
+	const katakanaToHiragana = (katakana) => {
+		if (!katakana) return '';
+
+		return katakana.split('').map(char => {
+			const code = char.charCodeAt(0);
+			if (code >= 0x30A1 && code <= 0x30F6) {
+				return String.fromCharCode(code - 0x60);
+			}
+			return char;
+		}).join('');
+	};
+
+	const convertToFurigana = (text) => {
+		console.log('[FuriganaConverter] convertToFurigana called');
+		console.log('[FuriganaConverter] text sample:', text?.substring(0, 50));
+
+		if (!text || typeof text !== 'string') {
+			console.log('[FuriganaConverter] ❌ Invalid text type');
+			return text;
+		}
+
+		if (!containsKanji(text)) {
+			console.log('[FuriganaConverter] ℹ️ No kanji in text');
+			return text;
+		}
+
+		console.log('[FuriganaConverter] ✓ Text contains kanji');
+
+		if (conversionCache.has(text)) {
+			console.log('[FuriganaConverter] ✓ Found in cache');
+			return conversionCache.get(text);
+		}
+
+		if (!kuromojiInstance) {
+			console.log('[FuriganaConverter] ❌ Kuromoji not initialized yet');
+			return text;
+		}
+
+		console.log('[FuriganaConverter] ✓ Kuromoji is ready, tokenizing...');
+
+		try {
+			const tokens = kuromojiInstance.tokenize(text);
+			console.log('[FuriganaConverter] ✓ Tokenized into', tokens.length, 'tokens');
+			let result = '';
+
+			for (const token of tokens) {
+				const surface = token.surface_form;
+				const reading = token.reading;
+
+				// Only add ruby if token has kanji AND reading
+				if (reading && containsKanji(surface)) {
+					const hiragana = katakanaToHiragana(reading);
+
+					// Process character by character to handle mixed kanji/kana
+					let tokenResult = '';
+					let readingIndex = 0;
+					let i = 0;
+
+					while (i < surface.length) {
+						const char = surface[i];
+
+						if (containsKanji(char)) {
+							// Found a kanji - collect consecutive kanji
+							let kanjiSequence = char;
+							i++;
+
+							while (i < surface.length && containsKanji(surface[i])) {
+								kanjiSequence += surface[i];
+								i++;
+							}
+
+							// Find the reading for this kanji sequence
+							// Look ahead in surface to find kana that matches reading
+							let nextKanaInSurface = '';
+							let tempI = i;
+							while (tempI < surface.length && !containsKanji(surface[tempI])) {
+								nextKanaInSurface += surface[tempI];
+								tempI++;
+							}
+
+							// Find where this kana appears in the remaining reading
+							let kanjiReading = '';
+							if (nextKanaInSurface.length > 0) {
+								// Find the kana in the reading
+								const remainingReading = hiragana.substring(readingIndex);
+								const kanaIndex = remainingReading.indexOf(nextKanaInSurface);
+
+								if (kanaIndex > 0) {
+									// Reading up to the kana is for the kanji
+									kanjiReading = remainingReading.substring(0, kanaIndex);
+								} else if (kanaIndex === 0) {
+									// No reading for this kanji? Shouldn't happen but handle it
+									kanjiReading = '';
+								} else {
+									// Kana not found - take all remaining as kanji reading
+									kanjiReading = remainingReading;
+								}
+							} else {
+								// No more kana in surface - rest of reading is for this kanji
+								kanjiReading = hiragana.substring(readingIndex);
+							}
+
+							if (kanjiReading) {
+								tokenResult += `<ruby>${kanjiSequence}<rt>${kanjiReading}</rt></ruby>`;
+								readingIndex += kanjiReading.length;
+								console.log(`[FuriganaConverter] ✓ ${kanjiSequence} → ${kanjiReading}`);
+							} else {
+								tokenResult += kanjiSequence;
+							}
+						} else {
+							// Regular kana - just add it
+							tokenResult += char;
+							readingIndex++;
+							i++;
+						}
+					}
+
+					result += tokenResult;
+				} else {
+					result += surface;
+				}
+			}
+
+			if (conversionCache.size > 1000) {
+				const firstKey = conversionCache.keys().next().value;
+				conversionCache.delete(firstKey);
+			}
+			conversionCache.set(text, result);
+
+			console.log('[FuriganaConverter] ✓ Conversion complete. Result sample:', result.substring(0, 100));
+			return result;
+		} catch (error) {
+			console.error('[FuriganaConverter] ❌ Conversion error:', error);
+			return text;
+		}
+	};
+
+	const isAvailable = () => {
+		return kuromojiInstance !== null;
+	};
+
+	const clearCache = () => {
+		conversionCache.clear();
+	};
+
+	return {
+		init,
+		convertToFurigana,
+		containsKanji,
+		isAvailable,
+		clearCache
+	};
+})();
+
+window.FuriganaConverter = FuriganaConverter;
+
+// Load Kuromoji library for furigana conversion
+console.log('[Furigana Init] Starting Kuromoji load...');
+console.log('[Furigana Init] window.kuromoji exists:', typeof window.kuromoji !== 'undefined');
+
+if (typeof window.kuromoji === 'undefined') {
+	console.log('[Furigana Init] Loading Kuromoji script...');
+	const kuromojiScript = document.createElement('script');
+	kuromojiScript.src = 'https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/build/kuromoji.js';
+	kuromojiScript.async = false; // Load synchronously to ensure it's available
+	kuromojiScript.onload = () => {
+		console.log('[Furigana Init] ✓ Kuromoji library loaded');
+		console.log('[Furigana Init] window.kuromoji now exists:', typeof window.kuromoji !== 'undefined');
+
+		// Initialize immediately
+		if (typeof window.FuriganaConverter !== 'undefined') {
+			console.log('[Furigana Init] Starting FuriganaConverter initialization...');
+			window.FuriganaConverter.init()
+				.then(() => {
+					console.log('[Furigana Init] ✅ FuriganaConverter initialized successfully');
+					// Trigger lyrics re-render if furigana is enabled
+					if (CONFIG?.visual?.["furigana-enabled"]) {
+						console.log('[Furigana Init] Re-rendering lyrics...');
+						// Try multiple methods to trigger re-render
+						if (window.lyricContainer) {
+							try {
+								window.lyricContainer.forceUpdate();
+							} catch (e) {
+								console.warn('[Furigana Init] forceUpdate failed:', e);
+							}
+						}
+						// Also try to refresh by simulating a track change
+						try {
+							const currentTrack = Spicetify.Player.data?.item?.uri;
+							if (currentTrack) {
+								console.log('[Furigana Init] Refreshing current track...');
+								// Small delay to ensure everything is ready
+								setTimeout(() => {
+									Spicetify.Player.playUri(currentTrack);
+								}, 200);
+							}
+						} catch (e) {
+							console.warn('[Furigana Init] Track refresh failed:', e);
+						}
+					}
+				})
+				.catch(err => {
+					console.error('[Furigana Init] ❌ Failed to initialize FuriganaConverter:', err);
+				});
+		} else {
+			console.error('[Furigana Init] ❌ FuriganaConverter not found after Kuromoji load');
+		}
+	};
+	kuromojiScript.onerror = (err) => {
+		console.error('[Furigana Init] ❌ Failed to load Kuromoji script:', err);
+	};
+	document.head.appendChild(kuromojiScript);
+	console.log('[Furigana Init] Script element appended to head');
+} else {
+	console.log('[Furigana Init] Kuromoji already loaded, initializing FuriganaConverter...');
+	// If Kuromoji is already loaded, initialize immediately
+	if (typeof window.FuriganaConverter !== 'undefined') {
+		window.FuriganaConverter.init()
+			.then(() => {
+				console.log('[Furigana Init] ✅ FuriganaConverter initialized successfully');
+			})
+			.catch(err => {
+				console.error('[Furigana Init] ❌ Failed to initialize FuriganaConverter:', err);
+			});
+	}
+}
+
 /** @type {React} */
 const react = Spicetify.React;
 const { useState, useEffect, useCallback, useMemo, useRef } = react;
@@ -144,6 +457,7 @@ const CONFIG = {
 		"gemini-api-key": StorageManager.getPersisted("lyrics-plus:visual:gemini-api-key") || "",
 		"gemini-api-key-romaji": StorageManager.getPersisted("lyrics-plus:visual:gemini-api-key-romaji") || "",
 		translate: StorageManager.get("lyrics-plus:visual:translate", false),
+		"furigana-enabled": StorageManager.get("lyrics-plus:visual:furigana-enabled", false),
 		"ja-detect-threshold": localStorage.getItem("lyrics-plus:visual:ja-detect-threshold") || "40",
 		"hans-detect-threshold": localStorage.getItem("lyrics-plus:visual:hans-detect-threshold") || "40",
 		"fade-blur": StorageManager.get("lyrics-plus:visual:fade-blur"),

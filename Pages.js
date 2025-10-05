@@ -95,7 +95,10 @@ const getLyricsDisplayMode = (isKara, line, text, originalText, text2) => {
 		
 		if (showTranslatedBelow) {
 			// Show original as main, translations below
-			mainText = safeRenderText(originalText);
+			// Apply furigana to original text if enabled
+			const processedOriginalText = safeRenderText(originalText);
+			mainText = typeof processedOriginalText === 'string' ? 
+				Utils.applyFuriganaIfEnabled(processedOriginalText) : processedOriginalText;
 			subText = text ? safeRenderText(text) : null;
 			subText2 = text2 ? safeRenderText(text2) : null;
 		} else if (replaceOriginal && text) {
@@ -104,8 +107,10 @@ const getLyricsDisplayMode = (isKara, line, text, originalText, text2) => {
 			subText = text2 ? safeRenderText(text2) : null;
 			subText2 = null;
 		} else {
-			// Default: just show original
-			mainText = safeRenderText(originalText);
+			// Default: just show original with furigana if enabled
+			const processedOriginalText = safeRenderText(originalText);
+			mainText = typeof processedOriginalText === 'string' ? 
+				Utils.applyFuriganaIfEnabled(processedOriginalText) : processedOriginalText;
 			subText = null;
 			subText2 = null;
 		}
@@ -255,6 +260,11 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 	const elements = [];
 	let localCharIndex = 0;
 
+	// Build raw text and apply furigana if enabled
+	const rawLineText = line.syllables.map(syllable => syllable?.text || "").join("");
+	const processedText = Utils.applyFuriganaIfEnabled(rawLineText);
+	const hasFurigana = processedText !== rawLineText && processedText.includes('<ruby>');
+
 	// 전체 글자 정보를 먼저 수집
 	const allChars = [];
 	line.syllables.forEach((syllable, syllableIndex) => {
@@ -304,15 +314,20 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 		let waveOffset = 0;
 		let waveScale = 1;
 		let transitionDelay = 0;
+		let shouldAnimate = false;
 
 		if (karaokeBounceEnabled && activeGlobalCharIndex >= 0) {
 			const distance = Math.abs(currentGlobalIndex - activeGlobalCharIndex);
-			if (distance <= 2) {
-				transitionDelay = distance * 0.05;
-				const normalizedDistance = distance / 2;
-				const waveStrength = Math.max(0, 1 - normalizedDistance * normalizedDistance);
-				waveOffset = -10 * waveStrength;
-				waveScale = 1 + 0.12 * waveStrength;
+			// Allow animation for chars within range OR recently passed chars (for smooth finish)
+			if (distance <= 2 || (currentGlobalIndex < activeGlobalCharIndex && distance <= 5)) {
+				shouldAnimate = true;
+				if (distance <= 2) {
+					transitionDelay = distance * 0.05;
+					const normalizedDistance = distance / 2;
+					const waveStrength = Math.max(0, 1 - normalizedDistance * normalizedDistance);
+					waveOffset = -10 * waveStrength;
+					waveScale = 1 + 0.12 * waveStrength;
+				}
 			}
 		}
 
@@ -323,12 +338,12 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 			className += " sung";
 		}
 
-		const style = (karaokeBounceEnabled && activeGlobalCharIndex >= 0) ? {
+		const style = shouldAnimate ? {
 			transform: `translateY(${waveOffset}px) scale(${waveScale})`,
-			transition: `transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${transitionDelay}s, color 0.2s ease-out`,
+			transition: `transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${transitionDelay}s, color 0.2s ease-out`,
 			transitionDelay: `${transitionDelay}s`
 		} : {
-			transition: "color 0.2s ease-out"
+			transition: "transform 0.3s ease-out, color 0.2s ease-out"
 		};
 
 		return {
@@ -340,10 +355,7 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 		};
 	});
 
-	// Build the actual text from syllables (not line.text which might be translated)
-	const rawLineText = line.syllables
-		.map(syllable => syllable?.text || "")
-		.join("");
+	// Use the already built rawLineText from above
 	const tokens = [];
 	const whitespacePattern = /([\s\u00a0\u1680\u2000-\u200b\u202f\u205f\u3000]+)/gu;
 	let lastIndex = 0;
@@ -435,18 +447,75 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 	}
 
 	if (!useWordGrouping) {
+		// Parse furigana HTML to extract readings for each kanji
+		const furiganaMap = new Map();
+		if (hasFurigana) {
+			// Extract kanji and their readings from processedText
+			const rubyRegex = /<ruby>([^<]+)<rt>([^<]+)<\/rt><\/ruby>/g;
+			let match;
+			while ((match = rubyRegex.exec(processedText)) !== null) {
+				const kanjiSequence = match[1];
+				const reading = match[2];
+
+				// If it's a single character, just map it directly
+				if (kanjiSequence.length === 1) {
+					furiganaMap.set(kanjiSequence, reading);
+				} else {
+					// Multiple kanji - split the reading evenly
+					const kanjiChars = Array.from(kanjiSequence);
+					const readingChars = Array.from(reading);
+					const charsPerKanji = Math.floor(readingChars.length / kanjiChars.length);
+
+					kanjiChars.forEach((kanji, idx) => {
+						if (idx === kanjiChars.length - 1) {
+							// Last kanji gets all remaining reading
+							const kanjiReading = readingChars.slice(idx * charsPerKanji).join('');
+							furiganaMap.set(kanji, kanjiReading);
+						} else {
+							const kanjiReading = readingChars.slice(idx * charsPerKanji, (idx + 1) * charsPerKanji).join('');
+							furiganaMap.set(kanji, kanjiReading);
+						}
+					});
+				}
+			}
+		}
+
 		charRenderData.forEach((charData, index) => {
-			elements.push(
-				react.createElement(
-					"span",
-					{
-						key: charData.key,
-						className: charData.className,
-						style: charData.style
-					},
-					charData.char
-				)
-			);
+			const char = charData.char;
+			const reading = furiganaMap.get(char);
+
+			// If this character has a furigana reading, wrap in ruby tag
+			if (reading) {
+				// Wrap ruby in a span that handles the karaoke animation
+				elements.push(
+					react.createElement(
+						"span",
+						{
+							key: charData.key,
+							className: charData.className,
+							style: charData.style
+						},
+						react.createElement(
+							"ruby",
+							null,
+							char,
+							react.createElement("rt", null, reading)
+						)
+					)
+				);
+			} else {
+				elements.push(
+					react.createElement(
+						"span",
+						{
+							key: charData.key,
+							className: charData.className,
+							style: charData.style
+						},
+						char
+					)
+				);
+			}
 
 			const nextCharData = charRenderData[index + 1];
 			if (nextCharData && nextCharData.syllableIndex !== charData.syllableIndex) {

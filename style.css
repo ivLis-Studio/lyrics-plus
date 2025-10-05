@@ -450,7 +450,7 @@ div.lyrics-tabBar-headerItemLink {
 }
 
 .lyrics-karaoke-char {
-	display: inline;
+	display: inline-block;
 	position: relative;
 	color: var(--lyrics-color-inactive);
 	/* synced 모드보다 더 좁은 letter-spacing 적용 */
@@ -460,6 +460,12 @@ div.lyrics-tabBar-headerItemLink {
 	will-change: transform, color;
 	backface-visibility: hidden;
 	-webkit-font-smoothing: antialiased;
+}
+
+/* Karaoke mode: ruby inside karaoke-char */
+.lyrics-karaoke-char ruby {
+	display: ruby;
+	ruby-position: over;
 }
 
 .lyrics-karaoke-space {
@@ -925,4 +931,68 @@ div.lyrics-tabBar-headerItemLink {
     height: 100%;
     z-index: -1;
     transition: background-color 0.5s ease, filter 0.5s ease;
+}
+
+/* Furigana Ruby Styles */
+ruby {
+	ruby-position: over;
+	ruby-align: center;
+}
+
+ruby rt {
+	font-size: 0.5em;
+	line-height: 1;
+	text-align: center;
+	font-weight: normal;
+	opacity: 0.85;
+	letter-spacing: 0.05em;
+	user-select: none;
+}
+
+/* Furigana styles - compact and clean */
+.lyrics-lyricsContainer-LyricsLine p {
+	line-height: 2.0;
+}
+
+.lyrics-lyricsContainer-LyricsLine ruby {
+	ruby-position: over;
+}
+
+.lyrics-lyricsContainer-LyricsLine ruby rt {
+	font-size: 0.5em;
+	user-select: none;
+	white-space: nowrap;
+}
+
+/* Active line furigana styling */
+.lyrics-lyricsContainer-LyricsLine-active ruby rt {
+	opacity: 0.9;
+	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Karaoke mode furigana styles */
+.lyrics-karaoke-line {
+	line-height: 2.0;
+}
+
+.lyrics-karaoke-line ruby {
+	ruby-position: over;
+}
+
+.lyrics-karaoke-line ruby rt {
+	font-size: 0.5em;
+	opacity: 0.85;
+	user-select: none;
+	white-space: nowrap;
+}
+
+/* Karaoke active/sung states for ruby elements */
+.lyrics-karaoke-char.active,
+ruby.active {
+	color: var(--karaoke-active-color, currentColor);
+}
+
+.lyrics-karaoke-char.sung,
+ruby.sung {
+	color: var(--karaoke-sung-color, currentColor);
 }

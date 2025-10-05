@@ -1787,6 +1787,12 @@ const ConfigModal = () => {
 				react.createElement(OptionList, {
 					items: [
 						{
+							desc: "일본어 한자에 후리가나 표시",
+							info: "일본어 가사의 한자(칸지) 위에 히라가나 읽기를 표시합니다",
+							key: "furigana-enabled",
+							type: ConfigSlider,
+						},
+						{
 							desc: "일본어 감지 임계값",
 							info: "가사에서 가나 문자의 비율로 일본어를 감지합니다. 값이 높을수록 더 엄격하게 감지합니다 (백분율)",
 							key: "ja-detect-threshold",
