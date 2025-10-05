@@ -361,28 +361,30 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 	let lastIndex = 0;
 	let match;
 
-	while ((match = whitespacePattern.exec(rawLineText)) !== null) {
+	// Build text from charRenderData to ensure exact matching
+	const actualText = charRenderData.map(c => c.char).join('');
+
+	// Reset regex state
+	whitespacePattern.lastIndex = 0;
+	while ((match = whitespacePattern.exec(actualText)) !== null) {
 		if (match.index > lastIndex) {
-			tokens.push({ type: "word", value: rawLineText.slice(lastIndex, match.index) });
+			tokens.push({ type: "word", value: actualText.slice(lastIndex, match.index) });
 		}
 		tokens.push({ type: "space", value: match[0] });
 		lastIndex = match.index + match[0].length;
 	}
 
-	if (lastIndex < rawLineText.length) {
-		tokens.push({ type: "word", value: rawLineText.slice(lastIndex) });
+	if (lastIndex < actualText.length) {
+		tokens.push({ type: "word", value: actualText.slice(lastIndex) });
 	}
 
 	const hasWhitespaceToken = tokens.some(token => token.type === "space");
-	// Count only actual characters from charRenderData (no spaces)
+	// Total character count including spaces
+	const totalTokenChars = tokens.reduce((sum, token) => sum + Array.from(token.value).length, 0);
 	const actualCharCount = charRenderData.length;
-	// Count characters in word tokens (excluding space tokens)
-	const wordTokenChars = tokens
-		.filter(token => token.type === "word")
-		.reduce((sum, token) => sum + Array.from(token.value).length, 0);
 
-	// Word grouping only works if syllable text matches token words exactly
-	let useWordGrouping = hasWhitespaceToken && wordTokenChars === actualCharCount;
+	// Word grouping works if we have spaces and total chars match
+	let useWordGrouping = hasWhitespaceToken && totalTokenChars === actualCharCount;
 
 	if (useWordGrouping) {
 		let charCursor = 0;
@@ -427,6 +429,27 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 
 				charCursor += wordChars.length;
 			} else {
+				// Space token - render the space characters from charRenderData
+				const spaceChars = Array.from(token.value);
+				const spaceCharData = charRenderData.slice(charCursor, charCursor + spaceChars.length);
+
+				if (spaceCharData.length !== spaceChars.length) {
+					mappingFailed = true;
+					return;
+				}
+
+				const spaceChildren = spaceCharData.map(charData =>
+					react.createElement(
+						"span",
+						{
+							key: charData.key,
+							className: charData.className,
+							style: charData.style
+						},
+						charData.char
+					)
+				);
+
 				elements.push(
 					react.createElement(
 						"span",
@@ -434,9 +457,11 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 							key: `space-${tokenIndex}`,
 							className: "lyrics-karaoke-word-space"
 						},
-						token.value
+						spaceChildren
 					)
 				);
+
+				charCursor += spaceChars.length;
 			}
 		});
 
@@ -517,18 +542,16 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 				);
 			}
 
+			// Only add syllable boundary space if the next character is actually a space
 			const nextCharData = charRenderData[index + 1];
 			if (nextCharData && nextCharData.syllableIndex !== charData.syllableIndex) {
-				elements.push(
-					react.createElement(
-						"span",
-						{
-							key: `space-${charData.key}`,
-							className: "lyrics-karaoke-space"
-						},
-						" "
-					)
-				);
+				// Check if the next character is a whitespace character
+				if (nextCharData.char && /\s/.test(nextCharData.char)) {
+					// Skip - the space will be rendered as part of charRenderData
+				} else {
+					// No space in the actual text, don't add artificial space
+					// This prevents "woul d" style splitting
+				}
 			}
 		});
 	}

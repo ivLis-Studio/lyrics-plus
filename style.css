@@ -276,7 +276,7 @@
 	text-shadow: var(--lyrics-text-shadow);
 	opacity: var(--lyrics-original-opacity, 1);
 	overflow-wrap: break-word;
-	word-break: keep-all;
+	word-break: auto-phrase; /* Allow natural breaks in CJK and word boundaries in Latin */
 	margin-bottom: 12px;
 }
 
@@ -288,7 +288,7 @@
 	text-shadow: var(--lyrics-text-shadow);
 	opacity: var(--lyrics-original-opacity, 1);
 	overflow-wrap: break-word;
-	word-break: keep-all;  
+	word-break: auto-phrase; /* Allow natural breaks in CJK and word boundaries in Latin */
 }
 
 @media (min-width: 1280px) {
@@ -433,33 +433,43 @@ div.lyrics-tabBar-headerItemLink {
 
 /* 새로운 가라오케 스타일 - synced 모드 기반 */
 .lyrics-karaoke-line {
-	display: inline;
-	letter-spacing: -0.06em; /* 글자 간격 더 좁게 */
+	display: block; /* inline에서 block으로 변경하여 정상적인 줄바꿈 허용 */
+	letter-spacing: -0.045em; /* 글자 간격 조정 (-0.06em에서 -0.02em으로 변경) */
+	line-height: 1.3; /* 줄바꿈 시 줄간격 조정 */
 }
 
 .lyrics-karaoke-word {
+	/* Make word a block that wraps as a unit, but can break if too long */
 	display: inline-block;
-	white-space: nowrap;
+	white-space: nowrap; /* keep word together */
+	/* If word is too long for the line, allow breaking inside */
+	max-width: 100%;
+	overflow-wrap: break-word;
+	word-break: normal;
+	line-height: inherit;
+	vertical-align: baseline;
 }
 
 .lyrics-karaoke-word-space {
 	display: inline;
 	white-space: pre-wrap;
 	letter-spacing: 0;
-	min-width: 0.3em;
+	min-width: 0.5em; /* 띄어쓰기 간격 증가 (0.3em -> 0.5em) */
 }
 
 .lyrics-karaoke-char {
-	display: inline-block;
+	display: inline-block; /* transform 적용을 위해 inline-block 유지 */
 	position: relative;
 	color: var(--lyrics-color-inactive);
-	/* synced 모드보다 더 좁은 letter-spacing 적용 */
-	letter-spacing: -0.06em;
+	/* 글자 간격을 살짝 더 넓게 조정 */
+	letter-spacing: -0.045em; /* -0.06em에서 -0.02em으로 변경 */
 	/* 부드러운 transition은 inline style에서 처리 */
 	/* GPU 가속 활성화 */
 	will-change: transform, color;
 	backface-visibility: hidden;
 	-webkit-font-smoothing: antialiased;
+	/* 세로 정렬로 줄바꿈 시 정렬 개선 */
+	vertical-align: baseline;
 }
 
 /* Karaoke mode: ruby inside karaoke-char */
