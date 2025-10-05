@@ -111,7 +111,12 @@ const FuriganaConverter = (() => {
 
 			for (const token of tokens) {
 				const surface = token.surface_form; // 表層形 (actual text)
-				const reading = token.reading;       // 読み (reading in katakana)
+				const reading = token.reading || token.pronunciation; // 読み (reading in katakana), fallback to pronunciation
+
+				// Debug logging for tokens without reading
+				if (containsKanji(surface) && !reading) {
+					console.log('[FuriganaConverter] ⚠️ No reading for kanji:', surface, 'token:', token);
+				}
 
 				// If token has kanji and reading is available
 				if (reading && containsKanji(surface)) {

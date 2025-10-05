@@ -8,6 +8,9 @@ const FuriganaConverter = (() => {
 	let isInitializing = false;
 	let initPromise = null;
 	const conversionCache = new Map();
+	
+	// Debug mode - set to false to reduce console logs
+	const DEBUG_MODE = false;
 
 	// Patch XMLHttpRequest to fix URL issues
 	const originalXHROpen = XMLHttpRequest.prototype.open;
@@ -17,28 +20,28 @@ const FuriganaConverter = (() => {
 			// If URL doesn't start with http/https, fix it
 			if (!url.startsWith('http://') && !url.startsWith('https://')) {
 				url = 'https://unpkg.com/kuromoji@0.1.2/dict/' + url.split('/dict/').pop();
-				console.log('[FuriganaConverter] Fixed URL to:', url);
+				if (DEBUG_MODE) console.log('[FuriganaConverter] Fixed URL to:', url);
 			}
 			// If URL has wrong host, fix it
 			else if (url.includes('xpui.app.spotify.com')) {
 				const filename = url.split('/dict/').pop();
 				url = 'https://unpkg.com/kuromoji@0.1.2/dict/' + filename;
-				console.log('[FuriganaConverter] Fixed wrong host URL to:', url);
+				if (DEBUG_MODE) console.log('[FuriganaConverter] Fixed wrong host URL to:', url);
 			}
 		}
 		return originalXHROpen.call(this, method, url, ...args);
 	};
 
 	const init = async () => {
-		console.log('[FuriganaConverter] init() called');
+		if (DEBUG_MODE) console.log('[FuriganaConverter] init() called');
 
 		if (kuromojiInstance) {
-			console.log('[FuriganaConverter] ✓ Already initialized');
+			if (DEBUG_MODE) console.log('[FuriganaConverter] ✓ Already initialized');
 			return Promise.resolve();
 		}
 
 		if (isInitializing) {
-			console.log('[FuriganaConverter] ⏳ Already initializing, waiting...');
+			if (DEBUG_MODE) console.log('[FuriganaConverter] ⏳ Already initializing, waiting...');
 			return initPromise;
 		}
 
@@ -51,11 +54,11 @@ const FuriganaConverter = (() => {
 				return;
 			}
 
-			console.log('[FuriganaConverter] ✓ Kuromoji library found, building...');
+			if (DEBUG_MODE) console.log('[FuriganaConverter] ✓ Kuromoji library found, building...');
 
 			// Use any path - our XHR patch will fix it
 			const dicPath = '/dict';
-			console.log('[FuriganaConverter] Using dictionary path:', dicPath);
+			if (DEBUG_MODE) console.log('[FuriganaConverter] Using dictionary path:', dicPath);
 
 			window.kuromoji.builder({
 				dicPath: dicPath
@@ -101,41 +104,46 @@ const FuriganaConverter = (() => {
 	};
 
 	const convertToFurigana = (text) => {
-		console.log('[FuriganaConverter] convertToFurigana called');
-		console.log('[FuriganaConverter] text sample:', text?.substring(0, 50));
+		if (DEBUG_MODE) console.log('[FuriganaConverter] convertToFurigana called');
+		if (DEBUG_MODE) console.log('[FuriganaConverter] text sample:', text?.substring(0, 50));
 
 		if (!text || typeof text !== 'string') {
-			console.log('[FuriganaConverter] ❌ Invalid text type');
+			if (DEBUG_MODE) console.log('[FuriganaConverter] ❌ Invalid text type');
 			return text;
 		}
 
 		if (!containsKanji(text)) {
-			console.log('[FuriganaConverter] ℹ️ No kanji in text');
+			if (DEBUG_MODE) console.log('[FuriganaConverter] ℹ️ No kanji in text');
 			return text;
 		}
 
-		console.log('[FuriganaConverter] ✓ Text contains kanji');
+		if (DEBUG_MODE) console.log('[FuriganaConverter] ✓ Text contains kanji');
 
 		if (conversionCache.has(text)) {
-			console.log('[FuriganaConverter] ✓ Found in cache');
+			if (DEBUG_MODE) console.log('[FuriganaConverter] ✓ Found in cache');
 			return conversionCache.get(text);
 		}
 
 		if (!kuromojiInstance) {
-			console.log('[FuriganaConverter] ❌ Kuromoji not initialized yet');
+			if (DEBUG_MODE) console.log('[FuriganaConverter] ❌ Kuromoji not initialized yet');
 			return text;
 		}
 
-		console.log('[FuriganaConverter] ✓ Kuromoji is ready, tokenizing...');
+		if (DEBUG_MODE) console.log('[FuriganaConverter] ✓ Kuromoji is ready, tokenizing...');
 
 		try {
 			const tokens = kuromojiInstance.tokenize(text);
-			console.log('[FuriganaConverter] ✓ Tokenized into', tokens.length, 'tokens');
+			if (DEBUG_MODE) console.log('[FuriganaConverter] ✓ Tokenized into', tokens.length, 'tokens');
 			let result = '';
 
 			for (const token of tokens) {
 				const surface = token.surface_form;
-				const reading = token.reading;
+				const reading = token.reading || token.pronunciation; // Fallback to pronunciation
+
+				// Debug logging for tokens without reading - only warn once per unique kanji
+				if (containsKanji(surface) && !reading) {
+					console.warn('[FuriganaConverter] ⚠️ No reading for kanji:', surface);
+				}
 
 				// Only add ruby if token has kanji AND reading
 				if (reading && containsKanji(surface)) {

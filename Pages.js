@@ -265,6 +265,10 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 	const processedText = Utils.applyFuriganaIfEnabled(rawLineText);
 	const hasFurigana = processedText !== rawLineText && processedText.includes('<ruby>');
 
+	console.log('[Karaoke Line Debug] rawLineText:', rawLineText);
+	console.log('[Karaoke Line Debug] processedText:', processedText);
+	console.log('[Karaoke Line Debug] hasFurigana:', hasFurigana);
+
 	// 전체 글자 정보를 먼저 수집
 	const allChars = [];
 	line.syllables.forEach((syllable, syllableIndex) => {
@@ -364,6 +368,9 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 	// Build text from charRenderData to ensure exact matching
 	const actualText = charRenderData.map(c => c.char).join('');
 
+	console.log('[Karaoke Line Debug] actualText from charRenderData:', actualText);
+	console.log('[Karaoke Line Debug] charRenderData length:', charRenderData.length);
+
 	// Reset regex state
 	whitespacePattern.lastIndex = 0;
 	while ((match = whitespacePattern.exec(actualText)) !== null) {
@@ -383,8 +390,68 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 	const totalTokenChars = tokens.reduce((sum, token) => sum + Array.from(token.value).length, 0);
 	const actualCharCount = charRenderData.length;
 
+	// Parse furigana HTML to extract readings for each kanji with position tracking
+	// Do this BEFORE word grouping so it's available for both paths
+	const furiganaMap = new Map(); // position -> reading
+	if (hasFurigana) {
+		const rubyRegex = /<ruby>([^<]+)<rt>([^<]+)<\/rt><\/ruby>/g;
+		
+		// Build clean text from processedText (removing all HTML tags)
+		const cleanText = processedText.replace(/<ruby>([^<]+)<rt>[^<]+<\/rt><\/ruby>/g, '$1');
+		
+		// Now parse the HTML and map positions
+		let currentPos = 0;
+		let lastMatchEnd = 0;
+		let match;
+		
+		rubyRegex.lastIndex = 0;
+		
+		while ((match = rubyRegex.exec(processedText)) !== null) {
+			const kanjiSequence = match[1];
+			const reading = match[2];
+			
+			// Calculate position by counting plain text before this match
+			const beforeMatch = processedText.substring(lastMatchEnd, match.index);
+			const plainTextBefore = beforeMatch.replace(/<[^>]+>/g, '');
+			currentPos += plainTextBefore.length;
+			
+			// Map each kanji to its reading
+			if (kanjiSequence.length === 1) {
+				furiganaMap.set(currentPos, reading);
+			} else {
+				// Multiple kanji - split the reading
+				const kanjiChars = Array.from(kanjiSequence);
+				const readingChars = Array.from(reading);
+				const charsPerKanji = Math.floor(readingChars.length / kanjiChars.length);
+
+				kanjiChars.forEach((kanji, idx) => {
+					let kanjiReading;
+					if (idx === kanjiChars.length - 1) {
+						// Last kanji gets all remaining reading
+						kanjiReading = readingChars.slice(idx * charsPerKanji).join('');
+					} else {
+						kanjiReading = readingChars.slice(idx * charsPerKanji, (idx + 1) * charsPerKanji).join('');
+					}
+					furiganaMap.set(currentPos + idx, kanjiReading);
+				});
+			}
+			
+			// Move position forward by the number of kanji
+			currentPos += kanjiSequence.length;
+			lastMatchEnd = match.index + match[0].length;
+		}
+		
+		console.log('[Karaoke Furigana Debug] furiganaMap:', Array.from(furiganaMap.entries()));
+		console.log('[Karaoke Furigana Debug] actualText:', actualText);
+		console.log('[Karaoke Furigana Debug] cleanText:', cleanText);
+	}
+
 	// Word grouping works if we have spaces and total chars match
 	let useWordGrouping = hasWhitespaceToken && totalTokenChars === actualCharCount;
+
+	console.log('[Karaoke Word Grouping] hasWhitespaceToken:', hasWhitespaceToken);
+	console.log('[Karaoke Word Grouping] totalTokenChars:', totalTokenChars, 'actualCharCount:', actualCharCount);
+	console.log('[Karaoke Word Grouping] useWordGrouping:', useWordGrouping);
 
 	if (useWordGrouping) {
 		let charCursor = 0;
@@ -404,17 +471,41 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 					return;
 				}
 
-				const wordChildren = wordCharData.map(charData =>
-					react.createElement(
-						"span",
-						{
-							key: charData.key,
-							className: charData.className,
-							style: charData.style
-						},
-						charData.char
-					)
-				);
+				// Apply furigana to each character in the word
+				const wordChildren = wordCharData.map((charData, localIdx) => {
+					const globalIdx = charCursor + localIdx;
+					const char = charData.char;
+					const reading = furiganaMap.get(globalIdx);
+
+					if (reading) {
+						// Has furigana
+						return react.createElement(
+							"span",
+							{
+								key: charData.key,
+								className: charData.className,
+								style: charData.style
+							},
+							react.createElement(
+								"ruby",
+								null,
+								char,
+								react.createElement("rt", null, reading)
+							)
+						);
+					} else {
+						// No furigana
+						return react.createElement(
+							"span",
+							{
+								key: charData.key,
+								className: charData.className,
+								style: charData.style
+							},
+							char
+						);
+					}
+				});
 
 				elements.push(
 					react.createElement(
@@ -472,42 +563,14 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 	}
 
 	if (!useWordGrouping) {
-		// Parse furigana HTML to extract readings for each kanji
-		const furiganaMap = new Map();
-		if (hasFurigana) {
-			// Extract kanji and their readings from processedText
-			const rubyRegex = /<ruby>([^<]+)<rt>([^<]+)<\/rt><\/ruby>/g;
-			let match;
-			while ((match = rubyRegex.exec(processedText)) !== null) {
-				const kanjiSequence = match[1];
-				const reading = match[2];
-
-				// If it's a single character, just map it directly
-				if (kanjiSequence.length === 1) {
-					furiganaMap.set(kanjiSequence, reading);
-				} else {
-					// Multiple kanji - split the reading evenly
-					const kanjiChars = Array.from(kanjiSequence);
-					const readingChars = Array.from(reading);
-					const charsPerKanji = Math.floor(readingChars.length / kanjiChars.length);
-
-					kanjiChars.forEach((kanji, idx) => {
-						if (idx === kanjiChars.length - 1) {
-							// Last kanji gets all remaining reading
-							const kanjiReading = readingChars.slice(idx * charsPerKanji).join('');
-							furiganaMap.set(kanji, kanjiReading);
-						} else {
-							const kanjiReading = readingChars.slice(idx * charsPerKanji, (idx + 1) * charsPerKanji).join('');
-							furiganaMap.set(kanji, kanjiReading);
-						}
-					});
-				}
-			}
-		}
-
+		// Furigana map is already built above, just use it
 		charRenderData.forEach((charData, index) => {
 			const char = charData.char;
-			const reading = furiganaMap.get(char);
+			const reading = furiganaMap.get(index); // Use position index instead of character
+
+			if (index < 10) { // Log first 10 chars for debugging
+				console.log(`[Karaoke Furigana] Char[${index}]: '${char}', reading: '${reading}'`);
+			}
 
 			// If this character has a furigana reading, wrap in ruby tag
 			if (reading) {

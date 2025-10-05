@@ -996,13 +996,18 @@ ruby rt {
 	white-space: nowrap;
 }
 
-/* Karaoke active/sung states for ruby elements */
+/* Ruby 내부의 개별 문자 스타일 */
+.lyrics-karaoke-line ruby span {
+	display: inline;
+}
+
+/* Karaoke active/sung states for ruby elements and spans inside ruby */
 .lyrics-karaoke-char.active,
-ruby.active {
+ruby .lyrics-karaoke-char.active {
 	color: var(--karaoke-active-color, currentColor);
 }
 
 .lyrics-karaoke-char.sung,
-ruby.sung {
+ruby .lyrics-karaoke-char.sung {
 	color: var(--karaoke-sung-color, currentColor);
 }
