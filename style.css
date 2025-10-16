@@ -272,12 +272,18 @@
 	font-size: var(--lyrics-original-font-size, var(--lyrics-font-size));
 	font-weight: var(--lyrics-original-font-weight, 700);
 	letter-spacing: -0.04em;
-	line-height: calc(20px + var(--lyrics-original-font-size, var(--lyrics-font-size)));
+	line-height: calc(1.4 * var(--lyrics-original-font-size, var(--lyrics-font-size)));
 	text-shadow: var(--lyrics-text-shadow);
 	opacity: var(--lyrics-original-opacity, 1);
 	overflow-wrap: break-word;
 	word-break: auto-phrase; /* Allow natural breaks in CJK and word boundaries in Latin */
 	margin-bottom: 12px;
+}
+
+.lyrics-lyricsContainer-UnsyncedLyricsPage .lyrics-lyricsContainer-LyricsLine > p {
+	margin: 0;
+	padding: 0;
+	line-height: inherit;
 }
 
 .lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine {
@@ -289,6 +295,12 @@
 	opacity: var(--lyrics-original-opacity, 1);
 	overflow-wrap: break-word;
 	word-break: auto-phrase; /* Allow natural breaks in CJK and word boundaries in Latin */
+}
+
+.lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine > p {
+	margin: 0;
+	padding: 0;
+	line-height: inherit;
 }
 
 @media (min-width: 1280px) {
@@ -922,10 +934,11 @@ div.lyrics-tabBar-headerItemLink {
 .lyrics-lyricsContainer-LyricsLine-sub {
 	font-size: var(--lyrics-translation-font-size, calc(var(--lyrics-font-size) * 0.7));
 	font-weight: var(--lyrics-translation-font-weight, 600);
-	margin-top: var(--lyrics-line-spacing, 0px);
+	margin-top: var(--lyrics-line-spacing, 8px);
 	margin-bottom: 0px;
 	opacity: var(--lyrics-translation-opacity, 0.6);
 	text-shadow: var(--lyrics-text-shadow);
+	line-height: calc(var(--lyrics-translation-font-size, calc(var(--lyrics-font-size) * 0.7)) * 1.4);
 }
 
 .lyrics-lyricsContainer-LyricsLine-active {

@@ -1376,7 +1376,10 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 					react.createElement(
 						"p",
 						{
-							style: { opacity: 0.5 },
+							className: "lyrics-lyricsContainer-LyricsLine-sub",
+							style: { 
+								"--sub-lyric-color": CONFIG.visual["inactive-color"]
+							},
 							onContextMenu: (event) => {
 								event.preventDefault();
 								Spicetify.Platform.ClipboardAPI.copy(Utils.convertParsedToUnsynced(lyrics, belowMode).conver)
@@ -1394,7 +1397,10 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 					react.createElement(
 						"p",
 						{
-							style: { opacity: 0.5 },
+							className: "lyrics-lyricsContainer-LyricsLine-sub",
+							style: { 
+								"--sub-lyric-color": CONFIG.visual["inactive-color"]
+							},
 							onContextMenu: (event) => {
 								event.preventDefault();
 								Spicetify.Platform.ClipboardAPI.copy(showMode2Translation)

@@ -323,7 +323,64 @@ const STATIC_OPTIONS = {
 			hk: "번체 중국어 (홍콩)", 
 			tw: "번체 중국어 (대만)",
 			pinyin: "병음",
-		}
+		},
+		// Gemini-powered languages
+		russian: {
+			gemini_romaji: "로마자 (제미니)",
+			gemini_ko: "한국어 (제미니)",
+		},
+		vietnamese: {
+			gemini_romaji: "로마자 (제미니)",
+			gemini_ko: "한국어 (제미니)",
+		},
+		german: {
+			gemini_romaji: "로마자 (제미니)",
+			gemini_ko: "한국어 (제미니)",
+		},
+		spanish: {
+			gemini_romaji: "로마자 (제미니)",
+			gemini_ko: "한국어 (제미니)",
+		},
+		french: {
+			gemini_romaji: "로마자 (제미니)",
+			gemini_ko: "한국어 (제미니)",
+		},
+		italian: {
+			gemini_romaji: "로마자 (제미니)",
+			gemini_ko: "한국어 (제미니)",
+		},
+		portuguese: {
+			gemini_romaji: "로마자 (제미니)",
+			gemini_ko: "한국어 (제미니)",
+		},
+		dutch: {
+			gemini_romaji: "로마자 (제미니)",
+			gemini_ko: "한국어 (제미니)",
+		},
+		polish: {
+			gemini_romaji: "로마자 (제미니)",
+			gemini_ko: "한국어 (제미니)",
+		},
+		turkish: {
+			gemini_romaji: "로마자 (제미니)",
+			gemini_ko: "한국어 (제미니)",
+		},
+		arabic: {
+			gemini_romaji: "로마자 (제미니)",
+			gemini_ko: "한국어 (제미니)",
+		},
+		hindi: {
+			gemini_romaji: "로마자 (제미니)",
+			gemini_ko: "한국어 (제미니)",
+		},
+		thai: {
+			gemini_romaji: "로마자 (제미니)",
+			gemini_ko: "한국어 (제미니)",
+		},
+		indonesian: {
+			gemini_romaji: "로마자 (제미니)",
+			gemini_ko: "한국어 (제미니)",
+		},
 	}
 };
 
@@ -374,7 +431,7 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
 
 		// Add language-specific display modes
 		if (friendlyLanguage) {
-			// For detected CJKE languages, show specific language modes
+			// For detected languages (CJKE + new languages), show specific language modes
 			baseItems.push(
 				{
 					desc: react.createElement(SettingRowDescription, { icon: ICONS.mode, text: "표시 모드" }),
@@ -391,7 +448,7 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
 					renderInline: true,
 				}
 			);
-		} else if (provider === "geminiVi") {
+		} else if (provider === "geminiKo") {
 			// For Gemini mode, show generic display modes even without detected language
 			baseItems.push(
 				{
