@@ -105,20 +105,20 @@ const FuriganaConverter = (() => {
 
 		try {
 			// Tokenize the text
-			const tokens = kuromojiInstance.tokenize(text);
-			console.log('[FuriganaConverter] ✓ Tokenized into', tokens.length, 'tokens');
+			const morphemes = kuromojiInstance.tokenize(text);
+			console.log('[FuriganaConverter] ✓ Tokenized into', morphemes.length, 'morphemes');
 			let result = '';
 
-			for (const token of tokens) {
-				const surface = token.surface_form; // 表層形 (actual text)
-				const reading = token.reading || token.pronunciation; // 読み (reading in katakana), fallback to pronunciation
+			for (const morpheme of morphemes) {
+				const surface = morpheme.surface_form; // 表層形 (actual text)
+				const reading = morpheme.reading || morpheme.pronunciation; // 読み (reading in katakana), fallback to pronunciation
 
-				// Debug logging for tokens without reading
+				// Debug logging for morphemes without reading
 				if (containsKanji(surface) && !reading) {
-					console.log('[FuriganaConverter] ⚠️ No reading for kanji:', surface, 'token:', token);
+					console.log('[FuriganaConverter] ⚠️ No reading for kanji:', surface, 'morpheme:', morpheme);
 				}
 
-				// If token has kanji and reading is available
+				// If morpheme has kanji and reading is available
 				if (reading && containsKanji(surface)) {
 					// Convert katakana reading to hiragana
 					const hiragana = katakanaToHiragana(reading);
