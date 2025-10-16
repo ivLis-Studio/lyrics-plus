@@ -13,6 +13,21 @@ class Translator {
 			ja: false,
 			ko: false,
 			zh: false,
+			ru: false,
+			vi: false,
+			de: false,
+			en: false,
+			es: false, // Spanish
+			fr: false, // French
+			it: false, // Italian
+			pt: false, // Portuguese
+			nl: false, // Dutch
+			pl: false, // Polish
+			tr: false, // Turkish
+			ar: false, // Arabic
+			hi: false, // Hindi
+			th: false, // Thai
+			id: false, // Indonesian
 		};
 		this.isUsingNetease = isUsingNetease;
 		this.initializationPromise = null;
@@ -215,11 +230,30 @@ class Translator {
 					this.includeExternal(pinyinProPath).catch(() => {});
 					this.includeExternal(tinyPinyinPath).catch(() => {});
 					break;
+			case "ru":
+			case "vi":
+			case "de":
+			case "en":
+			case "es":
+			case "fr":
+			case "it":
+			case "pt":
+			case "nl":
+			case "pl":
+			case "tr":
+			case "ar":
+			case "hi":
+			case "th":
+			case "id":
+					// These languages will use Gemini API for translation
+					// No external libraries needed
+					this.finished[langCode] = true;
+					break;
+			}
+		} catch (error) {
+			throw error;
 		}
-	} catch (error) {
-		throw error;
-	}
-}	async awaitFinished(language) {
+	}	async awaitFinished(language) {
 		const langCode = language?.slice(0, 2);
 		if (this.initializationPromise) {
 			await this.initializationPromise;
@@ -248,11 +282,11 @@ class Translator {
 
 	async createTranslator(lang) {
 		const langCode = lang.slice(0, 2);
-		
+
 		switch (langCode) {
 			case "ja":
 				if (this.kuroshiro) return;
-				
+
 				// Wait for libraries to be available with timeout
 				await this.waitForGlobals(['Kuroshiro', 'KuromojiAnalyzer'], 10000);
 
@@ -260,23 +294,42 @@ class Translator {
 				await this.kuroshiro.init(new KuromojiAnalyzer({ dictPath }));
 				this.finished.ja = true;
 				break;
-				
+
 			case "ko":
 				if (this.Aromanize) return;
-				
+
 				await this.waitForGlobals(['Aromanize'], 5000);
-				
+
 				this.Aromanize = Aromanize;
 				this.finished.ko = true;
 				break;
-				
+
 			case "zh":
 				if (this.OpenCC) return;
-				
+
 				await this.waitForGlobals(['OpenCC'], 5000);
-				
+
 				this.OpenCC = OpenCC;
 				this.finished.zh = true;
+				break;
+
+			case "ru":
+			case "vi":
+			case "de":
+			case "en":
+			case "es":
+			case "fr":
+			case "it":
+			case "pt":
+			case "nl":
+			case "pl":
+			case "tr":
+			case "ar":
+			case "hi":
+			case "th":
+			case "id":
+				// These languages use Gemini API for translation
+				this.finished[langCode] = true;
 				break;
 		}
 	}
