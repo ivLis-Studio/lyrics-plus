@@ -467,48 +467,35 @@ const Utils = {
 	 * @returns {string} - Text with furigana HTML tags if applicable
 	 */
 	applyFuriganaIfEnabled(text) {
-		console.log('[Furigana Debug] Starting applyFuriganaIfEnabled');
-		console.log('[Furigana Debug] furigana-enabled:', CONFIG?.visual?.["furigana-enabled"]);
-		console.log('[Furigana Debug] text type:', typeof text);
-		console.log('[Furigana Debug] text sample:', text?.substring(0, 50));
 
 		// Check if furigana is enabled and if the text contains Japanese
 		if (!CONFIG?.visual?.["furigana-enabled"]) {
-			console.log('[Furigana Debug] ❌ Furigana is disabled in settings');
 			return text;
 		}
 
 		if (!text || typeof text !== "string") {
-			console.log('[Furigana Debug] ❌ Invalid text input');
 			return text;
 		}
 
 		// Check if text contains kanji
 		const kanjiRegex = /[\u4E00-\u9FAF\u3400-\u4DBF]/;
 		if (!kanjiRegex.test(text)) {
-			console.log('[Furigana Debug] ℹ️ No kanji detected in text');
 			return text;
 		}
 
-		console.log('[Furigana Debug] ✓ Text contains kanji');
 
 		try {
 			// Use FuriganaConverter if available
-			console.log('[Furigana Debug] FuriganaConverter exists:', typeof window.FuriganaConverter !== 'undefined');
 
 			if (typeof window.FuriganaConverter !== 'undefined') {
-				console.log('[Furigana Debug] FuriganaConverter.isAvailable():', window.FuriganaConverter.isAvailable());
 
 				// Try to convert even if not fully initialized - it will return original text if not ready
 				const result = window.FuriganaConverter.convertToFurigana(text);
-				console.log('[Furigana Debug] ✓ Conversion result sample:', result?.substring(0, 100));
 				return result || text;
 			} else {
-				console.log('[Furigana Debug] ❌ FuriganaConverter not found');
 			}
 			return text;
 		} catch (error) {
-			console.error('[Furigana Debug] ❌ Failed to apply furigana:', error);
 			return text;
 		}
 	},

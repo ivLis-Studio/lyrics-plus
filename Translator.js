@@ -51,7 +51,7 @@ class Translator {
 		}
 	}
 
-	static async callGemini({ artist, title, text, wantSmartPhonetic = false, provider = null }) {
+	static async callGemini({ artist, title, text, wantSmartPhonetic = false, provider = null, ignoreCache = false }) {
 		if (!text?.trim()) throw new Error("No text provided for translation");
 
 		// Get API key from localStorage
@@ -73,7 +73,8 @@ class Translator {
 			text,
 			wantSmartPhonetic,
 			provider,
-			apiKey
+			apiKey,
+			ignore_cache: ignoreCache
 		};
 
 		const tryFetch = async (url) => {

@@ -20,51 +20,39 @@ const FuriganaConverter = (() => {
 			// If URL doesn't start with http/https, fix it
 			if (!url.startsWith('http://') && !url.startsWith('https://')) {
 				url = 'https://unpkg.com/kuromoji@0.1.2/dict/' + url.split('/dict/').pop();
-				if (DEBUG_MODE) console.log('[FuriganaConverter] Fixed URL to:', url);
 			}
 			// If URL has wrong host, fix it
 			else if (url.includes('xpui.app.spotify.com')) {
 				const filename = url.split('/dict/').pop();
 				url = 'https://unpkg.com/kuromoji@0.1.2/dict/' + filename;
-				if (DEBUG_MODE) console.log('[FuriganaConverter] Fixed wrong host URL to:', url);
 			}
 		}
 		return originalXHROpen.call(this, method, url, ...args);
 	};
 
 	const init = async () => {
-		if (DEBUG_MODE) console.log('[FuriganaConverter] init() called');
-
 		if (kuromojiInstance) {
-			if (DEBUG_MODE) console.log('[FuriganaConverter] ✓ Already initialized');
 			return Promise.resolve();
 		}
 
 		if (isInitializing) {
-			if (DEBUG_MODE) console.log('[FuriganaConverter] ⏳ Already initializing, waiting...');
 			return initPromise;
 		}
 
-		console.log('[FuriganaConverter] 🔄 Starting initialization...');
 		isInitializing = true;
 		initPromise = new Promise((resolve, reject) => {
 			if (typeof window.kuromoji === 'undefined') {
-				console.error('[FuriganaConverter] ❌ Kuromoji library not found in window');
 				reject(new Error('Kuromoji library not loaded'));
 				return;
 			}
 
-			if (DEBUG_MODE) console.log('[FuriganaConverter] ✓ Kuromoji library found, building...');
-
 			// Use any path - our XHR patch will fix it
 			const dicPath = '/dict';
-			if (DEBUG_MODE) console.log('[FuriganaConverter] Using dictionary path:', dicPath);
 
 			window.kuromoji.builder({
 				dicPath: dicPath
 			}).build((err, tokenizer) => {
 				if (err) {
-					console.error('[FuriganaConverter] ❌ Build failed:', err);
 					isInitializing = false;
 					reject(err);
 					return;
@@ -72,7 +60,6 @@ const FuriganaConverter = (() => {
 
 				kuromojiInstance = tokenizer;
 				isInitializing = false;
-				console.log('[FuriganaConverter] ✅ Initialization complete!');
 
 				// Trigger re-render by dispatching a custom event
 				setTimeout(() => {
@@ -104,46 +91,30 @@ const FuriganaConverter = (() => {
 	};
 
 	const convertToFurigana = (text) => {
-		if (DEBUG_MODE) console.log('[FuriganaConverter] convertToFurigana called');
-		if (DEBUG_MODE) console.log('[FuriganaConverter] text sample:', text?.substring(0, 50));
-
 		if (!text || typeof text !== 'string') {
-			if (DEBUG_MODE) console.log('[FuriganaConverter] ❌ Invalid text type');
 			return text;
 		}
 
 		if (!containsKanji(text)) {
-			if (DEBUG_MODE) console.log('[FuriganaConverter] ℹ️ No kanji in text');
 			return text;
 		}
 
-		if (DEBUG_MODE) console.log('[FuriganaConverter] ✓ Text contains kanji');
-
 		if (conversionCache.has(text)) {
-			if (DEBUG_MODE) console.log('[FuriganaConverter] ✓ Found in cache');
 			return conversionCache.get(text);
 		}
 
 		if (!kuromojiInstance) {
-			if (DEBUG_MODE) console.log('[FuriganaConverter] ❌ Kuromoji not initialized yet');
 			return text;
 		}
 
-		if (DEBUG_MODE) console.log('[FuriganaConverter] ✓ Kuromoji is ready, tokenizing...');
-
 		try {
 			const tokens = kuromojiInstance.tokenize(text);
-			if (DEBUG_MODE) console.log('[FuriganaConverter] ✓ Tokenized into', tokens.length, 'tokens');
 			let result = '';
 
 			for (const token of tokens) {
 				const surface = token.surface_form;
 				const reading = token.reading || token.pronunciation; // Fallback to pronunciation
 
-				// Debug logging for tokens without reading - only warn once per unique kanji
-				if (containsKanji(surface) && !reading) {
-					console.warn('[FuriganaConverter] ⚠️ No reading for kanji:', surface);
-				}
 
 				// Only add ruby if token has kanji AND reading
 				if (reading && containsKanji(surface)) {
@@ -201,7 +172,6 @@ const FuriganaConverter = (() => {
 							if (kanjiReading) {
 								tokenResult += `<ruby>${kanjiSequence}<rt>${kanjiReading}</rt></ruby>`;
 								readingIndex += kanjiReading.length;
-								console.log(`[FuriganaConverter] ✓ ${kanjiSequence} → ${kanjiReading}`);
 							} else {
 								tokenResult += kanjiSequence;
 							}
@@ -225,10 +195,8 @@ const FuriganaConverter = (() => {
 			}
 			conversionCache.set(text, result);
 
-			console.log('[FuriganaConverter] ✓ Conversion complete. Result sample:', result.substring(0, 100));
 			return result;
 		} catch (error) {
-			console.error('[FuriganaConverter] ❌ Conversion error:', error);
 			return text;
 		}
 	};
@@ -253,73 +221,46 @@ const FuriganaConverter = (() => {
 window.FuriganaConverter = FuriganaConverter;
 
 // Load Kuromoji library for furigana conversion
-console.log('[Furigana Init] Starting Kuromoji load...');
-console.log('[Furigana Init] window.kuromoji exists:', typeof window.kuromoji !== 'undefined');
-
 if (typeof window.kuromoji === 'undefined') {
-	console.log('[Furigana Init] Loading Kuromoji script...');
 	const kuromojiScript = document.createElement('script');
 	kuromojiScript.src = 'https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/build/kuromoji.js';
 	kuromojiScript.async = false; // Load synchronously to ensure it's available
 	kuromojiScript.onload = () => {
-		console.log('[Furigana Init] ✓ Kuromoji library loaded');
-		console.log('[Furigana Init] window.kuromoji now exists:', typeof window.kuromoji !== 'undefined');
-
 		// Initialize immediately
 		if (typeof window.FuriganaConverter !== 'undefined') {
-			console.log('[Furigana Init] Starting FuriganaConverter initialization...');
 			window.FuriganaConverter.init()
 				.then(() => {
-					console.log('[Furigana Init] ✅ FuriganaConverter initialized successfully');
 					// Trigger lyrics re-render if furigana is enabled
 					if (CONFIG?.visual?.["furigana-enabled"]) {
-						console.log('[Furigana Init] Re-rendering lyrics...');
 						// Try multiple methods to trigger re-render
 						if (window.lyricContainer) {
 							try {
 								window.lyricContainer.forceUpdate();
-							} catch (e) {
-								console.warn('[Furigana Init] forceUpdate failed:', e);
-							}
+							} catch (e) {}
 						}
 						// Also try to refresh by simulating a track change
 						try {
 							const currentTrack = Spicetify.Player.data?.item?.uri;
 							if (currentTrack) {
-								console.log('[Furigana Init] Refreshing current track...');
 								// Small delay to ensure everything is ready
 								setTimeout(() => {
 									Spicetify.Player.playUri(currentTrack);
 								}, 200);
 							}
-						} catch (e) {
-							console.warn('[Furigana Init] Track refresh failed:', e);
-						}
+						} catch (e) {}
 					}
 				})
-				.catch(err => {
-					console.error('[Furigana Init] ❌ Failed to initialize FuriganaConverter:', err);
-				});
-		} else {
-			console.error('[Furigana Init] ❌ FuriganaConverter not found after Kuromoji load');
+				.catch(err => {});
 		}
 	};
-	kuromojiScript.onerror = (err) => {
-		console.error('[Furigana Init] ❌ Failed to load Kuromoji script:', err);
-	};
+	kuromojiScript.onerror = (err) => {};
 	document.head.appendChild(kuromojiScript);
-	console.log('[Furigana Init] Script element appended to head');
 } else {
-	console.log('[Furigana Init] Kuromoji already loaded, initializing FuriganaConverter...');
 	// If Kuromoji is already loaded, initialize immediately
 	if (typeof window.FuriganaConverter !== 'undefined') {
 		window.FuriganaConverter.init()
-			.then(() => {
-				console.log('[Furigana Init] ✅ FuriganaConverter initialized successfully');
-			})
-			.catch(err => {
-				console.error('[Furigana Init] ❌ Failed to initialize FuriganaConverter:', err);
-			});
+			.then(() => {})
+			.catch(err => {});
 	}
 }
 
@@ -824,13 +765,16 @@ class LyricsContainer extends react.Component {
 		this.languageOverride = CONFIG.visual["translate:detect-language-override"];
 		this.reRenderLyricsPage = false;
 		this.displayMode = null;
-		
+
 		// Prevent infinite render loops
 		this.lastProcessedUri = null;
 		this.lastProcessedMode = null;
-		
+
 		// Translation loading timer
 		this.translationLoadingTimer = null;
+
+		// Bind regenerate translation method
+		this.regenerateTranslation = this.regenerateTranslation.bind(this);
 	}
 
 	/**
@@ -852,6 +796,143 @@ class LyricsContainer extends react.Component {
 			this.translationLoadingTimer = null;
 		}
 		this.setState({ isTranslationLoading: false });
+	}
+
+	/**
+	 * 번역 재생성 메서드 - ignore_cache를 true로 설정하여 새로운 번역 요청
+	 */
+	async regenerateTranslation() {
+		// 번역이 활성화되어 있는지 확인
+		const provider = CONFIG.visual["translate:translated-lyrics-source"];
+
+		if (!provider || provider === "none") {
+			return;
+		}
+
+		// 현재 가사가 있는지 확인
+		if (!this.state.currentLyrics || this.state.currentLyrics.length === 0) {
+			Spicetify.showNotification("가사가 로드되지 않았습니다.", true, 2000);
+			return;
+		}
+
+		const originalLanguage = this.provideLanguageCode(this.state.currentLyrics);
+		const friendlyLanguage = originalLanguage && new Intl.DisplayNames(["en"], { type: "language" }).of(originalLanguage.split("-")[0])?.toLowerCase();
+		const modeKey = provider === "geminiKo" && !friendlyLanguage ? "gemini" : friendlyLanguage;
+		const mode1 = CONFIG.visual[`translation-mode:${modeKey}`];
+		const mode2 = CONFIG.visual[`translation-mode-2:${modeKey}`];
+
+		// Gemini 번역인지 확인
+		const isGeminiMode = mode1?.startsWith("gemini") || mode2?.startsWith("gemini");
+
+		if (!isGeminiMode) {
+			Spicetify.showNotification("번역 재생성은 Gemini 번역에서만 사용할 수 있습니다.", true, 3000);
+			return;
+		}
+
+		try {
+			this.startTranslationLoading();
+			Spicetify.showNotification("번역을 재생성하는 중...", false, 2000);
+
+			// 현재 가사 가져오기
+			const lyricsState = this.state;
+			const lyrics = this.state.currentLyrics || [];
+
+			// Section line 제거하고 text 속성만 추출
+			const nonSectionLines = lyrics.filter(line => !line?.text?.startsWith("[") && line?.text);
+			const text = nonSectionLines.map(line => line.text).join("\n");
+
+			// API key 가져오기
+			const apiKey = localStorage.getItem("lyrics-plus:visual:gemini-api-key");
+
+			// ignore_cache를 true로 설정하여 API 호출
+			const response = await Translator.callGemini({
+				apiKey,
+				artist: this.state.artist || lyricsState.artist,
+				title: this.state.title || lyricsState.title,
+				text,
+				wantSmartPhonetic: mode1 === "gemini-phonetic" || mode2 === "gemini-phonetic",
+				provider: lyricsState.provider,
+				ignoreCache: true  // 캐시 무시
+			});
+
+			// 번역 결과 처리 및 업데이트
+			const mode1Text = mode1 === "gemini-phonetic" ? response.phonetic : response.vi;
+			const mode2Text = mode2 === "gemini-phonetic" ? response.phonetic : (mode2 === "gemini-vi" ? response.vi : null);
+
+			if (!mode1Text) {
+				throw new Error("Empty result from Gemini.");
+			}
+
+			// 결과를 lyrics 형식으로 변환
+			const processResult = (outText) => {
+				let lines;
+				if (Array.isArray(outText)) {
+					lines = outText;
+				} else if (typeof outText === 'string') {
+					lines = outText.split("\n");
+				} else {
+					return null;
+				}
+
+				const originalNonSectionLines = [];
+				const originalNonSectionIndices = [];
+
+				lyrics.forEach((line, idx) => {
+					if (!line?.text?.startsWith("[")) {
+						originalNonSectionLines.push(line);
+						originalNonSectionIndices.push(idx);
+					}
+				});
+
+				const result = [...lyrics];
+				for (let i = 0; i < Math.min(lines.length, originalNonSectionLines.length); i++) {
+					const originalIndex = originalNonSectionIndices[i];
+					result[originalIndex] = {
+						...result[originalIndex],
+						text: lines[i]
+					};
+				}
+
+				return result;
+			};
+
+			const translatedLyrics1 = processResult(mode1Text);
+			const translatedLyrics2 = mode2Text ? processResult(mode2Text) : null;
+
+			// _dmResults에 번역 결과 저장
+			const currentUri = this.state.uri;
+			if (!this._dmResults) {
+				this._dmResults = {};
+			}
+			if (!this._dmResults[currentUri]) {
+				this._dmResults[currentUri] = {};
+			}
+
+			// mode1과 mode2 결과 저장
+			this._dmResults[currentUri].mode1 = translatedLyrics1;
+			this._dmResults[currentUri].mode2 = translatedLyrics2;
+
+			// 상태 업데이트
+			const updateState = { isCached: true };
+
+			if (mode1?.startsWith("gemini")) {
+				updateState[mode1] = translatedLyrics1;
+			}
+			if (mode2?.startsWith("gemini") && translatedLyrics2) {
+				updateState[mode2] = translatedLyrics2;
+			}
+
+			this.setState(updateState);
+
+			// 화면 강제 업데이트
+			this.reRenderLyricsPage();
+
+			Spicetify.showNotification("✓ 번역이 재생성되었습니다", false, 2000);
+		} catch (error) {
+			Spicetify.showNotification(`번역 재생성 실패: ${error.message}`, true, 3000);
+		} finally {
+			this.clearTranslationLoading();
+		}
 	}
 
 	infoFromTrack(track) {
@@ -2113,10 +2194,24 @@ class LyricsContainer extends react.Component {
 		// Previously it was gated by detected language/loading state, causing it to
 		// be hidden on initial load or for non-target languages (e.g., English).
 		const potentialMode = this.state.explicitMode !== -1 ? this.state.explicitMode :
-			this.state.lockMode !== -1 ? this.state.lockMode : 
+			this.state.lockMode !== -1 ? this.state.lockMode :
 			(this.state.isLoading ? (this.lastModeBeforeLoading || SYNCED) : mode);
-		
+
 		showTranslationButton = (potentialMode === KARAOKE || potentialMode === SYNCED || potentialMode === UNSYNCED || mode === -1);
+
+		// 번역 재생성 버튼 활성화 조건 확인
+		const translationProvider = CONFIG.visual["translate:translated-lyrics-source"];
+		const hasTranslationEnabled = translationProvider && translationProvider !== "none";
+		const hasGeminiTranslation = hasTranslationEnabled && (displayMode1?.startsWith("gemini") || displayMode2?.startsWith("gemini"));
+
+		// Gemini 번역이 실제로 로드되었는지 확인 (_dmResults 확인)
+		const currentUri = this.state.uri;
+		const hasLoadedGeminiTranslation = !!(hasGeminiTranslation && this._dmResults && this._dmResults[currentUri] && (
+			(displayMode1?.startsWith("gemini") && this._dmResults[currentUri].mode1) ||
+			(displayMode2?.startsWith("gemini") && this._dmResults[currentUri].mode2)
+		));
+
+		const canRegenerateTranslation = hasLoadedGeminiTranslation;
 
 		if (mode !== -1) {
 
@@ -2127,7 +2222,7 @@ class LyricsContainer extends react.Component {
 					provider: this.state.provider,
 					copyright: this.state.copyright,
 					isKara: true,
-					reRenderLyricsPage: this.reRenderLyricsPage,
+					reRenderLyricsPage: this.reRenderLyricsPage
 				});
 			} else if (mode === SYNCED && this.state.synced) {
 				activeItem = react.createElement(CONFIG.visual["synced-compact"] ? SyncedLyricsPage : SyncedExpandedLyricsPage, {
@@ -2135,7 +2230,7 @@ class LyricsContainer extends react.Component {
 					lyrics: Array.isArray(this.state.currentLyrics) ? this.state.currentLyrics : [],
 					provider: this.state.provider,
 					copyright: this.state.copyright,
-					reRenderLyricsPage: this.reRenderLyricsPage,
+					reRenderLyricsPage: this.reRenderLyricsPage
 				});
 			} else if (mode === UNSYNCED && this.state.unsynced) {
 				activeItem = react.createElement(UnsyncedLyricsPage, {
@@ -2143,7 +2238,7 @@ class LyricsContainer extends react.Component {
 					lyrics: Array.isArray(this.state.currentLyrics) ? this.state.currentLyrics : [],
 					provider: this.state.provider,
 					copyright: this.state.copyright,
-					reRenderLyricsPage: this.reRenderLyricsPage,
+					reRenderLyricsPage: this.reRenderLyricsPage
 				});
 			}
 		}
@@ -2235,6 +2330,11 @@ class LyricsContainer extends react.Component {
 						friendlyLanguage,
 						hasTranslation: {},
 					}),
+				react.createElement(RegenerateTranslationButton, {
+					onRegenerate: this.regenerateTranslation,
+					isEnabled: canRegenerateTranslation,
+					isLoading: this.state.isTranslationLoading
+				}),
 				react.createElement(SettingsMenu),
 				react.createElement(
 					Spicetify.ReactComponent.TooltipWrapper,

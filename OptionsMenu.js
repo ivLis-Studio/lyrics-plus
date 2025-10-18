@@ -559,7 +559,37 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
 		react.createElement(
 			"button",
 			{ className: "lyrics-config-button", onClick: open },
-			"⇄"
+			react.createElement(
+				"svg",
+				{ width: 16, height: 16, viewBox: "0 0 16 16", fill: "currentColor" },
+				react.createElement("path", { d: "M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM5.78 8.5a.5.5 0 0 1-.5.5H3.5a.5.5 0 0 1 0-1h1.78a.5.5 0 0 1 .5.5zm6.72 0a.5.5 0 0 1-.5.5h-1.78a.5.5 0 0 1 0-1H12a.5.5 0 0 1 .5.5zM8 12a.5.5 0 0 1-.5-.5v-7a.5.5 0 0 1 1 0v7a.5.5 0 0 1-.5.5z" }),
+				react.createElement("path", { d: "M6.854 5.854a.5.5 0 1 0-.708-.708l-2 2a.5.5 0 0 0 0 .708l2 2a.5.5 0 0 0 .708-.708L5.207 7.5l1.647-1.646zm2.292 0a.5.5 0 0 1 .708-.708l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708-.708L10.793 7.5 9.146 5.854z" })
+			)
+		)
+	);
+});
+
+const RegenerateTranslationButton = react.memo(({ onRegenerate, isEnabled, isLoading }) => {
+	return react.createElement(
+		Spicetify.ReactComponent.TooltipWrapper,
+		{ label: "번역 재생성" },
+		react.createElement(
+			"button",
+			{
+				className: "lyrics-config-button",
+				onClick: onRegenerate,
+				disabled: !isEnabled || isLoading,
+				style: {
+					opacity: (!isEnabled || isLoading) ? 0.4 : 1,
+					cursor: (!isEnabled || isLoading) ? "not-allowed" : "pointer"
+				}
+			},
+			react.createElement(
+				"svg",
+				{ width: 16, height: 16, viewBox: "0 0 16 16", fill: "currentColor" },
+				react.createElement("path", { d: "M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" }),
+				react.createElement("path", { d: "M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" })
+			)
 		)
 	);
 });

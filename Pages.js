@@ -1,7 +1,7 @@
 // Optimized CreditFooter with better memoization
 const CreditFooter = react.memo(({ provider, copyright }) => {
 	if (provider === "local" || !provider) return null;
-	
+
 	const credit = useMemo(() => {
 		const credits = [Spicetify.Locale.get("web-player.lyrics.providedBy", provider)];
 		if (copyright) {
@@ -265,10 +265,6 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 	const processedText = Utils.applyFuriganaIfEnabled(rawLineText);
 	const hasFurigana = processedText !== rawLineText && processedText.includes('<ruby>');
 
-	console.log('[Karaoke Line Debug] rawLineText:', rawLineText);
-	console.log('[Karaoke Line Debug] processedText:', processedText);
-	console.log('[Karaoke Line Debug] hasFurigana:', hasFurigana);
-
 	// 전체 글자 정보를 먼저 수집
 	const allChars = [];
 	line.syllables.forEach((syllable, syllableIndex) => {
@@ -368,9 +364,6 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 	// Build text from charRenderData to ensure exact matching
 	const actualText = charRenderData.map(c => c.char).join('');
 
-	console.log('[Karaoke Line Debug] actualText from charRenderData:', actualText);
-	console.log('[Karaoke Line Debug] charRenderData length:', charRenderData.length);
-
 	// Reset regex state
 	whitespacePattern.lastIndex = 0;
 	while ((match = whitespacePattern.exec(actualText)) !== null) {
@@ -440,18 +433,10 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 			currentPos += kanjiSequence.length;
 			lastMatchEnd = match.index + match[0].length;
 		}
-		
-		console.log('[Karaoke Furigana Debug] furiganaMap:', Array.from(furiganaMap.entries()));
-		console.log('[Karaoke Furigana Debug] actualText:', actualText);
-		console.log('[Karaoke Furigana Debug] cleanText:', cleanText);
 	}
 
 	// Word grouping works if we have spaces and total chars match
 	let useWordGrouping = hasWhitespaceToken && totalTokenChars === actualCharCount;
-
-	console.log('[Karaoke Word Grouping] hasWhitespaceToken:', hasWhitespaceToken);
-	console.log('[Karaoke Word Grouping] totalTokenChars:', totalTokenChars, 'actualCharCount:', actualCharCount);
-	console.log('[Karaoke Word Grouping] useWordGrouping:', useWordGrouping);
 
 	if (useWordGrouping) {
 		let charCursor = 0;
@@ -567,10 +552,6 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 		charRenderData.forEach((charData, index) => {
 			const char = charData.char;
 			const reading = furiganaMap.get(index); // Use position index instead of character
-
-			if (index < 10) { // Log first 10 chars for debugging
-				console.log(`[Karaoke Furigana] Char[${index}]: '${char}', reading: '${reading}'`);
-			}
 
 			// If this character has a furigana reading, wrap in ruby tag
 			if (reading) {
