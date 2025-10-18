@@ -670,7 +670,7 @@ const Utils = {
 	/**
 	 * Current version of the lyrics-plus app
 	 */
-	currentVersion: "1.2.1",
+	currentVersion: "1.2.2",
 
 	/**
 	 * Check for updates from remote repository
@@ -824,6 +824,47 @@ const Utils = {
 				latestVersion: this.currentVersion,
 				error: error.message
 			};
+		}
+	},
+	
+	// Track-specific sync offset management
+	getTrackSyncOffset(trackUri) {
+		if (!trackUri) return 0;
+		const offsetData = localStorage.getItem("lyrics-plus:track-sync-offsets");
+		if (!offsetData) return 0;
+		try {
+			const offsets = JSON.parse(offsetData);
+			return offsets[trackUri] || 0;
+		} catch {
+			return 0;
+		}
+	},
+	
+	setTrackSyncOffset(trackUri, offset) {
+		if (!trackUri) return;
+		let offsets = {};
+		const offsetData = localStorage.getItem("lyrics-plus:track-sync-offsets");
+		if (offsetData) {
+			try {
+				offsets = JSON.parse(offsetData);
+			} catch {
+				offsets = {};
+			}
+		}
+		offsets[trackUri] = offset;
+		localStorage.setItem("lyrics-plus:track-sync-offsets", JSON.stringify(offsets));
+	},
+	
+	clearTrackSyncOffset(trackUri) {
+		if (!trackUri) return;
+		const offsetData = localStorage.getItem("lyrics-plus:track-sync-offsets");
+		if (!offsetData) return;
+		try {
+			const offsets = JSON.parse(offsetData);
+			delete offsets[trackUri];
+			localStorage.setItem("lyrics-plus:track-sync-offsets", JSON.stringify(offsets));
+		} catch {
+			// Ignore errors
 		}
 	},
 };

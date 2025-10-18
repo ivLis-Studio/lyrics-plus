@@ -1833,7 +1833,7 @@ class LyricsContainer extends react.Component {
 		if (hasTranslations) {
 			Spicetify.showNotification(`✓ Reset ${clearedCount} translation cache entries`, false, 2000);
 		} else {
-			Spicetify.showNotification("✓ Translation cache cleared (no translations found)", false, 2000);
+			Spicetify.showNotification("✓ 번역 캐시를 제거하고 다시 불러왔습니다!", false, 2000);
 		}
 	}
 
@@ -2371,6 +2371,13 @@ class LyricsContainer extends react.Component {
 					onRegenerate: this.regenerateTranslation,
 					isEnabled: canRegenerateTranslation,
 					isLoading: this.state.isTranslationLoading
+				}),
+				react.createElement(SyncAdjustButton, {
+					trackUri: this.currentTrackUri,
+					currentOffset: Utils.getTrackSyncOffset(this.currentTrackUri),
+					onOffsetChange: (offset) => {
+						this.forceUpdate();
+					},
 				}),
 				react.createElement(SettingsMenu),
 				react.createElement(

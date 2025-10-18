@@ -611,7 +611,9 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 
 	useTrackPosition(() => {
 		const newPos = Spicetify.Player.getProgress();
-		const delay = CONFIG.visual["global-delay"] + CONFIG.visual.delay;
+		const trackUri = Spicetify.Player?.data?.item?.uri || "";
+		const trackOffset = Utils.getTrackSyncOffset(trackUri);
+		const delay = CONFIG.visual["global-delay"] + CONFIG.visual.delay + trackOffset;
 		// Always update position for smoother karaoke animation
 		setPosition(newPos + delay);
 	});
@@ -1090,7 +1092,9 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 
 	useTrackPosition(() => {
 		const newPos = Spicetify.Player.getProgress();
-		const delay = CONFIG.visual["global-delay"] + CONFIG.visual.delay;
+		const trackUri = Spicetify.Player?.data?.item?.uri || "";
+		const trackOffset = Utils.getTrackSyncOffset(trackUri);
+		const delay = CONFIG.visual["global-delay"] + CONFIG.visual.delay + trackOffset;
 		// Always update position for smoother karaoke animation
 		setPosition(newPos + delay);
 	});

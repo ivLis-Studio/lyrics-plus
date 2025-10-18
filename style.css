@@ -1024,3 +1024,65 @@ ruby .lyrics-karaoke-char.active {
 ruby .lyrics-karaoke-char.sung {
 	color: var(--karaoke-sung-color, currentColor);
 }
+/* Sync Adjust Modal Slider Styles */
+.lyrics-sync-adjust-modal input[type="range"] {
+-webkit-appearance: none;
+appearance: none;
+}
+
+.lyrics-sync-adjust-modal input[type="range"]::-webkit-slider-thumb {
+-webkit-appearance: none;
+appearance: none;
+width: 16px;
+height: 16px;
+background: #ffffff;
+border-radius: 50%;
+cursor: pointer;
+transition: all 0.15s ease;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.lyrics-sync-adjust-modal input[type="range"]::-webkit-slider-thumb:hover {
+background: #1db954;
+transform: scale(1.1);
+}
+
+.lyrics-sync-adjust-modal input[type="range"]::-moz-range-thumb {
+width: 16px;
+height: 16px;
+background: #ffffff;
+border: none;
+border-radius: 50%;
+cursor: pointer;
+transition: all 0.15s ease;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.lyrics-sync-adjust-modal input[type="range"]::-moz-range-thumb:hover {
+background: #1db954;
+transform: scale(1.1);
+}
+
+.lyrics-sync-adjust-modal input[type="range"]::-webkit-slider-runnable-track {
+width: 100%;
+height: 4px;
+background: linear-gradient(to right, #ff4444 0%, #ffaa00 25%, #2b2b2b 50%, #00ff88 75%, #00ff88 100%);
+border-radius: 2px;
+}
+
+.lyrics-sync-adjust-modal input[type="range"]::-moz-range-track {
+width: 100%;
+height: 4px;
+background: linear-gradient(to right, #ff4444 0%, #ffaa00 25%, #2b2b2b 50%, #00ff88 75%, #00ff88 100%);
+border-radius: 2px;
+}
+
+.lyrics-sync-adjust-modal button:hover {
+background: #323232 !important;
+border-color: #505050 !important;
+}
+
+.lyrics-sync-adjust-modal button:active {
+background: #1f1f1f !important;
+transform: scale(0.95);
+}

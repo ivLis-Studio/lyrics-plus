@@ -594,6 +594,357 @@ const RegenerateTranslationButton = react.memo(({ onRegenerate, isEnabled, isLoa
 	);
 });
 
+const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }) => {
+	const [isOpen, setIsOpen] = useState(false);
+	const [offset, setOffset] = useState(0);
+
+	// Load offset when trackUri changes
+	useEffect(() => {
+		const savedOffset = Utils.getTrackSyncOffset(trackUri) || 0;
+		setOffset(savedOffset);
+	}, [trackUri]);
+
+	const handleOffsetChange = (newOffset) => {
+		setOffset(newOffset);
+		Utils.setTrackSyncOffset(trackUri, newOffset);
+		if (onOffsetChange) {
+			onOffsetChange(newOffset);
+		}
+	};
+
+	const adjustOffset = (delta) => {
+		const newOffset = Math.max(-10000, Math.min(10000, offset + delta));
+		handleOffsetChange(newOffset);
+	};
+
+	const handleSliderChange = (event) => {
+		const newOffset = Number(event.target.value);
+		handleOffsetChange(newOffset);
+	};
+
+	const resetOffset = () => {
+		handleOffsetChange(0);
+	};
+
+	const toggleModal = () => {
+		setIsOpen(!isOpen);
+	};
+
+	return react.createElement(
+		react.Fragment,
+		null,
+		react.createElement(
+			Spicetify.ReactComponent.TooltipWrapper,
+			{ label: "싱크 조절" },
+			react.createElement(
+				"button",
+				{
+					className: "lyrics-config-button",
+					onClick: toggleModal,
+				},
+				react.createElement(
+					"svg",
+					{ width: 16, height: 16, viewBox: "0 0 16 16", fill: "currentColor" },
+					react.createElement("path", { d: "M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z" }),
+					react.createElement("path", { d: "M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z" })
+				)
+			)
+		),
+		isOpen && react.createElement(
+			"div",
+			{
+				className: "lyrics-sync-adjust-modal",
+				style: {
+					position: "fixed",
+					bottom: "120px",
+					left: "50%",
+					transform: "translateX(-50%)",
+					background: "rgba(18, 18, 18, 0.95)",
+					backdropFilter: "blur(20px)",
+					border: "1px solid #2b2b2b",
+					borderRadius: "8px",
+					padding: "16px 20px",
+					zIndex: 9999,
+					minWidth: "500px",
+					boxShadow: "0 8px 24px rgba(0, 0, 0, 0.5)",
+				}
+			},
+			react.createElement(
+				"div",
+				{
+					style: {
+						display: "flex",
+						justifyContent: "space-between",
+						alignItems: "center",
+						marginBottom: "12px",
+					}
+				},
+				react.createElement(
+					"div",
+					{
+						style: {
+							fontSize: "14px",
+							fontWeight: "600",
+							color: "#ffffff",
+						}
+					},
+					"가사 싱크 조절"
+				),
+				react.createElement(
+					"button",
+					{
+						onClick: toggleModal,
+						style: {
+							background: "transparent",
+							border: "none",
+							color: "#b3b3b3",
+							cursor: "pointer",
+							fontSize: "18px",
+							padding: "0",
+							width: "20px",
+							height: "20px",
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+						}
+					},
+					"×"
+				)
+			),
+			react.createElement(
+				"div",
+				{
+					style: {
+						fontSize: "12px",
+						color: "#8a8a8a",
+						marginBottom: "16px",
+					}
+				},
+				"양수: 가사를 늦게 표시 | 음수: 가사를 빨리 표시"
+			),
+			react.createElement(
+				"div",
+				{
+					style: {
+						display: "flex",
+						alignItems: "center",
+						gap: "12px",
+					}
+				},
+				// Slider
+				react.createElement(
+					"div",
+					{
+						style: {
+							flex: 1,
+							display: "flex",
+							flexDirection: "column",
+							gap: "8px",
+						}
+					},
+					react.createElement("input", {
+						type: "range",
+						min: -10000,
+						max: 10000,
+						step: 10,
+						value: offset,
+						onChange: handleSliderChange,
+						style: {
+							width: "100%",
+							height: "4px",
+							background: "#2b2b2b",
+							borderRadius: "2px",
+							outline: "none",
+							appearance: "none",
+							cursor: "pointer",
+						}
+					}),
+					react.createElement(
+						"div",
+						{
+							style: {
+								display: "flex",
+								justifyContent: "space-between",
+								fontSize: "11px",
+								color: "#6d6d6d",
+							}
+						},
+						react.createElement("span", null, "-10s"),
+						react.createElement(
+							"span",
+							{
+								style: {
+									color: "#ffffff",
+									fontWeight: "600",
+									fontSize: "13px",
+								}
+							},
+							`${offset}ms`
+						),
+						react.createElement("span", null, "+10s")
+					)
+				),
+				// Fine adjustment buttons
+				react.createElement(
+					"div",
+					{
+						style: {
+							display: "flex",
+							flexDirection: "column",
+							gap: "4px",
+						}
+					},
+					react.createElement(
+						"div",
+						{
+							style: {
+								display: "flex",
+								gap: "4px",
+							}
+						},
+						react.createElement(
+							"button",
+							{
+								onClick: () => adjustOffset(-100),
+								style: {
+									background: "#2b2b2b",
+									border: "1px solid #3d3d3d",
+									borderRadius: "4px",
+									color: "#ffffff",
+									cursor: "pointer",
+									padding: "4px 8px",
+									fontSize: "11px",
+									fontWeight: "500",
+									minWidth: "45px",
+								}
+							},
+							"-100"
+						),
+						react.createElement(
+							"button",
+							{
+								onClick: () => adjustOffset(-10),
+								style: {
+									background: "#2b2b2b",
+									border: "1px solid #3d3d3d",
+									borderRadius: "4px",
+									color: "#ffffff",
+									cursor: "pointer",
+									padding: "4px 8px",
+									fontSize: "11px",
+									fontWeight: "500",
+									minWidth: "45px",
+								}
+							},
+							"-10"
+						),
+						react.createElement(
+							"button",
+							{
+								onClick: () => adjustOffset(-1),
+								style: {
+									background: "#2b2b2b",
+									border: "1px solid #3d3d3d",
+									borderRadius: "4px",
+									color: "#ffffff",
+									cursor: "pointer",
+									padding: "4px 8px",
+									fontSize: "11px",
+									fontWeight: "500",
+									minWidth: "45px",
+								}
+							},
+							"-1"
+						)
+					),
+					react.createElement(
+						"div",
+						{
+							style: {
+								display: "flex",
+								gap: "4px",
+							}
+						},
+						react.createElement(
+							"button",
+							{
+								onClick: () => adjustOffset(100),
+								style: {
+									background: "#2b2b2b",
+									border: "1px solid #3d3d3d",
+									borderRadius: "4px",
+									color: "#ffffff",
+									cursor: "pointer",
+									padding: "4px 8px",
+									fontSize: "11px",
+									fontWeight: "500",
+									minWidth: "45px",
+								}
+							},
+							"+100"
+						),
+						react.createElement(
+							"button",
+							{
+								onClick: () => adjustOffset(10),
+								style: {
+									background: "#2b2b2b",
+									border: "1px solid #3d3d3d",
+									borderRadius: "4px",
+									color: "#ffffff",
+									cursor: "pointer",
+									padding: "4px 8px",
+									fontSize: "11px",
+									fontWeight: "500",
+									minWidth: "45px",
+								}
+							},
+							"+10"
+						),
+						react.createElement(
+							"button",
+							{
+								onClick: () => adjustOffset(1),
+								style: {
+									background: "#2b2b2b",
+									border: "1px solid #3d3d3d",
+									borderRadius: "4px",
+									color: "#ffffff",
+									cursor: "pointer",
+									padding: "4px 8px",
+									fontSize: "11px",
+									fontWeight: "500",
+									minWidth: "45px",
+								}
+							},
+							"+1"
+						)
+					)
+				),
+				// Reset button
+				react.createElement(
+					"button",
+					{
+						onClick: resetOffset,
+						style: {
+							background: "#1f1f1f",
+							border: "1px solid #3d3d3d",
+							borderRadius: "4px",
+							color: "#ffffff",
+							cursor: "pointer",
+							padding: "8px 12px",
+							fontSize: "12px",
+							fontWeight: "500",
+							minWidth: "60px",
+						}
+					},
+					"초기화"
+				)
+			)
+		)
+	);
+});
+
 const SettingsMenu = react.memo(() => {
 	const openSettings = () => {
 		openConfig();
