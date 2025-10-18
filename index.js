@@ -831,40 +831,47 @@ class LyricsContainer extends react.Component {
 
 		try {
 			this.startTranslationLoading();
+
 			Spicetify.showNotification("번역을 재생성하는 중...", false, 2000);
 
-			// 현재 가사 가져오기
+			// 원본 가사 가져오기 (번역되지 않은 원문)
 			const lyricsState = this.state;
-			const lyrics = this.state.currentLyrics || [];
+			const currentMode = this.getCurrentMode();
 
-			// Section line 제거하고 text 속성만 추출
-			const nonSectionLines = lyrics.filter(line => !line?.text?.startsWith("[") && line?.text);
-			const text = nonSectionLines.map(line => line.text).join("\n");
+			// 원본 가사를 가져오기 위해 synced, karaoke, unsynced 중 현재 모드에 해당하는 것 사용
+			let originalLyrics = [];
+			if (currentMode === KARAOKE && this.state.karaoke) {
+				originalLyrics = this.state.karaoke;
+			} else if (currentMode === SYNCED && this.state.synced) {
+				originalLyrics = this.state.synced;
+			} else if (currentMode === UNSYNCED && this.state.unsynced) {
+				originalLyrics = this.state.unsynced;
+			} else {
+				// fallback: currentLyrics에서 originalText 사용
+				originalLyrics = this.state.currentLyrics || [];
+			}
 
-			// API key 가져오기
-			const apiKey = localStorage.getItem("lyrics-plus:visual:gemini-api-key");
+			// Section line 제거하고 원문 텍스트만 추출 (getGeminiTranslation과 동일)
+			const allLines = originalLyrics.map((l) => l?.text || "").filter(Boolean);
+			const nonSectionLines = allLines.filter(line => !Utils.isSectionHeader(line));
+			const text = nonSectionLines.join("\n");
 
-			// ignore_cache를 true로 설정하여 API 호출
+			// API 호출 (ignore_cache: true)
 			const response = await Translator.callGemini({
-				apiKey,
+				apiKey: "no",
 				artist: this.state.artist || lyricsState.artist,
 				title: this.state.title || lyricsState.title,
 				text,
-				wantSmartPhonetic: mode1 === "gemini-phonetic" || mode2 === "gemini-phonetic",
+				wantSmartPhonetic: mode1 === "gemini_romaji" || mode2 === "gemini_romaji",
 				provider: lyricsState.provider,
-				ignoreCache: true  // 캐시 무시
+				ignoreCache: true
 			});
 
-			// 번역 결과 처리 및 업데이트
-			const mode1Text = mode1 === "gemini-phonetic" ? response.phonetic : response.vi;
-			const mode2Text = mode2 === "gemini-phonetic" ? response.phonetic : (mode2 === "gemini-vi" ? response.vi : null);
+			// 번역 결과를 getGeminiTranslation과 동일한 방식으로 처리하는 함수
+			const processTranslationResult = (outText, lyrics) => {
+				if (!outText) return null;
 
-			if (!mode1Text) {
-				throw new Error("Empty result from Gemini.");
-			}
-
-			// 결과를 lyrics 형식으로 변환
-			const processResult = (outText) => {
+				// Handle both array and string formats
 				let lines;
 				if (Array.isArray(outText)) {
 					lines = outText;
@@ -874,30 +881,71 @@ class LyricsContainer extends react.Component {
 					return null;
 				}
 
+				// Create mapping arrays for proper alignment
 				const originalNonSectionLines = [];
 				const originalNonSectionIndices = [];
 
-				lyrics.forEach((line, idx) => {
-					if (!line?.text?.startsWith("[")) {
-						originalNonSectionLines.push(line);
-						originalNonSectionIndices.push(idx);
+				// Collect non-section lines from original lyrics (excluding empty lines)
+				lyrics.forEach((line, i) => {
+					const text = line?.text || "";
+					if (!Utils.isSectionHeader(text) && text.trim() !== "") {
+						originalNonSectionLines.push(text);
+						originalNonSectionIndices.push(i);
 					}
 				});
 
-				const result = [...lyrics];
-				for (let i = 0; i < Math.min(lines.length, originalNonSectionLines.length); i++) {
-					const originalIndex = originalNonSectionIndices[i];
-					result[originalIndex] = {
-						...result[originalIndex],
-						text: lines[i]
-					};
-				}
+				// Filter out section headers and empty lines from translation results
+				const cleanTranslationLines = lines.filter(line =>
+					line &&
+					line.trim() !== "" &&
+					!Utils.isSectionHeader(line.trim())
+				);
 
-				return result;
+				// Use the clean translation lines for mapping
+				lines = cleanTranslationLines;
+
+				// Smart mapping that accounts for section headers and empty lines
+				const mapped = lyrics.map((line, i) => {
+					const originalText = line?.text || "";
+
+					// If this is a section header, keep original and don't show translation
+					if (Utils.isSectionHeader(originalText)) {
+						return {
+							...line,
+							text: null,
+							originalText: originalText,
+						};
+					}
+
+					// If this is an empty line, keep it empty
+					if (originalText.trim() === "") {
+						return {
+							...line,
+							text: "",
+							originalText: originalText,
+						};
+					}
+
+					// Find the translation index for this non-section, non-empty line
+					const positionInNonSectionLines = originalNonSectionIndices.indexOf(i);
+					const translatedText = lines[positionInNonSectionLines]?.trim() || "";
+
+					return {
+						...line,
+						text: translatedText || line?.text || "",
+						originalText: originalText,
+					};
+				});
+
+				return mapped;
 			};
 
-			const translatedLyrics1 = processResult(mode1Text);
-			const translatedLyrics2 = mode2Text ? processResult(mode2Text) : null;
+			// mode1과 mode2 각각 처리
+			const mode1Text = mode1 === "gemini_romaji" ? response.phonetic : response.vi;
+			const mode2Text = mode2 === "gemini_romaji" ? response.phonetic : (mode2 === "gemini_ko" ? response.vi : null);
+
+			const translatedLyrics1 = mode1Text ? processTranslationResult(mode1Text, originalLyrics) : null;
+			const translatedLyrics2 = mode2Text ? processTranslationResult(mode2Text, originalLyrics) : null;
 
 			// _dmResults에 번역 결과 저장
 			const currentUri = this.state.uri;
@@ -912,21 +960,10 @@ class LyricsContainer extends react.Component {
 			this._dmResults[currentUri].mode1 = translatedLyrics1;
 			this._dmResults[currentUri].mode2 = translatedLyrics2;
 
-			// 상태 업데이트
-			const updateState = { isCached: true };
-
-			if (mode1?.startsWith("gemini")) {
-				updateState[mode1] = translatedLyrics1;
-			}
-			if (mode2?.startsWith("gemini") && translatedLyrics2) {
-				updateState[mode2] = translatedLyrics2;
-			}
-
-			this.setState(updateState);
-
-			// 화면 강제 업데이트
-			this.reRenderLyricsPage();
-
+			// lyricsSource를 다시 호출하여 기존 로직으로 화면 업데이트
+			// 이렇게 하면 optimizeTranslations이 호출되어 사용자 설정에 따라 번역이 표시됨
+			this.lyricsSource(this.state, currentMode);
+			this.resetTranslationCache(this.currentTrackUri)
 			Spicetify.showNotification("✓ 번역이 재생성되었습니다", false, 2000);
 		} catch (error) {
 			Spicetify.showNotification(`번역 재생성 실패: ${error.message}`, true, 3000);
