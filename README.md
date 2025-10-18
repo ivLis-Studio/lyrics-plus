@@ -1,3 +1,11 @@
+# 업데이트 방법
+https://github.com/ivLis-Studio/lyrics-plus/releases/latest
+에서 최신버전 zip 파일을 다운로드 받고, 기존처럼 폴더에 붙여 넣은 후, 
+   ```
+   spicetify apply
+   ```
+명령어 실행하시면 됩니다.
+
 # Lyrics Plus (한국어 커스텀 버전)
 
 Spicetify용 **Lyrics Plus** 커스텀 앱을 뼈대만 남기고 모조리 다 수정해버린 버전입니다. Google Gemini API를 활용하여 한국어 번역 기능을 제공합니다.
