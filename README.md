@@ -4,6 +4,8 @@ Spicetify용 **Lyrics Plus** 커스텀 앱을 뼈대만 남기고 모조리 다 
 
 관심있으시면 따봉(스타) 부탁드립니다. PR 환영합니다. :D
 
+각종 오류 및 ivLyrics의 싱크, 번역 문제는 디스코드에서 문의해주세요. : https://discord.gg/C6WGX73xqu
+
 https://github.com/user-attachments/assets/c865affb-1a7b-405c-86ac-e1421f426c58
 
 ---
