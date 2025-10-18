@@ -1,6 +1,8 @@
 # Lyrics Plus (한국어 커스텀 버전)
 
-Spicetify용 **Lyrics Plus** 커스텀 앱을 뼈대만 남기고 모조리 다 수정해버린 버전입니다. Google Gemini API를 활용하여 고품질 한국어 번역 기능을 제공합니다.
+Spicetify용 **Lyrics Plus** 커스텀 앱을 뼈대만 남기고 모조리 다 수정해버린 버전입니다. Google Gemini API를 활용하여 한국어 번역 기능을 제공합니다.
+
+관심있으시면 따봉(스타) 부탁드립니다. PR 환영합니다. :D
 
 https://github.com/user-attachments/assets/c865affb-1a7b-405c-86ac-e1421f426c58
 
