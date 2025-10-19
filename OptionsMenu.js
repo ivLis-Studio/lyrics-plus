@@ -131,39 +131,88 @@ function openOptionsModal(title, items, onChange, eventType = null) {
 		react.createElement("style", {
 			dangerouslySetInnerHTML: {
 				__html: `
-/* Microsoft Fluent Design - 변환 설정 모달 */
+/* iOS 18 Design - 변환 설정 모달 */
 #${APP_NAME}-config-container {
-	padding: 24px;
-	background: #1a1a1a;
+	padding: 0;
+	background: transparent;
 	color: #ffffff;
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+	width: 100%;
 }
 
+/* 섹션 타이틀 - 카드 헤더 스타일 */
+#${APP_NAME}-config-container .section-title {
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-top-left-radius: 12px;
+	border-top-right-radius: 12px;
+	border-bottom: none;
+	backdrop-filter: blur(30px) saturate(150%);
+	-webkit-backdrop-filter: blur(30px) saturate(150%);
+	padding: 16px 16px 12px 16px;
+	margin-top: 24px;
+	margin-bottom: 0;
+}
+
+#${APP_NAME}-config-container .section-title:first-child {
+	margin-top: 0;
+}
+
+#${APP_NAME}-config-container .section-title h3 {
+	margin: 0 0 4px;
+	font-size: 17px;
+	font-weight: 600;
+	color: #ffffff;
+	letter-spacing: -0.02em;
+}
+
+#${APP_NAME}-config-container .section-title p {
+	margin: 0;
+	font-size: 13px;
+	color: #8e8e93;
+	line-height: 1.4;
+	letter-spacing: -0.01em;
+}
+
+/* Setting Row */
 #${APP_NAME}-config-container .setting-row {
 	padding: 0;
 	margin: 0;
-	background: transparent;
-	border: none;
-	border-bottom: 1px solid #2b2b2b;
-	border-radius: 0;
-	transition: background 0.1s ease;
+	background: rgba(28, 28, 30, 0.5);
+	backdrop-filter: blur(30px) saturate(150%);
+	-webkit-backdrop-filter: blur(30px) saturate(150%);
+	border-left: 1px solid rgba(255, 255, 255, 0.08);
+	border-right: 1px solid rgba(255, 255, 255, 0.08);
+	border-top: none;
+	border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+	transition: background 0.15s ease;
+}
+
+#${APP_NAME}-config-container .section-title + .setting-row:first-of-type {
+	border-top: none;
+}
+
+#${APP_NAME}-config-container .setting-row:last-of-type {
+	border-bottom-left-radius: 12px;
+	border-bottom-right-radius: 12px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 #${APP_NAME}-config-container .setting-row:hover {
-	background: rgba(255,255,255,0.02);
+	background: rgba(44, 44, 46, 0.6);
 }
 
-#${APP_NAME}-config-container .setting-row:last-child {
-	border-bottom: none;
+#${APP_NAME}-config-container .setting-row:active {
+	background: rgba(58, 58, 60, 0.7);
 }
 
 #${APP_NAME}-config-container .setting-row-content {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	gap: 32px;
-	padding: 16px 0;
-	min-height: 64px;
+	gap: 24px;
+	padding: 12px 16px;
+	min-height: 44px;
 }
 
 #${APP_NAME}-config-container .setting-row-left {
@@ -181,104 +230,305 @@ function openOptionsModal(title, items, onChange, eventType = null) {
 }
 
 #${APP_NAME}-config-container .setting-name {
-	font-weight: 500;
-	font-size: 14px;
+	font-weight: 400;
+	font-size: 15px;
 	color: #ffffff;
-	line-height: 1.4;
+	line-height: 1.3;
+	letter-spacing: -0.01em;
 }
 
 #${APP_NAME}-config-container .setting-description {
-	font-size: 12px;
-	color: #8a8a8a;
-	line-height: 1.5;
+	font-size: 13px;
+	color: #8e8e93;
+	line-height: 1.35;
+	letter-spacing: -0.01em;
 }
 
 #${APP_NAME}-config-container .setting-row-with-icon {
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	gap: 10px;
 	color: #ffffff;
-	font-weight: 500;
-	font-size: 14px;
+	font-weight: 400;
+	font-size: 15px;
+	letter-spacing: -0.01em;
 }
 
 #${APP_NAME}-config-container .setting-row-with-icon svg {
 	flex-shrink: 0;
-	opacity: 0.9;
+	opacity: 0.8;
+	color: #8e8e93;
 }
 
-/* Select dropdown */
-#${APP_NAME}-config-container select {
-	background: #2b2b2b !important;
-	border: 1px solid #3d3d3d !important;
-	border-radius: 2px !important;
-	padding: 10px 32px 10px 12px !important;
-	width: 200px !important;
-	outline: none !important;
-	color: #ffffff !important;
-	transition: border-color 0.1s ease !important;
-	font-size: 13px !important;
-	font-family: var(--font-family, -apple-system, BlinkMacSystemFont, sans-serif) !important;
-	min-height: 36px !important;
-	height: auto !important;
-	box-sizing: border-box !important;
-	appearance: none !important;
-	background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M3 6l5 5.794L13 6z"/></svg>') !important;
-	background-repeat: no-repeat !important;
-	background-position: right 10px center !important;
-	cursor: pointer !important;
-}
-
-#${APP_NAME}-config-container select:hover {
-	border-color: #505050 !important;
-	background: #2b2b2b !important;
-}
-
-#${APP_NAME}-config-container select:focus {
-	border-color: #0078d4 !important;
-	background: #2b2b2b !important;
-	box-shadow: none !important;
-}
-
-#${APP_NAME}-config-container select option {
-	background-color: #2b2b2b;
-	color: #ffffff;
-	padding: 8px;
-}
-
-/* Button */
+/* Button - iOS 스타일 */
 #${APP_NAME}-config-container .btn {
-	background: #2b2b2b;
-	border: 1px solid #3d3d3d;
-	border-radius: 2px;
+	background: #007aff;
+	border: none;
+	border-radius: 10px;
 	color: #ffffff;
-	font-weight: 400;
+	font-weight: 600;
 	padding: 0 16px;
 	min-height: 36px;
 	cursor: pointer;
-	transition: all 0.1s ease;
+	transition: all 0.2s ease;
+	font-size: 15px;
+	letter-spacing: -0.01em;
 }
 
 #${APP_NAME}-config-container .btn:hover:not(:disabled) {
-	background: #323232;
-	border-color: #505050;
+	background: #0066cc;
+	transform: scale(1.02);
 }
 
 #${APP_NAME}-config-container .btn:active:not(:disabled) {
-	background: #1f1f1f;
+	background: #0055b3;
+	transform: scale(0.98);
 }
 
 #${APP_NAME}-config-container .btn:disabled {
 	opacity: 0.4;
 	cursor: not-allowed;
+	transform: none;
+}
+
+/* iOS 토글 스위치 - 완전히 새로 작성 */
+#${APP_NAME}-config-container .switch-checkbox {
+	width: 51px;
+	height: 31px;
+	border-radius: 15.5px;
+	background-color: #3a3a3c;
+	border: none;
+	cursor: pointer;
+	position: relative;
+	flex-shrink: 0;
+	transition: background-color 0.2s ease;
+	-webkit-tap-highlight-color: transparent;
+}
+
+#${APP_NAME}-config-container .switch-checkbox::after {
+	content: "";
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	width: 27px;
+	height: 27px;
+	border-radius: 50%;
+	background-color: #ffffff;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+#${APP_NAME}-config-container .switch-checkbox.active {
+	background-color: #34c759;
+}
+
+#${APP_NAME}-config-container .switch-checkbox.active::after {
+	transform: translateX(20px);
+}
+
+#${APP_NAME}-config-container .switch-checkbox svg {
+	display: none;
+	visibility: hidden;
+}
+
+/* Custom Modal Overlay - 일반 설정과 동일한 스타일 */
+#lyrics-plus-translation-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.4);
+	backdrop-filter: blur(60px) saturate(200%) brightness(1.1);
+	-webkit-backdrop-filter: blur(60px) saturate(200%) brightness(1.1);
+	z-index: 9999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+#lyrics-plus-translation-modal {
+	background: rgba(28, 28, 30, 0.95);
+	backdrop-filter: blur(60px) saturate(200%);
+	-webkit-backdrop-filter: blur(60px) saturate(200%);
+	border-radius: 16px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+	max-width: 520px;
+	width: 90%;
+	max-height: 80vh;
+	overflow-y: auto;
+	animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideIn {
+	from {
+		opacity: 0;
+		transform: scale(0.95) translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
+}
+
+/* 모달 헤더 */
+#lyrics-plus-translation-modal .modal-header {
+	padding: 24px 24px 16px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+#lyrics-plus-translation-modal .modal-header h2 {
+	margin: 0;
+	font-size: 22px;
+	font-weight: 700;
+	color: #ffffff;
+	letter-spacing: -0.02em;
+}
+
+#lyrics-plus-translation-modal .modal-close {
+	background: rgba(255, 255, 255, 0.1);
+	border: none;
+	border-radius: 50%;
+	width: 32px;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	color: #ffffff;
+}
+
+#lyrics-plus-translation-modal .modal-close:hover {
+	background: rgba(255, 255, 255, 0.15);
+	transform: scale(1.05);
+}
+
+#lyrics-plus-translation-modal .modal-close:active {
+	transform: scale(0.95);
+}
+
+#lyrics-plus-translation-modal .modal-close svg {
+	width: 20px;
+	height: 20px;
+}
+
+/* 모달 바디 */
+#lyrics-plus-translation-modal .modal-body {
+	padding: 24px;
+}
+
+/* 스크롤바 스타일 */
+#lyrics-plus-translation-modal::-webkit-scrollbar {
+	width: 8px;
+}
+
+#lyrics-plus-translation-modal::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+#lyrics-plus-translation-modal::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.2);
+	border-radius: 4px;
+}
+
+#lyrics-plus-translation-modal::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.3);
 }
 `
 			}
 		}),
-		react.createElement(OptionList, Object.assign({ items, onChange }, eventType ? { type: eventType } : {}))
+		// Render sections
+		items.map((section, sectionIndex) => 
+			react.createElement(
+				react.Fragment,
+				{ key: sectionIndex },
+				// Section Title
+				section.section && react.createElement(
+					"div",
+					{ className: "section-title" },
+					react.createElement("h3", null, section.section),
+					section.subtitle && react.createElement("p", null, section.subtitle)
+				),
+				// Section Items
+				react.createElement(
+					OptionList, 
+					Object.assign(
+						{ 
+							items: section.items || [section],
+							onChange 
+						}, 
+						eventType ? { type: eventType } : {}
+					)
+				)
+			)
+		)
 	);
 
-	Spicetify.PopupModal.display({ title, content: container, isLarge: true });
+	// Create custom modal instead of using Spicetify.PopupModal
+	const overlay = document.createElement('div');
+	overlay.id = 'lyrics-plus-translation-overlay';
+	
+	const modal = document.createElement('div');
+	modal.id = 'lyrics-plus-translation-modal';
+	
+	// Modal header
+	const header = document.createElement('div');
+	header.className = 'modal-header';
+	
+	const headerTitle = document.createElement('h2');
+	headerTitle.textContent = title;
+	
+	const closeBtn = document.createElement('button');
+	closeBtn.className = 'modal-close';
+	closeBtn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/></svg>';
+	closeBtn.onclick = () => overlay.remove();
+	
+	header.appendChild(headerTitle);
+	header.appendChild(closeBtn);
+	
+	// Modal body
+	const body = document.createElement('div');
+	body.className = 'modal-body';
+	
+	modal.appendChild(header);
+	modal.appendChild(body);
+	overlay.appendChild(modal);
+	
+	// Render React content in body
+	Spicetify.ReactDOM.render(container, body);
+	
+	// Close on overlay click
+	overlay.onclick = (e) => {
+		if (e.target === overlay) {
+			overlay.remove();
+		}
+	};
+	
+	// Close on ESC key
+	const handleEsc = (e) => {
+		if (e.key === 'Escape') {
+			overlay.remove();
+			document.removeEventListener('keydown', handleEsc);
+		}
+	};
+	document.addEventListener('keydown', handleEsc);
+	
+	// Add to DOM
+	document.body.appendChild(overlay);
 }
 
 // Debounce handle for adjustments modal
@@ -286,27 +536,12 @@ let adjustmentsDebounceTimeout = null;
 
 // Define static options outside component to avoid recreation
 const STATIC_OPTIONS = {
-	source: {
-		traditional: "전통적 변환",
-		geminiKo: "제미니 AI",
-	},
-	translationDisplay: {
-		replace: "원문 대체",
-		below: "원문 아래 표시",
-	},
-	language: {
-		off: "끄기",
-		"zh-hans": "중국어 (간체)",
-		"zh-hant": "중국어 (번체)",
-		ja: "일본어",
-		ko: "한국어",
-	},
 	modeBase: {
 		none: "없음",
 	},
 	geminiModes: {
-		gemini_romaji: "로마지, 로마자, 병음 (제미니)",
-		gemini_ko: "한국어 (제미니)",
+		gemini_romaji: "발음",
+		gemini_ko: "번역",
 	},
 	languageModes: {
 		japanese: {
@@ -385,164 +620,108 @@ const STATIC_OPTIONS = {
 };
 
 const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
-	const items = useMemo(() => {
-		const sourceOptions = STATIC_OPTIONS.source;
-		const translationDisplayOptions = STATIC_OPTIONS.translationDisplay;
-		const languageOptions = STATIC_OPTIONS.language;
-		
-		let modeOptions = { ...STATIC_OPTIONS.modeBase };
-
-		const provider = CONFIG.visual["translate:translated-lyrics-source"];
-		if (provider === "geminiKo") {
-			modeOptions = STATIC_OPTIONS.geminiModes;
-		} else if (friendlyLanguage) {
-			// Local conversions via kuromoji/OpenCC
-			modeOptions = STATIC_OPTIONS.languageModes[friendlyLanguage] || STATIC_OPTIONS.modeBase;
-		}
-
-		// Always show basic options, even when friendlyLanguage is not available
-		const baseItems = [
-			{
-				desc: react.createElement(SettingRowDescription, { icon: ICONS.provider, text: "번역 제공자" }),
-				key: "translate:translated-lyrics-source",
-				type: ConfigSelection,
-				options: sourceOptions,
-				renderInline: true,
-			},
-			{
-				desc: react.createElement(SettingRowDescription, { icon: ICONS.display, text: "번역 표시" }),
-				key: "translate:display-mode",
-				type: ConfigSelection,
-				options: translationDisplayOptions,
-				renderInline: true,
-			},
-		];
-
-		// Show Language Override option only for Kuromoji mode
-		if (provider !== "geminiKo") {
-			baseItems.push({
-				desc: react.createElement(SettingRowDescription, { icon: ICONS.language, text: "언어 강제 설정" }),
-				key: "translate:detect-language-override",
-				type: ConfigSelection,
-				options: languageOptions,
-				renderInline: true,
-			});
-		}
-
-		// Add language-specific display modes
-		if (friendlyLanguage) {
-			// For detected languages (CJKE + new languages), show specific language modes
-			baseItems.push(
-				{
-					desc: react.createElement(SettingRowDescription, { icon: ICONS.mode, text: "표시 모드" }),
-					key: `translation-mode:${friendlyLanguage}`,
-					type: ConfigSelection,
-					options: { none: "없음", ...modeOptions },
-					renderInline: true,
-				},
-				{
-					desc: react.createElement(SettingRowDescription, { icon: ICONS.mode, text: "표시 모드 2" }),
-					key: `translation-mode-2:${friendlyLanguage}`,
-					type: ConfigSelection,
-					options: { none: "없음", ...modeOptions },
-					renderInline: true,
-				}
-			);
-		} else if (provider === "geminiKo") {
-			// For Gemini mode, show generic display modes even without detected language
-			baseItems.push(
-				{
-					desc: react.createElement(SettingRowDescription, { icon: ICONS.mode, text: "표시 모드" }),
-					key: "translation-mode:gemini",
-					type: ConfigSelection,
-					options: { none: "없음", ...modeOptions },
-					renderInline: true,
-				},
-				{
-					desc: react.createElement(SettingRowDescription, { icon: ICONS.mode, text: "표시 모드 2" }),
-					key: "translation-mode-2:gemini",
-					type: ConfigSelection,
-					options: { none: "없음", ...modeOptions },
-					renderInline: true,
-				}
-			);
-		} else {
-			// For Kuromoji mode without detected language, show info message
-			baseItems.push({
-				desc: "언어별 옵션",
-				key: "language-info",
-				type: ConfigButton,
-				text: "언어가 감지되지 않음",
-				onChange: () => {}, // No-op button
-				info: "CJKE 언어(영어, 일본어, 한국어, 중국어)가 가사에서 감지되면 표시 모드 옵션이 나타납니다. 위의 언어 강제 설정을 사용하여 특정 언어를 강제할 수 있습니다.",
-			});
-		}
-
-		return baseItems;
-	}, [friendlyLanguage, CONFIG.visual["translate:translated-lyrics-source"]]);
-
-	// Re-dispatch dynamic items so an open modal can update its OptionList
-	useEffect(() => {
-		const event = new CustomEvent("lyrics-plus", {
-			detail: { type: "translation-menu", items },
-		});
-		document.dispatchEvent(event);
-	}, [items, friendlyLanguage, CONFIG.visual["translate:translated-lyrics-source"]]);
-
 	// Open modal on click instead of ContextMenu to avoid xpui hook errors
 	const open = () => {
-		openOptionsModal("변환 설정", items, (name, value) => {
-				// Skip processing for info-only items
-				if (name === "language-info") {
-					return;
-				}
+		// Force geminiKo provider
+		CONFIG.visual["translate:translated-lyrics-source"] = "geminiKo";
+		localStorage.setItem(`${APP_NAME}:visual:translate:translated-lyrics-source`, "geminiKo");
 
-			if (name === "translate:translated-lyrics-source") {
-				// Only reset display modes when actually changing provider (not when loading new songs)
-				const currentProvider = CONFIG.visual["translate:translated-lyrics-source"];
-				if (currentProvider !== value) {
-					// Reset display modes appropriately on provider change
-					if (friendlyLanguage) {
-						const modeKey = `translation-mode:${friendlyLanguage}`;
-						const modeKey2 = `translation-mode-2:${friendlyLanguage}`;
-						CONFIG.visual[modeKey] = "none";
-						localStorage.setItem(`${APP_NAME}:visual:${modeKey}`, "none");
-						CONFIG.visual[modeKey2] = "none";
-						localStorage.setItem(`${APP_NAME}:visual:${modeKey2}`, "none");
+		// Force "below" display mode
+		CONFIG.visual["translate:display-mode"] = "below";
+		localStorage.setItem(`${APP_NAME}:visual:translate:display-mode`, "below");
+
+		// Determine the correct mode key based on language
+		const provider = CONFIG.visual["translate:translated-lyrics-source"];
+		const modeKey = provider === "geminiKo" && !friendlyLanguage ? "gemini" : friendlyLanguage;
+		
+		console.log('[TranslationMenu] Language:', friendlyLanguage, 'ModeKey:', modeKey);
+		console.log('[TranslationMenu] Current values:');
+		console.log(`translation-mode:${modeKey} =`, CONFIG.visual[`translation-mode:${modeKey}`]);
+		console.log(`translation-mode-2:${modeKey} =`, CONFIG.visual[`translation-mode-2:${modeKey}`]);
+
+		let modeOptions = STATIC_OPTIONS.geminiModes;
+
+		const items = [
+			{
+				section: "변환 옵션",
+				subtitle: "가사의 발음과 번역 표시를 설정하세요",
+				items: [
+					{
+						desc: react.createElement(SettingRowDescription, { icon: ICONS.mode, text: "발음" }),
+						key: `translation-mode:${modeKey}`,
+						type: ConfigSlider,
+						defaultValue: CONFIG.visual[`translation-mode:${modeKey}`] !== "none",
+						renderInline: true,
+						info: "원문 가사의 발음(로마자)을 표시합니다",
+					},
+					{
+						desc: react.createElement(SettingRowDescription, { icon: ICONS.mode, text: "번역" }),
+						key: `translation-mode-2:${modeKey}`,
+						type: ConfigSlider,
+						defaultValue: CONFIG.visual[`translation-mode-2:${modeKey}`] !== "none",
+						renderInline: true,
+						info: "원문 가사를 한국어로 번역하여 표시합니다",
 					}
-					
-					// Reset generic Gemini display modes
-					const geminiModeKey = "translation-mode:gemini";
-					const geminiModeKey2 = "translation-mode-2:gemini";
-					CONFIG.visual[geminiModeKey] = "none";
-					localStorage.setItem(`${APP_NAME}:visual:${geminiModeKey}`, "none");
-					CONFIG.visual[geminiModeKey2] = "none";
-					localStorage.setItem(`${APP_NAME}:visual:${geminiModeKey2}`, "none");
-					
-					// When switching to Gemini, reset language override to "off" since it's not needed
-					if (value === "geminiKo" && CONFIG.visual["translate:detect-language-override"] !== "off") {
-						CONFIG.visual["translate:detect-language-override"] = "off";
-						localStorage.setItem(`${APP_NAME}:visual:translate:detect-language-override`, "off");
-						Spicetify.showNotification("제미니 모드를 위해 언어 강제 설정이 '끄기'로 재설정되었습니다", false, 3000);
+				]
+			},
+			{
+				section: "API 설정",
+				subtitle: "Gemini API를 구성하세요",
+				items: [
+					{
+						desc: react.createElement(SettingRowDescription, { icon: ICONS.provider, text: "API 키 설정" }),
+						key: "open-api-settings",
+						type: ConfigButton,
+						text: "설정 열기",
+						onChange: () => {
+							// Close the current modal and open settings at API tab
+							const overlay = document.getElementById('lyrics-plus-settings-overlay');
+							if (overlay) {
+								overlay.remove();
+							}
+							// Open main settings and switch to advanced tab
+							setTimeout(() => {
+								openConfig();
+								// Wait for modal to render, then switch to advanced tab
+								setTimeout(() => {
+									const advancedTab = document.querySelector('[data-tab-id="advanced"]');
+									if (advancedTab) {
+										advancedTab.click();
+									}
+								}, 100);
+							}, 100);
+						},
+						info: "Gemini API 키를 설정하려면 여기를 클릭하세요",
 					}
+				]
+			}
+		];
+
+		openOptionsModal("변환 설정", items, (name, value) => {
+			// Skip processing for button items
+			if (name === "open-api-settings") {
+				return;
+			}
+
+			// Handle toggle values - convert boolean to appropriate mode string
+			if (name.startsWith("translation-mode")) {
+				// For first line (발음), set to romaji or none
+				if (name.startsWith(`translation-mode:`) && !name.includes("mode-2")) {
+					value = value ? "gemini_romaji" : "none";
+				}
+				// For second line (번역), set to korean or none
+				else if (name.startsWith(`translation-mode-2:`)) {
+					value = value ? "gemini_ko" : "none";
 				}
 			}
 
 			CONFIG.visual[name] = value;
 			localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
 
-			// Force re-detection of language when language override changes
-			if (name === "translate:detect-language-override" && window.lyricContainer) {
-				// Clear cached language to force re-detection
-				window.lyricContainer.setState({ language: null });
-				// Force re-render of lyrics to update language detection
-				window.lyricContainer.lastProcessedUri = null;
-				window.lyricContainer.lastProcessedMode = null;
-				window.lyricContainer.forceUpdate();
-			}
-
 			if (name.startsWith("translation-mode")) {
 				if (window.lyricContainer) {
+					// Clear translation cache to force reload with new settings
+					window.lyricContainer._dmResults = {};
 					window.lyricContainer.lastProcessedUri = null;
 					window.lyricContainer.lastProcessedMode = null;
 					window.lyricContainer.forceUpdate();
@@ -550,7 +729,7 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
 			}
 
 			lyricContainerUpdate?.();
-		}, "translation-menu");
+		});
 	};
 
 	return react.createElement(
@@ -596,7 +775,7 @@ const RegenerateTranslationButton = react.memo(({ onRegenerate, isEnabled, isLoa
 
 const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }) => {
 	const [isOpen, setIsOpen] = useState(false);
-	const [offset, setOffset] = useState(0);
+	const [offset, setOffset] = useState(Utils.getTrackSyncOffset(trackUri) || 0);
 
 	// Load offset when trackUri changes
 	useEffect(() => {
@@ -659,16 +838,95 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 					bottom: "120px",
 					left: "50%",
 					transform: "translateX(-50%)",
-					background: "rgba(18, 18, 18, 0.95)",
-					backdropFilter: "blur(20px)",
-					border: "1px solid #2b2b2b",
-					borderRadius: "8px",
-					padding: "16px 20px",
+					background: "rgba(28, 28, 30, 0.95)",
+					backdropFilter: "blur(60px) saturate(200%)",
+					WebkitBackdropFilter: "blur(60px) saturate(200%)",
+					border: "1px solid rgba(255, 255, 255, 0.08)",
+					borderRadius: "16px",
+					padding: "20px 24px",
 					zIndex: 9999,
-					minWidth: "500px",
-					boxShadow: "0 8px 24px rgba(0, 0, 0, 0.5)",
+					minWidth: "520px",
+					boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+					fontFamily: "Pretendard Variable, -apple-system, BlinkMacSystemFont, sans-serif",
 				}
 			},
+			react.createElement("style", {
+				dangerouslySetInnerHTML: {
+					__html: `
+.lyrics-sync-adjust-modal .slider-container {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 8px 0;
+}
+.lyrics-sync-adjust-modal .sync-slider {
+	width: 100%;
+	height: 28px; /* Increased height for easier interaction */
+	background: transparent;
+	outline: none;
+	-webkit-appearance: none;
+	appearance: none;
+	cursor: pointer;
+}
+
+.lyrics-sync-adjust-modal .sync-slider::-webkit-slider-runnable-track {
+	width: 100%;
+	height: 6px;
+	background: linear-gradient(to right, #007aff var(--progress-percent, 50%), #3a3a3c var(--progress-percent, 50%));
+	border-radius: 3px;
+	transition: background 0.1s ease;
+}
+
+.lyrics-sync-adjust-modal .sync-slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 28px;
+	height: 28px;
+	background: #ffffff;
+	border-radius: 50%;
+	cursor: pointer;
+	box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1);
+	margin-top: -11px; /* (track_height - thumb_height) / 2 */
+	transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lyrics-sync-adjust-modal .sync-slider:hover::-webkit-slider-thumb {
+	transform: scale(1.05);
+}
+
+.lyrics-sync-adjust-modal .sync-slider:active::-webkit-slider-thumb {
+	transform: scale(0.98);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Firefox Styles */
+.lyrics-sync-adjust-modal .sync-slider::-moz-range-track {
+	width: 100%;
+	height: 6px;
+	background: #3a3a3c;
+	border-radius: 3px;
+	border: none;
+}
+
+.lyrics-sync-adjust-modal .sync-slider::-moz-range-progress {
+	height: 6px;
+	background: #007aff;
+	border-radius: 3px;
+}
+
+.lyrics-sync-adjust-modal .sync-slider::-moz-range-thumb {
+	width: 28px;
+	height: 28px;
+	background: #ffffff;
+	border: none;
+	border-radius: 50%;
+	cursor: pointer;
+	box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1);
+}
+`
+				}
+			}),
 			react.createElement(
 				"div",
 				{
@@ -683,9 +941,10 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 					"div",
 					{
 						style: {
-							fontSize: "14px",
+							fontSize: "16px",
 							fontWeight: "600",
 							color: "#ffffff",
+							letterSpacing: "-0.01em",
 						}
 					},
 					"가사 싱크 조절"
@@ -695,17 +954,27 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 					{
 						onClick: toggleModal,
 						style: {
-							background: "transparent",
+							background: "rgba(255, 255, 255, 0.1)",
 							border: "none",
-							color: "#b3b3b3",
+							borderRadius: "50%",
+							color: "#ffffff",
 							cursor: "pointer",
 							fontSize: "18px",
 							padding: "0",
-							width: "20px",
-							height: "20px",
+							width: "28px",
+							height: "28px",
 							display: "flex",
 							alignItems: "center",
 							justifyContent: "center",
+							transition: "all 0.2s ease",
+						},
+						onMouseEnter: (e) => {
+							e.target.style.background = "rgba(255, 255, 255, 0.15)";
+							e.target.style.transform = "scale(1.05)";
+						},
+						onMouseLeave: (e) => {
+							e.target.style.background = "rgba(255, 255, 255, 0.1)";
+							e.target.style.transform = "scale(1)";
 						}
 					},
 					"×"
@@ -715,12 +984,13 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 				"div",
 				{
 					style: {
-						fontSize: "12px",
-						color: "#8a8a8a",
+						fontSize: "13px",
+						color: "#8e8e93",
 						marginBottom: "16px",
+						letterSpacing: "-0.01em",
 					}
 				},
-				"양수: 가사를 늦게 표시 | 음수: 가사를 빨리 표시"
+				"슬라이더를 우측으로 이동하면, 가사가 빠르게 지나갑니다."
 			),
 			react.createElement(
 				"div",
@@ -735,28 +1005,18 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 				react.createElement(
 					"div",
 					{
-						style: {
-							flex: 1,
-							display: "flex",
-							flexDirection: "column",
-							gap: "8px",
-						}
+						className: "slider-container",
 					},
 					react.createElement("input", {
 						type: "range",
+						className: "sync-slider",
 						min: -10000,
 						max: 10000,
 						step: 10,
 						value: offset,
-						onChange: handleSliderChange,
+						onInput: handleSliderChange,
 						style: {
-							width: "100%",
-							height: "4px",
-							background: "#2b2b2b",
-							borderRadius: "2px",
-							outline: "none",
-							appearance: "none",
-							cursor: "pointer",
+							'--progress-percent': `${((offset + 10000) / 20000) * 100}%`
 						}
 					}),
 					react.createElement(
@@ -766,7 +1026,9 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 								display: "flex",
 								justifyContent: "space-between",
 								fontSize: "11px",
-								color: "#6d6d6d",
+								color: "#8e8e93",
+								fontWeight: "500",
+								padding: "0 4px",
 							}
 						},
 						react.createElement("span", null, "-10s"),
@@ -776,7 +1038,8 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 								style: {
 									color: "#ffffff",
 									fontWeight: "600",
-									fontSize: "13px",
+									fontSize: "14px",
+									letterSpacing: "-0.01em",
 								}
 							},
 							`${offset}ms`
@@ -791,7 +1054,7 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 						style: {
 							display: "flex",
 							flexDirection: "column",
-							gap: "4px",
+							gap: "6px",
 						}
 					},
 					react.createElement(
@@ -799,7 +1062,7 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 						{
 							style: {
 								display: "flex",
-								gap: "4px",
+								gap: "6px",
 							}
 						},
 						react.createElement(
@@ -807,15 +1070,25 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 							{
 								onClick: () => adjustOffset(-100),
 								style: {
-									background: "#2b2b2b",
-									border: "1px solid #3d3d3d",
-									borderRadius: "4px",
+									background: "rgba(255, 255, 255, 0.08)",
+									border: "1px solid rgba(255, 255, 255, 0.12)",
+									borderRadius: "8px",
 									color: "#ffffff",
 									cursor: "pointer",
-									padding: "4px 8px",
-									fontSize: "11px",
-									fontWeight: "500",
-									minWidth: "45px",
+									padding: "6px 10px",
+									fontSize: "12px",
+									fontWeight: "600",
+									minWidth: "52px",
+									letterSpacing: "-0.01em",
+									transition: "all 0.2s ease",
+								},
+								onMouseEnter: (e) => {
+									e.target.style.background = "rgba(255, 255, 255, 0.12)";
+									e.target.style.transform = "translateY(-1px)";
+								},
+								onMouseLeave: (e) => {
+									e.target.style.background = "rgba(255, 255, 255, 0.08)";
+									e.target.style.transform = "translateY(0)";
 								}
 							},
 							"-100"
@@ -825,15 +1098,25 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 							{
 								onClick: () => adjustOffset(-10),
 								style: {
-									background: "#2b2b2b",
-									border: "1px solid #3d3d3d",
-									borderRadius: "4px",
+									background: "rgba(255, 255, 255, 0.08)",
+									border: "1px solid rgba(255, 255, 255, 0.12)",
+									borderRadius: "8px",
 									color: "#ffffff",
 									cursor: "pointer",
-									padding: "4px 8px",
-									fontSize: "11px",
-									fontWeight: "500",
-									minWidth: "45px",
+									padding: "6px 10px",
+									fontSize: "12px",
+									fontWeight: "600",
+									minWidth: "52px",
+									letterSpacing: "-0.01em",
+									transition: "all 0.2s ease",
+								},
+								onMouseEnter: (e) => {
+									e.target.style.background = "rgba(255, 255, 255, 0.12)";
+									e.target.style.transform = "translateY(-1px)";
+								},
+								onMouseLeave: (e) => {
+									e.target.style.background = "rgba(255, 255, 255, 0.08)";
+									e.target.style.transform = "translateY(0)";
 								}
 							},
 							"-10"
@@ -843,15 +1126,25 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 							{
 								onClick: () => adjustOffset(-1),
 								style: {
-									background: "#2b2b2b",
-									border: "1px solid #3d3d3d",
-									borderRadius: "4px",
+									background: "rgba(255, 255, 255, 0.08)",
+									border: "1px solid rgba(255, 255, 255, 0.12)",
+									borderRadius: "8px",
 									color: "#ffffff",
 									cursor: "pointer",
-									padding: "4px 8px",
-									fontSize: "11px",
-									fontWeight: "500",
-									minWidth: "45px",
+									padding: "6px 10px",
+									fontSize: "12px",
+									fontWeight: "600",
+									minWidth: "52px",
+									letterSpacing: "-0.01em",
+									transition: "all 0.2s ease",
+								},
+								onMouseEnter: (e) => {
+									e.target.style.background = "rgba(255, 255, 255, 0.12)";
+									e.target.style.transform = "translateY(-1px)";
+								},
+								onMouseLeave: (e) => {
+									e.target.style.background = "rgba(255, 255, 255, 0.08)";
+									e.target.style.transform = "translateY(0)";
 								}
 							},
 							"-1"
@@ -862,7 +1155,7 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 						{
 							style: {
 								display: "flex",
-								gap: "4px",
+								gap: "6px",
 							}
 						},
 						react.createElement(
@@ -870,15 +1163,25 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 							{
 								onClick: () => adjustOffset(100),
 								style: {
-									background: "#2b2b2b",
-									border: "1px solid #3d3d3d",
-									borderRadius: "4px",
+									background: "rgba(255, 255, 255, 0.08)",
+									border: "1px solid rgba(255, 255, 255, 0.12)",
+									borderRadius: "8px",
 									color: "#ffffff",
 									cursor: "pointer",
-									padding: "4px 8px",
-									fontSize: "11px",
-									fontWeight: "500",
-									minWidth: "45px",
+									padding: "6px 10px",
+									fontSize: "12px",
+									fontWeight: "600",
+									minWidth: "52px",
+									letterSpacing: "-0.01em",
+									transition: "all 0.2s ease",
+								},
+								onMouseEnter: (e) => {
+									e.target.style.background = "rgba(255, 255, 255, 0.12)";
+									e.target.style.transform = "translateY(-1px)";
+								},
+								onMouseLeave: (e) => {
+									e.target.style.background = "rgba(255, 255, 255, 0.08)";
+									e.target.style.transform = "translateY(0)";
 								}
 							},
 							"+100"
@@ -888,15 +1191,25 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 							{
 								onClick: () => adjustOffset(10),
 								style: {
-									background: "#2b2b2b",
-									border: "1px solid #3d3d3d",
-									borderRadius: "4px",
+									background: "rgba(255, 255, 255, 0.08)",
+									border: "1px solid rgba(255, 255, 255, 0.12)",
+									borderRadius: "8px",
 									color: "#ffffff",
 									cursor: "pointer",
-									padding: "4px 8px",
-									fontSize: "11px",
-									fontWeight: "500",
-									minWidth: "45px",
+									padding: "6px 10px",
+									fontSize: "12px",
+									fontWeight: "600",
+									minWidth: "52px",
+									letterSpacing: "-0.01em",
+									transition: "all 0.2s ease",
+								},
+								onMouseEnter: (e) => {
+									e.target.style.background = "rgba(255, 255, 255, 0.12)";
+									e.target.style.transform = "translateY(-1px)";
+								},
+								onMouseLeave: (e) => {
+									e.target.style.background = "rgba(255, 255, 255, 0.08)";
+									e.target.style.transform = "translateY(0)";
 								}
 							},
 							"+10"
@@ -906,15 +1219,25 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 							{
 								onClick: () => adjustOffset(1),
 								style: {
-									background: "#2b2b2b",
-									border: "1px solid #3d3d3d",
-									borderRadius: "4px",
+									background: "rgba(255, 255, 255, 0.08)",
+									border: "1px solid rgba(255, 255, 255, 0.12)",
+									borderRadius: "8px",
 									color: "#ffffff",
 									cursor: "pointer",
-									padding: "4px 8px",
-									fontSize: "11px",
-									fontWeight: "500",
-									minWidth: "45px",
+									padding: "6px 10px",
+									fontSize: "12px",
+									fontWeight: "600",
+									minWidth: "52px",
+									letterSpacing: "-0.01em",
+									transition: "all 0.2s ease",
+								},
+								onMouseEnter: (e) => {
+									e.target.style.background = "rgba(255, 255, 255, 0.12)";
+									e.target.style.transform = "translateY(-1px)";
+								},
+								onMouseLeave: (e) => {
+									e.target.style.background = "rgba(255, 255, 255, 0.08)";
+									e.target.style.transform = "translateY(0)";
 								}
 							},
 							"+1"
@@ -927,15 +1250,27 @@ const SyncAdjustButton = react.memo(({ trackUri, currentOffset, onOffsetChange }
 					{
 						onClick: resetOffset,
 						style: {
-							background: "#1f1f1f",
-							border: "1px solid #3d3d3d",
-							borderRadius: "4px",
-							color: "#ffffff",
+							background: "rgba(255, 59, 48, 0.15)",
+							border: "1px solid rgba(255, 59, 48, 0.3)",
+							borderRadius: "10px",
+							color: "#ff3b30",
 							cursor: "pointer",
-							padding: "8px 12px",
-							fontSize: "12px",
-							fontWeight: "500",
-							minWidth: "60px",
+							padding: "10px 16px",
+							fontSize: "13px",
+							fontWeight: "600",
+							letterSpacing: "-0.01em",
+							transition: "all 0.2s ease",
+							whiteSpace: "nowrap",
+						},
+						onMouseEnter: (e) => {
+							e.target.style.background = "rgba(255, 59, 48, 0.2)";
+							e.target.style.borderColor = "rgba(255, 59, 48, 0.4)";
+							e.target.style.transform = "translateY(-1px)";
+						},
+						onMouseLeave: (e) => {
+							e.target.style.background = "rgba(255, 59, 48, 0.15)";
+							e.target.style.borderColor = "rgba(255, 59, 48, 0.3)";
+							e.target.style.transform = "translateY(0)";
 						}
 					},
 					"초기화"

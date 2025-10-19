@@ -1,4 +1,4 @@
-const ButtonSVG = ({ icon, active = true, onClick }) => {
+const ButtonSVG = react.memo(({ icon, active = true, onClick }) => {
 	return react.createElement(
 		"button",
 		{
@@ -7,7 +7,7 @@ const ButtonSVG = ({ icon, active = true, onClick }) => {
 			"aria-checked": active,
 			role: "checkbox"
 		},
-		active && react.createElement("svg", {
+		react.createElement("svg", {
 			width: 12,
 			height: 12,
 			viewBox: "0 0 16 16",
@@ -17,7 +17,10 @@ const ButtonSVG = ({ icon, active = true, onClick }) => {
 			},
 		})
 	);
-};
+}, (prevProps, nextProps) => {
+	// active 상태가 변경되면 리렌더링 필요
+	return prevProps.active === nextProps.active;
+});
 
 const SwapButton = ({ icon, disabled, onClick }) => {
 	return react.createElement(
@@ -70,7 +73,7 @@ const CacheButton = () => {
 };
 
 
-const ConfigButton = ({ name, text, onChange = () => {} }) => {
+const ConfigButton = ({ name, info, text, onChange = () => {} }) => {
 	return react.createElement(
 		"div",
 		{
@@ -82,7 +85,13 @@ const ConfigButton = ({ name, text, onChange = () => {} }) => {
 			react.createElement(
 				"div",
 				{ className: "setting-row-left" },
-				react.createElement("div", { className: "setting-name" }, name)
+				react.createElement("div", { className: "setting-name" }, name),
+				info && react.createElement("div", {
+					className: "setting-description",
+					dangerouslySetInnerHTML: {
+						__html: info,
+					},
+				})
 			),
 			react.createElement(
 				"div",
@@ -100,7 +109,7 @@ const ConfigButton = ({ name, text, onChange = () => {} }) => {
 	);
 };
 
-const ConfigSlider = ({ name, defaultValue, onChange = () => {} }) => {
+const ConfigSlider = react.memo(({ name, defaultValue, disabled, onChange = () => {} }) => {
 	const [active, setActive] = useState(defaultValue);
 
 	useEffect(() => {
@@ -108,45 +117,77 @@ const ConfigSlider = ({ name, defaultValue, onChange = () => {} }) => {
 	}, [defaultValue]);
 
 	const toggleState = useCallback(() => {
-		const state = !active;
-		setActive(state);
-		onChange(state);
-	}, [active]);
+		if (disabled) return;
+		setActive(prevActive => {
+			const newState = !prevActive;
+			onChange(newState);
+			return newState;
+		});
+	}, [onChange, disabled]);
 
 	return react.createElement(ButtonSVG, {
 		icon: Spicetify.SVGIcons.check,
 		active,
 		onClick: toggleState,
+		disabled,
 	});
-};
+});
 
-const ConfigSliderRange = ({ name, defaultValue, min = 0, max = 100, step = 1, unit = "", onChange = () => {} }) => {
+const ConfigSliderRange = ({ name, defaultValue, min = 0, max = 100, step = 1, unit = "", disabled, onChange = () => {} }) => {
 	const [value, setValue] = useState(defaultValue);
+	const sliderRef = useRef(null);
 
 	useEffect(() => {
 		setValue(defaultValue);
 	}, [defaultValue]);
 
+	const updateValue = useCallback((newValue) => {
+		if (disabled) return;
+		setValue(newValue);
+		onChange(newValue);
+	}, [onChange, disabled]);
+
+	const handleInput = useCallback(
+		(event) => {
+			const newValue = Number(event.target.value);
+			updateValue(newValue);
+		},
+		[updateValue]
+	);
+
 	const handleChange = useCallback(
 		(event) => {
 			const newValue = Number(event.target.value);
-			setValue(newValue);
-			onChange(newValue);
+			updateValue(newValue);
 		},
-		[onChange]
+		[updateValue]
 	);
+
+	const sliderStyle = {
+		'--progress-percent': `${((value - min) / (max - min)) * 100}%`
+	};
 
 	return react.createElement(
 		"div",
-		{ className: "slider-container" },
+		{ className: `slider-container` },
 		react.createElement("input", {
+			ref: sliderRef,
 			type: "range",
 			min,
 			max,
 			step,
 			value,
+			disabled,
+			onInput: handleInput,
 			onChange: handleChange,
+			onMouseDown: (e) => {
+				if (disabled) return;
+				// 마우스 다운 시 즉시 값 업데이트
+				const newValue = Number(e.target.value);
+				updateValue(newValue);
+			},
 			className: "config-slider",
+			style: sliderStyle,
 		}),
 		react.createElement(
 			"span",
@@ -192,11 +233,12 @@ const ConfigColorPicker = ({ name, defaultValue, onChange = () => {} }) => {
 	);
 };
 
-const ConfigSelection = ({ name, defaultValue, options, onChange = () => {} }) => {
+const ConfigSelection = ({ name, defaultValue, options, disabled, onChange = () => {} }) => {
 	const [value, setValue] = useState(defaultValue);
 
 	const setValueCallback = useCallback(
 		(event) => {
+			if (disabled) return;
 			let value = event.target.value;
 			if (!Number.isNaN(Number(value))) {
 				value = Number.parseInt(value);
@@ -204,7 +246,7 @@ const ConfigSelection = ({ name, defaultValue, options, onChange = () => {} }) =
 			setValue(value);
 			onChange(value);
 		},
-		[value, options]
+		[value, options, disabled]
 	);
 
 	useEffect(() => {
@@ -217,6 +259,7 @@ const ConfigSelection = ({ name, defaultValue, options, onChange = () => {} }) =
 		"select",
 		{
 			value,
+			disabled,
 			onChange: setValueCallback,
 		},
 		...Object.keys(options).map((item) =>
@@ -369,7 +412,7 @@ const ServiceAction = ({ item, setTokenCallback }) => {
 	}
 };
 
-const ServiceOption = ({ item, onToggle, onSwap, isFirst = false, isLast = false, onTokenChange = null }) => {
+const ServiceOption = react.memo(({ item, onToggle, onSwap, isFirst = false, isLast = false, onTokenChange = null }) => {
 	const [token, setToken] = useState(item.token);
 	const [active, setActive] = useState(item.on);
 
@@ -378,83 +421,101 @@ const ServiceOption = ({ item, onToggle, onSwap, isFirst = false, isLast = false
 			setToken(token);
 			onTokenChange(item.name, token);
 		},
-		[item.token]
+		[item.name, onTokenChange]
 	);
 
 	const toggleActive = useCallback(() => {
-		const state = !active;
-		setActive(state);
-		onToggle(item.name, state);
-	}, [active]);
+		setActive(prevActive => {
+			const newState = !prevActive;
+			onToggle(item.name, newState);
+			return newState;
+		});
+	}, [item.name, onToggle]);
 
 	return react.createElement(
-		"div",
-		{
-			className: "setting-row",
-			style: { marginBottom: "16px" }
-		},
+		react.Fragment,
+		null,
 		react.createElement(
 			"div",
-			{ className: "setting-row-content" },
+			{
+				className: "setting-row"
+			},
 			react.createElement(
 				"div",
-				{ className: "setting-row-left" },
-				react.createElement("div", { className: "setting-name" }, item.name),
-				react.createElement("div", {
-					className: "setting-description",
-					dangerouslySetInnerHTML: {
-						__html: item.desc,
+				{ className: "setting-row-content" },
+				react.createElement(
+					"div",
+					{ className: "setting-row-left" },
+					react.createElement("div", { className: "setting-name" }, item.name),
+					react.createElement("div", {
+						className: "setting-description",
+						dangerouslySetInnerHTML: {
+							__html: item.desc,
+						},
+					})
+				),
+				react.createElement(
+					"div",
+					{
+						className: "setting-row-right",
+						style: { display: "flex", gap: "8px", alignItems: "center" }
 					},
-				})
-			),
-			react.createElement(
-				"div",
-				{
-					className: "setting-row-right",
-					style: { display: "flex", gap: "8px", alignItems: "center" }
-				},
-				react.createElement(ServiceAction, {
-					item,
-					setTokenCallback,
-				}),
-				react.createElement(SwapButton, {
-					icon: Spicetify.SVGIcons["chart-up"],
-					onClick: () => onSwap(item.name, -1),
-					disabled: isFirst,
-				}),
-				react.createElement(SwapButton, {
-					icon: Spicetify.SVGIcons["chart-down"],
-					onClick: () => onSwap(item.name, 1),
-					disabled: isLast,
-				}),
-				react.createElement(ButtonSVG, {
-					icon: Spicetify.SVGIcons.check,
-					active,
-					onClick: toggleActive,
-				})
+					react.createElement(ServiceAction, {
+						item,
+						setTokenCallback,
+					}),
+					react.createElement(SwapButton, {
+						icon: Spicetify.SVGIcons["chart-up"],
+						onClick: () => onSwap(item.name, -1),
+						disabled: isFirst,
+					}),
+					react.createElement(SwapButton, {
+						icon: Spicetify.SVGIcons["chart-down"],
+						onClick: () => onSwap(item.name, 1),
+						disabled: isLast,
+					}),
+					react.createElement(ButtonSVG, {
+						icon: Spicetify.SVGIcons.check,
+						active,
+						onClick: toggleActive,
+					})
+				)
 			)
 		),
 		item.token !== undefined &&
-			react.createElement("input", {
-				type: "text",
-				placeholder: `Place your ${item.name} token here`,
-				value: token,
-				onChange: (event) => setTokenCallback(event.target.value),
+			react.createElement("div", {
+				className: "service-token-input-wrapper",
 				style: {
-					backgroundColor: "#1a1a1a",
-					border: "2px solid #404040",
-					borderRadius: "8px",
-					padding: "2px 2.8px",
-					color: "#ffffff",
-					fontSize: "14px",
-					minHeight: "20px",
-					boxSizing: "border-box",
-					width: "100%",
-					marginTop: "8px"
+					padding: "0 16px 12px 16px",
+					background: "rgba(28, 28, 30, 0.5)",
+					backdropFilter: "blur(30px) saturate(150%)",
+					WebkitBackdropFilter: "blur(30px) saturate(150%)",
+					borderLeft: "1px solid rgba(255, 255, 255, 0.08)",
+					borderRight: "1px solid rgba(255, 255, 255, 0.08)",
+					borderBottom: "0.5px solid rgba(255, 255, 255, 0.08)",
+					marginTop: "-1px"
 				}
-			})
+			},
+				react.createElement("input", {
+					type: "text",
+					placeholder: `Place your ${item.name} token here`,
+					value: token,
+					onChange: (event) => setTokenCallback(event.target.value),
+					style: {
+						backgroundColor: "rgba(0, 0, 0, 0.3)",
+						border: "1px solid rgba(255, 255, 255, 0.1)",
+						borderRadius: "8px",
+						padding: "8px 12px",
+						color: "#ffffff",
+						fontSize: "13px",
+						width: "100%",
+						boxSizing: "border-box",
+						fontFamily: "Pretendard Variable, -apple-system, BlinkMacSystemFont, sans-serif"
+					}
+				})
+			)
 	);
-};
+});
 
 const ServiceList = ({ itemsList, onListChange = () => {}, onToggle = () => {}, onTokenChange = () => {} }) => {
 	const [items, setItems] = useState(itemsList);
@@ -471,7 +532,7 @@ const ServiceList = ({ itemsList, onListChange = () => {}, onToggle = () => {}, 
 		[items]
 	);
 
-	return items.map((key, index) => {
+	const renderedItems = items.map((key, index) => {
 		const item = CONFIG.providers[key];
 		item.name = key;
 		return react.createElement(ServiceOption, {
@@ -484,6 +545,13 @@ const ServiceList = ({ itemsList, onListChange = () => {}, onToggle = () => {}, 
 			onToggle,
 		});
 	});
+
+	// ServiceList도 wrapper로 감싸기
+	return react.createElement(
+		"div",
+		{ className: "service-list-wrapper" },
+		...renderedItems
+	);
 };
 
 
@@ -503,18 +571,39 @@ const OptionList = ({ type, items, onChange }) => {
 		return () => document.removeEventListener("lyrics-plus", eventListener);
 	}, []);
 
-	return itemList.map((item, index) => {
+	const renderedItems = itemList.map((item, index) => {
 		if (!item || (item.when && !item.when())) {
 			return;
 		}
 
 		const onChangeItem = item.onChange || onChange;
+		const isDisabled = item.disabled || false;
 
+		// ConfigButton, ConfigInput, ConfigHotkey는 자체적으로 setting-row를 만들므로 wrapper 불필요
+		if (item.type === ConfigButton || item.type === ConfigInput || item.type === ConfigHotkey) {
+			return react.createElement(item.type, {
+				...item,
+				key: index,
+				name: item.desc,
+				text: item.text,
+				disabled: isDisabled,
+				defaultValue: item.defaultValue !== undefined ? item.defaultValue : CONFIG.visual[item.key],
+				onChange: (value, event) => {
+					if (!isDisabled) {
+						onChangeItem(item.key, value, event);
+						forceUpdate({});
+					}
+				},
+			});
+		}
+
+		// 나머지 타입들은 wrapper로 감싸기
 		return react.createElement(
 			"div",
 			{ 
 				key: index,
-				className: "setting-row"
+				className: "setting-row",
+				style: isDisabled ? { opacity: 0.5, pointerEvents: 'none' } : {}
 			},
 			react.createElement(
 				"div",
@@ -536,16 +625,26 @@ const OptionList = ({ type, items, onChange }) => {
 					react.createElement(item.type, {
 						...item,
 						name: item.desc,
-						defaultValue: CONFIG.visual[item.key],
+						disabled: isDisabled,
+						defaultValue: item.defaultValue !== undefined ? item.defaultValue : CONFIG.visual[item.key],
 						onChange: (value) => {
-							onChangeItem(item.key, value);
-							forceUpdate({});
+							if (!isDisabled) {
+								onChangeItem(item.key, value);
+								forceUpdate({});
+							}
 						},
 					})
 				)
 			)
 		);
 	});
+
+	// Wrapper로 감싸서 반환
+	return react.createElement(
+		"div",
+		{ className: "option-list-wrapper" },
+		...renderedItems
+	);
 };
 
 const languageCodes =
@@ -566,12 +665,17 @@ const MODAL_STYLES = {
 };
 
 const ConfigModal = () => {
-	const [activeTab, setActiveTab] = react.useState("display");
+	const [activeTab, setActiveTab] = react.useState("general");
 
 	// Initialize line-spacing if not set
 	if (CONFIG.visual["line-spacing"] === undefined) {
 		CONFIG.visual["line-spacing"] = 8;
 	}
+
+	// FAD (Full Screen) 확장 프로그램 감지
+	const isFadActive = react.useMemo(() => {
+		return !!document.getElementById("fad-lyrics-plus-container");
+	}, []);
 
 	const HeaderSection = () => {
 		return react.createElement(
@@ -613,6 +717,7 @@ const ConfigModal = () => {
 			"button",
 			{
 				className: `settings-tab-btn ${isActive ? "active" : ""}`,
+				"data-tab-id": id,
 				onClick: (e) => {
 					e.preventDefault();
 					e.stopPropagation();
@@ -654,22 +759,25 @@ const ConfigModal = () => {
 		react.createElement("style", {
 			dangerouslySetInnerHTML: {
 				__html: `
-/* 전체 컨테이너 - Microsoft Fluent 스타일 */
+/* 전체 컨테이너 - iOS 18 스타일 */
 #${APP_NAME}-config-container {
     padding: 0;
     height: 90vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: #1a1a1a;
+    background: transparent;
+    font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
 }
 
-/* 헤더 영역 */
+/* 헤더 영역 - iOS 스타일 */
 #${APP_NAME}-config-container .settings-header {
-    background: #202020;
-    border-bottom: 1px solid #2b2b2b;
-    padding: 20px 32px;
+    background: rgba(0, 0, 0, 0.15);
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.15);
+    padding: 20px 32px 16px;
     flex-shrink: 0;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 #${APP_NAME}-config-container .settings-header-content {
@@ -680,103 +788,113 @@ const ConfigModal = () => {
 
 #${APP_NAME}-config-container .settings-title-section {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: 12px;
 }
 
 #${APP_NAME}-config-container .settings-title-section h1 {
-    font-size: 24px;
-    font-weight: 600;
+    font-size: 34px;
+    font-weight: 700;
     margin: 0;
     color: #ffffff;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
 }
 
 #${APP_NAME}-config-container .settings-version {
-    font-size: 12px;
-    color: #8a8a8a;
-    font-weight: 400;
-    padding: 2px 8px;
-    background: #2b2b2b;
-    border-radius: 2px;
+    font-size: 11px;
+    color: #8e8e93;
+    font-weight: 600;
+    padding: 3px 8px;
+    background: #1c1c1e;
+    border-radius: 6px;
 }
 
 #${APP_NAME}-config-container .settings-github-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    background: transparent;
-    border: 1px solid #3d3d3d;
-    border-radius: 2px;
-    color: #ffffff;
+    gap: 6px;
+    padding: 8px 14px;
+    background: #1c1c1e;
+    border: none;
+    border-radius: 10px;
+    color: #007aff;
     cursor: pointer;
-    transition: all 0.1s ease;
+    transition: all 0.2s ease;
     font-size: 14px;
-    font-weight: 400;
+    font-weight: 600;
 }
 
 #${APP_NAME}-config-container .settings-github-btn:hover {
-    background: #2b2b2b;
-    border-color: #505050;
+    background: #2c2c2e;
+    transform: scale(1.02);
 }
 
 #${APP_NAME}-config-container .settings-github-btn:active {
-    background: #1f1f1f;
+    background: #3a3a3c;
+    transform: scale(0.98);
 }
 
-/* 탭 영역 */
+/* 탭 영역 - iOS 세그먼트 컨트롤 스타일 */
 #${APP_NAME}-config-container .settings-tabs {
     display: flex;
-    gap: 0;
-    padding: 0 32px;
-    background: #202020;
-    border-bottom: 1px solid #2b2b2b;
+    gap: 8px;
+    padding: 12px 32px;
+    background: rgba(0, 0, 0, 0.15);
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.15);
     flex-shrink: 0;
     overflow-x: auto;
+    scrollbar-width: none;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+#${APP_NAME}-config-container .settings-tabs::-webkit-scrollbar {
+    display: none;
 }
 
 #${APP_NAME}-config-container .settings-tab-btn {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 16px;
-    background: transparent;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #1c1c1e;
     border: none;
-    border-bottom: 2px solid transparent;
-    color: #8a8a8a;
+    border-radius: 10px;
+    color: #8e8e93;
     cursor: pointer;
-    transition: all 0.1s ease;
-    font-weight: 400;
-    font-size: 14px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 600;
+    font-size: 13px;
     white-space: nowrap;
+    min-width: fit-content;
 }
 
 #${APP_NAME}-config-container .settings-tab-btn:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: #2c2c2e;
     color: #ffffff;
 }
 
 #${APP_NAME}-config-container .settings-tab-btn.active {
-    background: transparent;
-    border-bottom-color: #0078d4;
+    background: #007aff;
     color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
 }
 
 #${APP_NAME}-config-container .tab-icon {
-    font-size: 16px;
+    font-size: 14px;
 }
 
-/* 콘텐츠 영역 */
+/* 콘텐츠 영역 - iOS 스타일 */
 #${APP_NAME}-config-container .settings-content {
     flex: 1;
     overflow-y: auto;
-    padding: 24px 32px;
-    background: #1a1a1a;
+    padding: 20px 32px 32px;
+    background: transparent;
 }
 
 #${APP_NAME}-config-container .settings-content::-webkit-scrollbar {
-    width: 14px;
+    width: 12px;
 }
 
 #${APP_NAME}-config-container .settings-content::-webkit-scrollbar-track {
@@ -784,13 +902,14 @@ const ConfigModal = () => {
 }
 
 #${APP_NAME}-config-container .settings-content::-webkit-scrollbar-thumb {
-    background: #3d3d3d;
-    border: 3px solid #1a1a1a;
-    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 3px solid transparent;
+    border-radius: 6px;
+    background-clip: padding-box;
 }
 
 #${APP_NAME}-config-container .settings-content::-webkit-scrollbar-thumb:hover {
-    background: #505050;
+    background: #48484a;
 }
 
 #${APP_NAME}-config-container .tab-content {
@@ -799,13 +918,32 @@ const ConfigModal = () => {
 
 #${APP_NAME}-config-container .tab-content.active {
     display: block;
+    animation: fadeIn 0.3s ease;
 }
 
-/* 섹션 타이틀 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 섹션 타이틀 - iOS 스타일 카드 */
 #${APP_NAME}-config-container .section-title {
-    margin: 32px 0 16px;
-    padding: 0;
+    margin: 24px 0 0;
+    padding: 16px 16px 12px;
     border: none;
+    background: rgba(28, 28, 30, 0.5);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: none;
 }
 
 #${APP_NAME}-config-container .section-title:first-child {
@@ -814,8 +952,8 @@ const ConfigModal = () => {
 
 #${APP_NAME}-config-container .section-title-content {
     display: flex;
-    align-items: center;
-    gap: 0;
+    flex-direction: column;
+    gap: 4px;
 }
 
 #${APP_NAME}-config-container .section-icon {
@@ -824,39 +962,115 @@ const ConfigModal = () => {
 
 #${APP_NAME}-config-container .section-text h3 {
     margin: 0;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 600;
     color: #ffffff;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
 }
 
 #${APP_NAME}-config-container .section-text p {
-    margin: 4px 0 0;
-    font-size: 12px;
-    color: #8a8a8a;
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: #8e8e93;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
 }
 
-/* 설정 행 */
+/* 설정 행 - iOS 그룹화된 리스트 스타일 */
 #${APP_NAME}-config-container .setting-row {
     padding: 0;
     margin: 0;
-    background: transparent;
-    border: none;
+    background: rgba(28, 28, 30, 0.5);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 0;
-    transition: background 0.1s ease;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+    transition: background 0.15s ease;
+}
+
+/* Wrapper를 통한 그룹화 */
+#${APP_NAME}-config-container .option-list-wrapper,
+#${APP_NAME}-config-container .service-list-wrapper {
+    display: contents;
+}
+
+/* 섹션 타이틀 바로 다음의 wrapper의 첫 번째 항목 - 위쪽은 직선으로 */
+#${APP_NAME}-config-container .section-title + .option-list-wrapper > .setting-row:first-child,
+#${APP_NAME}-config-container .section-title + .service-list-wrapper > .setting-row:first-child {
+    border-top: none;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+/* wrapper 내의 마지막 항목 */
+#${APP_NAME}-config-container .option-list-wrapper > .setting-row:last-child,
+#${APP_NAME}-config-container .service-list-wrapper > .setting-row:last-child {
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* service-token-input-wrapper가 있는 경우 setting-row의 하단 둥글기 제거 */
+#${APP_NAME}-config-container .service-list-wrapper > .setting-row:has(+ .service-token-input-wrapper) {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+/* service-token-input-wrapper의 마지막 항목에 하단 둥글기 적용 */
+#${APP_NAME}-config-container .service-list-wrapper > .service-token-input-wrapper:last-child {
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* service-token-input-wrapper 다음에 setting-row가 오는 경우 */
+#${APP_NAME}-config-container .service-list-wrapper > .service-token-input-wrapper + .setting-row {
+    border-top: none;
+}
+
+/* wrapper 내에 항목이 하나만 있을 때 */
+#${APP_NAME}-config-container .option-list-wrapper > .setting-row:only-child,
+#${APP_NAME}-config-container .service-list-wrapper > .setting-row:only-child {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* update-result-container가 있을 때 setting-row의 하단 둥글기 제거 */
+#${APP_NAME}-config-container .setting-row:has(+ #update-result-container) {
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* font-preview-container를 카드 그룹으로 스타일링 */
+#${APP_NAME}-config-container .font-preview-container {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0 0 12px 12px;
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    padding: 0;
+    margin-bottom: 24px;
 }
 
 #${APP_NAME}-config-container .setting-row:hover {
-    background: rgba(255,255,255,0.02);
+    background: rgba(44, 44, 46, 0.6);
+}
+
+#${APP_NAME}-config-container .setting-row:active {
+    background: rgba(58, 58, 60, 0.7);
 }
 
 #${APP_NAME}-config-container .setting-row-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 32px;
-    padding: 16px 0;
-    min-height: 64px;
+    gap: 24px;
+    padding: 12px 16px;
+    min-height: 44px;
 }
 
 #${APP_NAME}-config-container .setting-row-left {
@@ -864,127 +1078,155 @@ const ConfigModal = () => {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 3px;
 }
 
 #${APP_NAME}-config-container .setting-name {
-    font-weight: 500;
-    font-size: 14px;
+    font-weight: 400;
+    font-size: 15px;
     color: #ffffff;
-    line-height: 1.4;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
 }
 
 #${APP_NAME}-config-container .setting-description {
-    font-size: 12px;
-    color: #8a8a8a;
-    line-height: 1.5;
+    font-size: 13px;
+    color: #8e8e93;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
 }
 
 #${APP_NAME}-config-container .setting-row-right {
     flex-shrink: 0;
     display: flex;
     align-items: center;
+    gap: 8px;
 }
 
-/* 슬라이더 컨트롤 */
+/* 슬라이더 컨트롤 - 개선된 iOS 스타일 */
 #${APP_NAME}-config-container .slider-container {
     display: flex;
     align-items: center;
     gap: 12px;
-    min-width: 280px;
+    width: 280px;
+    position: relative;
 }
 
 #${APP_NAME}-config-container .config-slider {
     flex: 1;
-    height: 4px;
-    background: #2b2b2b;
-    border-radius: 2px;
+    height: 28px; /* Increased height for easier interaction */
+    background: transparent;
     outline: none;
+    -webkit-appearance: none;
     appearance: none;
     cursor: pointer;
+    margin: 0;
+}
+
+#${APP_NAME}-config-container .config-slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 6px;
+    background: #3a3a3c;
+    border-radius: 3px;
     transition: background 0.1s ease;
 }
 
 #${APP_NAME}-config-container .config-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
     appearance: none;
-    width: 16px;
-    height: 16px;
-    background: #0078d4;
+    width: 28px;
+    height: 28px;
+    background: #ffffff;
     border-radius: 50%;
     cursor: pointer;
-    transition: all 0.1s ease;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1);
+    margin-top: -11px; /* (track_height - thumb_height) / 2 */
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-#${APP_NAME}-config-container .config-slider::-webkit-slider-thumb:hover {
-    background: #106ebe;
-    transform: scale(1.1);
+#${APP_NAME}-config-container .config-slider:hover::-webkit-slider-thumb {
+    transform: scale(1.05);
+}
+
+#${APP_NAME}-config-container .config-slider:active::-webkit-slider-thumb {
+    transform: scale(0.98);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Firefox Styles */
+#${APP_NAME}-config-container .config-slider::-moz-range-track {
+    width: 100%;
+    height: 6px;
+    background: #3a3a3c;
+    border-radius: 3px;
+    border: none;
 }
 
 #${APP_NAME}-config-container .config-slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    background: #0078d4;
+    width: 28px;
+    height: 28px;
+    background: #ffffff;
     border: none;
     border-radius: 50%;
     cursor: pointer;
-    transition: all 0.1s ease;
-}
-
-#${APP_NAME}-config-container .config-slider::-moz-range-thumb:hover {
-    background: #106ebe;
-    transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 #${APP_NAME}-config-container .slider-value {
-    min-width: 56px;
+    min-width: 60px;
     text-align: right;
-    font-size: 13px;
+    font-size: 15px;
     color: #ffffff;
-    font-weight: 500;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 10px;
+    border-radius: 6px;
 }
 
-/* 조정 버튼 (+ -) */
+/* 조정 버튼 (+ -) - iOS 스타일 */
 #${APP_NAME}-config-container .adjust-container {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
 }
 
 #${APP_NAME}-config-container .adjust-button {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #2b2b2b;
-    border: 1px solid #3d3d3d;
-    border-radius: 2px;
-    color: #ffffff;
-    font-size: 16px;
-    font-weight: 500;
+    background: #2c2c2e;
+    border: none;
+    border-radius: 10px;
+    color: #007aff;
+    font-size: 20px;
+    font-weight: 400;
     cursor: pointer;
-    transition: all 0.1s ease;
+    transition: all 0.2s ease;
     user-select: none;
 }
 
 #${APP_NAME}-config-container .adjust-button:hover {
-    background: #323232;
-    border-color: #0078d4;
+    background: #3a3a3c;
+    transform: scale(1.05);
 }
 
 #${APP_NAME}-config-container .adjust-button:active {
-    background: #1f1f1f;
+    background: #48484a;
     transform: scale(0.95);
 }
 
 #${APP_NAME}-config-container .adjust-value {
-    min-width: 48px;
+    min-width: 56px;
     text-align: center;
-    font-size: 13px;
+    font-size: 15px;
     color: #ffffff;
-    font-weight: 500;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
 }
 
 /* 스왑 버튼 (위 아래 화살표) */
@@ -1056,46 +1298,50 @@ const ConfigModal = () => {
     text-transform: uppercase !important;
 }
 
-/* 입력 필드 */
+/* 입력 필드 - iOS 스타일 */
 #${APP_NAME}-config-container input[type="text"],
 #${APP_NAME}-config-container input[type="password"],
 #${APP_NAME}-config-container input[type="number"],
 #${APP_NAME}-config-container input[type="url"],
 #${APP_NAME}-config-container input,
 #${APP_NAME}-config-container textarea {
-	background: #2b2b2b !important;
-	border: 1px solid #3d3d3d !important;
-	border-radius: 2px !important;
+	background: #2c2c2e !important;
+	border: none !important;
+	border-radius: 8px !important;
 	padding: 8px 12px !important;
     width: min(320px, 100%) !important;
     outline: none !important;
     color: #ffffff !important;
-    transition: border-color 0.1s ease !important;
-    font-size: 13px !important;
-    font-family: var(--font-family, -apple-system, BlinkMacSystemFont, sans-serif) !important;
+    transition: background 0.2s ease, box-shadow 0.2s ease !important;
+    font-size: 15px !important;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
     min-height: 36px !important;
     box-sizing: border-box !important;
+    font-weight: 400 !important;
+    letter-spacing: -0.01em !important;
 }
 
 #${APP_NAME}-config-container select {
-	background: #2b2b2b !important;
-	border: 1px solid #3d3d3d !important;
-	border-radius: 2px !important;
-	padding: 10px 32px 10px 12px !important;
+	background: #2c2c2e !important;
+	border: none !important;
+	border-radius: 8px !important;
+	padding: 8px 32px 8px 12px !important;
     width: 200px !important;
     outline: none !important;
     color: #ffffff !important;
-    transition: border-color 0.1s ease !important;
-    font-size: 13px !important;
-    font-family: var(--font-family, -apple-system, BlinkMacSystemFont, sans-serif) !important;
+    transition: background 0.2s ease !important;
+    font-size: 15px !important;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif !important;
     min-height: 36px !important;
     height: auto !important;
     box-sizing: border-box !important;
     appearance: none !important;
-    background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M3 6l5 5.794L13 6z"/></svg>') !important;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%238e8e93" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M3 6l5 5.794L13 6z"/></svg>') !important;
     background-repeat: no-repeat !important;
     background-position: right 10px center !important;
     cursor: pointer !important;
+    font-weight: 400 !important;
+    letter-spacing: -0.01em !important;
 }
 
 #${APP_NAME}-config-container input[type="text"]:hover,
@@ -1105,8 +1351,7 @@ const ConfigModal = () => {
 #${APP_NAME}-config-container input:hover,
 #${APP_NAME}-config-container select:hover,
 #${APP_NAME}-config-container textarea:hover {
-    border-color: #505050 !important;
-    background: #2b2b2b !important;
+    background: #3a3a3c !important;
 }
 
 #${APP_NAME}-config-container input[type="text"]:focus,
@@ -1116,9 +1361,8 @@ const ConfigModal = () => {
 #${APP_NAME}-config-container input:focus,
 #${APP_NAME}-config-container select:focus,
 #${APP_NAME}-config-container textarea:focus {
-    border-color: #0078d4 !important;
-    background: #2b2b2b !important;
-    box-shadow: none !important;
+    background: #2c2c2e !important;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3) !important;
 }
 
 #${APP_NAME}-config-container input::placeholder,
@@ -1144,57 +1388,68 @@ const ConfigModal = () => {
 
 #${APP_NAME}-config-container .switch,
 #${APP_NAME}-config-container .btn {
-    height: 32px;
-    min-width: 32px;
-    border-radius: 2px;
-    background: #2b2b2b;
-    border: 1px solid #3d3d3d;
+    height: 36px;
+    min-width: 80px;
+    border-radius: 10px;
+    background: #007aff;
+    border: none;
     color: #ffffff;
     cursor: pointer;
-    transition: all 0.1s ease;
+    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 0 16px;
+    letter-spacing: -0.01em;
 }
 
-/* 체크박스 스타일 */
+/* iOS 토글 스위치 - 완전히 새로 작성 */
 #${APP_NAME}-config-container .switch-checkbox {
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-    min-height: 20px;
-    border-radius: 2px;
-    background: #2b2b2b;
-    border: 1px solid #3d3d3d;
+    width: 51px;
+    height: 31px;
+    border-radius: 15.5px;
+    background-color: #3a3a3c;
+    border: none;
     cursor: pointer;
-    transition: all 0.15s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
     position: relative;
+    flex-shrink: 0;
+    transition: background-color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    overflow: hidden;
 }
 
-#${APP_NAME}-config-container .switch-checkbox:hover {
-    background: #333333;
-    border-color: #505050;
+#${APP_NAME}-config-container .switch-checkbox::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 27px;
+    height: 27px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+    will-change: transform;
+    transform: translateX(0);
 }
 
 #${APP_NAME}-config-container .switch-checkbox.active {
-    background: #0078d4;
-    border-color: #0078d4;
+    background-color: #34c759;
+    transition: background-color 0.2s ease;
 }
 
-#${APP_NAME}-config-container .switch-checkbox.active:hover {
-    background: #106ebe;
-    border-color: #106ebe;
+#${APP_NAME}-config-container .switch-checkbox.active::after {
+    transform: translateX(20px);
 }
 
 #${APP_NAME}-config-container .switch-checkbox svg {
-    color: #ffffff;
-    opacity: 1;
-}
-    transition: background 0.1s ease, border-color 0.1s ease;
+    display: none !important;
+    visibility: hidden !important;
+    position: absolute;
+    pointer-events: none;
 }
 
 #${APP_NAME}-config-container .switch {
@@ -1235,30 +1490,11 @@ const ConfigModal = () => {
     cursor: not-allowed;
 }
 
-/* 글꼴 미리보기 */
-#${APP_NAME}-config-container .font-preview-container {
-    background: #202020;
-    border: 1px solid #2b2b2b;
-    border-radius: 2px;
-    padding: 20px;
-    margin-bottom: 24px;
-}
-
-#${APP_NAME}-config-container .font-preview-title {
-    margin: 0 0 16px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
+/* 글꼴 미리보기 - iOS 스타일 (이미 CSS로 스타일링됨) */
 #${APP_NAME}-config-container .font-preview {
-    background: #1a1a1a;
-    border: 1px solid #2b2b2b;
-    border-radius: 2px;
-    padding: 16px;
+    background: transparent;
+    border: none;
+    padding: 20px;
 }
 
 #${APP_NAME}-config-container #lyrics-preview,
@@ -1300,31 +1536,31 @@ const ConfigModal = () => {
 			"div",
 			{ className: "settings-tabs" },
 			react.createElement(TabButton, {
-				id: "display",
-				label: "디스플레이",
+				id: "general",
+				label: "일반",
 				icon: "",
-				isActive: activeTab === "display",
+				isActive: activeTab === "general",
 				onClick: setActiveTab
 			}),
 			react.createElement(TabButton, {
-				id: "typography",
-				label: "타이포그래피",
+				id: "appearance",
+				label: "외관",
 				icon: "",
-				isActive: activeTab === "typography",
+				isActive: activeTab === "appearance",
 				onClick: setActiveTab
 			}),
 			react.createElement(TabButton, {
-				id: "behavior",
-				label: "동작",
+				id: "lyrics",
+				label: "가사",
 				icon: "",
-				isActive: activeTab === "behavior",
+				isActive: activeTab === "lyrics",
 				onClick: setActiveTab
 			}),
 			react.createElement(TabButton, {
-				id: "providers",
-				label: "가사 제공자",
+				id: "translation",
+				label: "번역",
 				icon: "",
-				isActive: activeTab === "providers",
+				isActive: activeTab === "translation",
 				onClick: setActiveTab
 			}),
 			react.createElement(TabButton, {
@@ -1343,13 +1579,49 @@ const ConfigModal = () => {
 			})
 		),
 		react.createElement(TabContainer, null,
-			// 디스플레이 탭
+			// 일반 탭 (동작 관련 설정)
 			react.createElement(
 				"div",
 				{
-					className: `tab-content ${activeTab === "display" ? "active" : ""}`
+					className: `tab-content ${activeTab === "general" ? "active" : ""}`
 				},
 				react.createElement(SectionTitle, { title: "시각 효과", subtitle: "가사 화면의 시각적 요소를 커스터마이징하세요" }),
+				// FAD 경고 메시지
+				isFadActive && react.createElement(
+					"div",
+					{
+						className: "setting-row",
+						style: {
+							backgroundColor: "rgba(var(--spice-rgb-warning), 0.1)"
+						}
+					},
+					react.createElement(
+						"div",
+						{ className: "setting-row-content" },
+						react.createElement(
+							"div",
+							{ className: "setting-row-left" },
+							react.createElement(
+								"div",
+								{ 
+									className: "setting-name",
+									style: { color: "var(--spice-text)", fontWeight: "600" }
+								},
+								"⚠️ Full Screen 확장 프로그램 사용 중"
+							),
+							react.createElement(
+								"div",
+								{
+									className: "setting-description",
+									style: { color: "var(--spice-subtext)" }
+								},
+								"Full Screen 확장 프로그램 사용 중에는 지원하지 않습니다.",
+								react.createElement("br"),
+								"정렬 방식은 Full Screen 자체 설정에서 변경하십시오."
+							)
+						)
+					)
+				),
 				react.createElement(OptionList, {
 				items: [
 				{
@@ -1357,6 +1629,7 @@ const ConfigModal = () => {
 					key: "alignment",
 					info: "가사 텍스트의 정렬 위치를 선택하세요",
 					type: ConfigSelection,
+					disabled: isFadActive,
 				options: {
 					left: "왼쪽",
 					center: "가운데",
@@ -1368,30 +1641,44 @@ const ConfigModal = () => {
 					key: "noise",
 					info: "배경에 필름 그레인 효과를 추가합니다",
 					type: ConfigSlider,
+					disabled: isFadActive,
 				},
 				{
 					desc: "컬러풀 배경",
 					key: "colorful",
 					info: "앨범 색상 기반의 동적 배경을 활성화합니다",
 					type: ConfigSlider,
+					disabled: isFadActive,
 				},
 				{
 					desc: "앨범 커버 배경",
 					info: "현재 재생 중인 앨범 커버를 배경으로 사용합니다 (풀스크린 모드에서는 제대로 동작하지 않을 수 있습니다)",
 					key: "gradient-background",
 					type: ConfigSlider,
+					disabled: isFadActive,
 				},
 				{
 					desc: "배경 밝기",
 					key: "background-brightness",
 					info: "배경의 밝기 수준을 조절합니다 (0-100%)",
-					type: ConfigAdjust,
+					type: ConfigSliderRange,
+					disabled: isFadActive,
 					min: 0,
 					max: 100,
-					step: 10,
+					step: 1,
+					unit: "%",
 				},
 			],
 			onChange: (name, value) => {
+				// 컬러풀 배경과 앨범 커버 배경은 상호 배타적으로 동작
+				if (name === "colorful" && value) {
+					CONFIG.visual["gradient-background"] = false;
+					StorageManager.saveConfig("gradient-background", false);
+				} else if (name === "gradient-background" && value) {
+					CONFIG.visual["colorful"] = false;
+					StorageManager.saveConfig("colorful", false);
+				}
+				
 				CONFIG.visual[name] = value;
 				StorageManager.saveConfig(name, value);
 				lyricContainerUpdate?.();
@@ -1444,19 +1731,16 @@ const ConfigModal = () => {
 			},
 		})
 			),
-			// 타이포그래피 탭
+			// 외관 탭 (시각 효과 + 타이포그래피)
 			react.createElement(
 				"div",
 				{
-					className: `tab-content ${activeTab === "typography" ? "active" : ""}`
+					className: `tab-content ${activeTab === "appearance" ? "active" : ""}`
 				},
 				react.createElement(SectionTitle, { title: "실시간 미리보기", subtitle: "설정한 스타일을 즉시 확인하세요" }),
 				react.createElement("div", {
-					className: "font-preview-container",
+					className: "font-preview-container"
 				},
-					react.createElement("h3", { className: "font-preview-title" }, 
-						"스타일 미리보기"
-					),
 					react.createElement("div", {
 						className: "font-preview"
 					},
@@ -1466,14 +1750,27 @@ const ConfigModal = () => {
 								fontSize: `${CONFIG.visual["original-font-size"] || 20}px`,
 								fontWeight: CONFIG.visual["original-font-weight"] || "400",
 								textAlign: CONFIG.visual["alignment"] || "left",
-								lineHeight: "1.5",
-								marginBottom: "10px",
 								opacity: (CONFIG.visual["original-opacity"] || 100) / 100,
 								textShadow: CONFIG.visual["text-shadow-enabled"] ?
 									`0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"}${Math.round((CONFIG.visual["text-shadow-opacity"] || 50) * 2.55).toString(16).padStart(2, '0')}` :
 									"none"
 							}
-						}, "샘플 가사 텍스트입니다"),
+						}, "Sample lyrics text goes here"),
+						react.createElement("div", {
+							id: "phonetic-preview",
+							style: {
+								fontSize: `${CONFIG.visual["phonetic-font-size"] || 20}px`,
+								fontWeight: CONFIG.visual["phonetic-font-weight"] || "400",
+								textAlign: CONFIG.visual["alignment"] || "left",
+								lineHeight: "1.3",
+								opacity: (CONFIG.visual["phonetic-opacity"] || 70) / 100,
+								color: "rgba(255,255,255,0.7)",
+								marginTop: `${parseInt(CONFIG.visual["phonetic-spacing"]) || 4}px`,
+								textShadow: CONFIG.visual["text-shadow-enabled"] ?
+									`0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"}${Math.round((CONFIG.visual["text-shadow-opacity"] || 50) * 2.55).toString(16).padStart(2, '0')}` :
+									"none"
+							}
+						}, "Saempeul lirilseu tekseuteu gouseu hieol"),
 						react.createElement("div", {
 							id: "translation-preview",
 							style: {
@@ -1483,12 +1780,12 @@ const ConfigModal = () => {
 								lineHeight: "1.4",
 								opacity: (CONFIG.visual["translation-opacity"] || 100) / 100,
 								color: "rgba(255,255,255,0.7)",
-								marginTop: `${parseInt(CONFIG.visual["line-spacing"]) || 8}px`,
+								marginTop: `${parseInt(CONFIG.visual["translation-spacing"]) || 8}px`,
 								textShadow: CONFIG.visual["text-shadow-enabled"] ?
 									`0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"}${Math.round((CONFIG.visual["text-shadow-opacity"] || 50) * 2.55).toString(16).padStart(2, '0')}` :
 									"none"
 							}
-						}, "Sample lyrics translation text")
+						}, "샘플 가사가 여기 있습니다.")
 					)
 				),
 				react.createElement(SectionTitle, { title: "원문 스타일", subtitle: "가사 원문의 글꼴 설정" }),
@@ -1547,6 +1844,73 @@ const ConfigModal = () => {
 						}));
 					},
 				}),
+				react.createElement(SectionTitle, { title: "발음 스타일", subtitle: "로마자 발음 표기(Romaji, Romaja, Pinyin)의 글꼴 설정" }),
+				react.createElement(OptionList, {
+					items: [
+						{
+							desc: "글꼴 크기",
+							info: "로마자 발음 표기의 글꼴 크기 (픽셀)",
+							key: "phonetic-font-size",
+							type: ConfigSliderRange,
+							min: 10,
+							max: 96,
+							step: 2,
+							unit: "px",
+						},
+						{
+							desc: "글꼴 두께",
+							info: "로마자 발음 표기의 글꼴 굵기",
+							key: "phonetic-font-weight",
+							type: ConfigSelection,
+							options: {
+								"100": "Thin (100)",
+								"200": "Extra Light (200)",
+								"300": "Light (300)",
+								"400": "Regular (400)",
+								"500": "Medium (500)",
+								"600": "Semi Bold (600)",
+								"700": "Bold (700)",
+								"800": "Extra Bold (800)",
+								"900": "Black (900)",
+							},
+						},
+						{
+							desc: "투명도",
+							info: "로마자 발음 표기의 불투명도 (0-100%)",
+							key: "phonetic-opacity",
+							type: ConfigSliderRange,
+							min: 0,
+							max: 100,
+							step: 5,
+							unit: "%",
+						},
+						{
+							desc: "원문과의 간격",
+							info: "원문과 발음 표기 사이의 여백",
+							key: "phonetic-spacing",
+							type: ConfigSliderRange,
+							min: -30,
+							max: 20,
+							step: 1,
+							unit: "px",
+						},
+					],
+					onChange: (name, value) => {
+						CONFIG.visual[name] = value;
+						localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
+						const phoneticPreview = document.getElementById("phonetic-preview");
+						if (phoneticPreview) {
+							if (name === "phonetic-font-size") phoneticPreview.style.fontSize = `${value}px`;
+							if (name === "phonetic-font-weight") phoneticPreview.style.fontWeight = value;
+							if (name === "phonetic-opacity") phoneticPreview.style.opacity = value / 100;
+							if (name === "phonetic-spacing") phoneticPreview.style.marginTop = `${parseInt(value) || 0}px`;
+						}
+						lyricContainerUpdate?.();
+						window.dispatchEvent(new CustomEvent("lyrics-plus", {
+							detail: { type: "config", name, value },
+						}));
+					},
+				}),
 				react.createElement(SectionTitle, { title: "번역문 스타일", subtitle: "번역된 가사의 글꼴 설정" }),
 				react.createElement(OptionList, {
 					items: [
@@ -1588,11 +1952,11 @@ const ConfigModal = () => {
 							unit: "%",
 						},
 						{
-							desc: "원문과의 간격",
-							info: "원문과 번역문 사이의 여백 (픽셀)",
-							key: "line-spacing",
+							desc: "발음과의 간격",
+							info: "발음 표기와 번역문 사이의 여백 (픽셀)",
+							key: "translation-spacing",
 							type: ConfigSliderRange,
-							min: 0,
+							min: -20,
 							max: 30,
 							step: 2,
 							unit: "px",
@@ -1602,12 +1966,11 @@ const ConfigModal = () => {
 						CONFIG.visual[name] = value;
 						localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
 						const translationPreview = document.getElementById("translation-preview");
-						const lyricsPreview = document.getElementById("lyrics-preview");
 						if (translationPreview) {
 							if (name === "translation-font-size") translationPreview.style.fontSize = `${value}px`;
 							if (name === "translation-font-weight") translationPreview.style.fontWeight = value;
 							if (name === "translation-opacity") translationPreview.style.opacity = value / 100;
-							if (name === "line-spacing") translationPreview.style.marginTop = `${parseInt(value) || 0}px`;
+							if (name === "translation-spacing") translationPreview.style.marginTop = `${parseInt(value) || 0}px`;
 						}
 						lyricContainerUpdate?.();
 						window.dispatchEvent(new CustomEvent("lyrics-plus", {
@@ -1655,17 +2018,19 @@ const ConfigModal = () => {
 						CONFIG.visual[name] = value;
 						localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
 						const lyricsPreview = document.getElementById("lyrics-preview");
+						const phoneticPreview = document.getElementById("phonetic-preview");
 						const translationPreview = document.getElementById("translation-preview");
 						
-						if (lyricsPreview && translationPreview) {
+						if (lyricsPreview || phoneticPreview || translationPreview) {
 							const shadowEnabled = CONFIG.visual["text-shadow-enabled"];
 							const shadowColor = CONFIG.visual["text-shadow-color"] || "#000000";
 							const shadowOpacity = CONFIG.visual["text-shadow-opacity"] || 50;
 							const shadowBlur = CONFIG.visual["text-shadow-blur"] || 2;
 							const shadowAlpha = Math.round(shadowOpacity * 2.55).toString(16).padStart(2, '0');
 							const shadow = shadowEnabled ? `0 0 ${shadowBlur}px ${shadowColor}${shadowAlpha}` : "none";
-							lyricsPreview.style.textShadow = shadow;
-							translationPreview.style.textShadow = shadow;
+							if (lyricsPreview) lyricsPreview.style.textShadow = shadow;
+							if (phoneticPreview) phoneticPreview.style.textShadow = shadow;
+							if (translationPreview) translationPreview.style.textShadow = shadow;
 						}
 						lyricContainerUpdate?.();
 						window.dispatchEvent(new CustomEvent("lyrics-plus", {
@@ -1674,11 +2039,11 @@ const ConfigModal = () => {
 					},
 				})
 			),
-			// 동작 탭
+			// 가사 탭 (가사 동기화 및 동작)
 			react.createElement(
 				"div",
 				{
-					className: `tab-content ${activeTab === "behavior" ? "active" : ""}`
+					className: `tab-content ${activeTab === "lyrics" ? "active" : ""}`
 				},
 				react.createElement(SectionTitle, { title: "재생 동작", subtitle: "재생 관련 기능 설정" }),
 				react.createElement(OptionList, {
@@ -1714,12 +2079,18 @@ const ConfigModal = () => {
 						}));
 					},
 				}),
-				react.createElement(SectionTitle, { title: "가라오케 모드", subtitle: "노래방 스타일 가사 표시" }),
+				react.createElement(SectionTitle, { title: "노래방 모드", subtitle: "노래방 스타일 가사 표시" }),
 				react.createElement(OptionList, {
 					items: [
 						{
+							desc: "노래방 모드 사용",
+							info: "노래방 가사를 지원하는 곡에서 노래방 탭을 사용합니다. 비활성화 시 동기화 탭으로 고정됩니다",
+							key: "karaoke-mode-enabled",
+							type: ConfigSlider,
+						},
+						{
 							desc: "글자 바운스 효과",
-							info: "가라오케 모드에서 현재 부르는 글자에 통통 튀는 애니메이션을 적용합니다",
+							info: "노래방 모드에서 현재 부르는 글자에 통통 튀는 애니메이션을 적용합니다",
 							key: "karaoke-bounce",
 							type: ConfigSlider,
 						},
@@ -1751,11 +2122,11 @@ const ConfigModal = () => {
 					onChange: () => {},
 				})
 			),
-			// 가사 제공자 탭
+			// 번역 탭 (가사 제공자 포함)
 			react.createElement(
 				"div",
 				{
-					className: `tab-content ${activeTab === "providers" ? "active" : ""}`
+					className: `tab-content ${activeTab === "translation" ? "active" : ""}`
 				},
 				react.createElement(SectionTitle, { title: "가사 제공자", subtitle: "가사 소스의 우선순위와 설정을 관리하세요" }),
 				react.createElement(ServiceList, {
@@ -1850,11 +2221,14 @@ const ConfigModal = () => {
 				},
 				react.createElement(SectionTitle, { title: "앱 정보", subtitle: "Lyrics Plus에 대해" }),
 				react.createElement("div", {
+					className: "info-card",
 					style: {
 						padding: "20px",
-						background: "#202020",
-						border: "1px solid #2b2b2b",
-						borderRadius: "2px",
+						background: "rgba(255, 255, 255, 0.03)",
+						border: "1px solid rgba(255, 255, 255, 0.08)",
+						borderRadius: "0 0 12px 12px",
+						backdropFilter: "blur(30px) saturate(150%)",
+						WebkitBackdropFilter: "blur(30px) saturate(150%)",
 						marginBottom: "24px"
 					}
 				},
@@ -1891,10 +2265,6 @@ const ConfigModal = () => {
 					)
 				),
 				react.createElement(SectionTitle, { title: "업데이트", subtitle: "최신 버전 확인" }),
-				react.createElement("div", {
-					id: "update-result-container",
-					style: { marginBottom: "16px" }
-				}),
 				react.createElement(OptionList, {
 					items: [
 						{
@@ -1910,7 +2280,18 @@ const ConfigModal = () => {
 								button.textContent = "확인 중...";
 								button.disabled = true;
 
-								const resultContainer = document.getElementById('update-result-container');
+								// setting-row 다음에 결과 컨테이너 찾기/생성
+								const settingRow = button.closest('.setting-row');
+								let resultContainer = settingRow?.nextElementSibling;
+								
+								if (!resultContainer || !resultContainer.id || resultContainer.id !== 'update-result-container') {
+									// 결과 컨테이너가 없으면 생성
+									resultContainer = document.createElement('div');
+									resultContainer.id = 'update-result-container';
+									resultContainer.style.cssText = 'margin-top: -1px;';
+									settingRow?.parentNode?.insertBefore(resultContainer, settingRow.nextSibling);
+								}
+								
 								if (resultContainer) resultContainer.innerHTML = '';
 
 								try {
@@ -1920,19 +2301,19 @@ const ConfigModal = () => {
 										let bgColor, borderColor, textColor, message, showLink = false;
 										
 										if (updateInfo.error) {
-											bgColor = '#3d1a1a';
-											borderColor = '#8b2e2e';
+											bgColor = 'rgba(61, 26, 26, 0.5)';
+											borderColor = 'rgba(139, 46, 46, 0.3)';
 											textColor = '#ff6b6b';
 											message = `❌ 업데이트 확인 실패: ${updateInfo.error}`;
 										} else if (updateInfo.hasUpdate) {
-											bgColor = '#1a3d2e';
-											borderColor = '#2e8b57';
+											bgColor = 'rgba(26, 61, 46, 0.5)';
+											borderColor = 'rgba(46, 139, 87, 0.3)';
 											textColor = '#4ade80';
 											message = `✨ 업데이트 가능: v${updateInfo.latestVersion} (현재: v${updateInfo.currentVersion})`;
 											showLink = true;
 										} else {
-											bgColor = '#1a2d3d';
-											borderColor = '#2e5a8b';
+											bgColor = 'rgba(26, 45, 61, 0.5)';
+											borderColor = 'rgba(46, 90, 139, 0.3)';
 											textColor = '#60a5fa';
 											message = `✓ 최신 버전입니다: v${updateInfo.currentVersion}`;
 										}
@@ -1942,11 +2323,16 @@ const ConfigModal = () => {
 												padding: 16px;
 												background: ${bgColor};
 												border: 1px solid ${borderColor};
-												border-radius: 2px;
+												border-left: 1px solid rgba(255, 255, 255, 0.08);
+												border-right: 1px solid rgba(255, 255, 255, 0.08);
+												border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+												border-bottom-left-radius: 12px;
+												border-bottom-right-radius: 12px;
 												color: ${textColor};
 												font-size: 13px;
 												line-height: 1.6;
-												margin-bottom: 16px;
+												backdrop-filter: blur(30px) saturate(150%);
+												-webkit-backdrop-filter: blur(30px) saturate(150%);
 											">
 												<div style="font-weight: 600; margin-bottom: 8px;">${message}</div>
 												${showLink ? `
@@ -1968,12 +2354,17 @@ const ConfigModal = () => {
 										resultContainer.innerHTML = `
 											<div style="
 												padding: 16px;
-												background: #3d1a1a;
-												border: 1px solid #8b2e2e;
-												border-radius: 2px;
+												background: rgba(61, 26, 26, 0.5);
+												border: 1px solid rgba(139, 46, 46, 0.3);
+												border-left: 1px solid rgba(255, 255, 255, 0.08);
+												border-right: 1px solid rgba(255, 255, 255, 0.08);
+												border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+												border-bottom-left-radius: 12px;
+												border-bottom-right-radius: 12px;
 												color: #ff6b6b;
 												font-size: 13px;
-												margin-bottom: 16px;
+												backdrop-filter: blur(30px) saturate(150%);
+												-webkit-backdrop-filter: blur(30px) saturate(150%);
 											">
 												<div style="font-weight: 600;">❌ 업데이트 확인 실패</div>
 												<div style="margin-top: 4px; opacity: 0.9;">네트워크 연결을 확인하세요.</div>
@@ -1991,11 +2382,14 @@ const ConfigModal = () => {
 				}),
 				react.createElement(SectionTitle, { title: "크레딧", subtitle: "개발자 및 기여자" }),
 				react.createElement("div", {
+					className: "info-card",
 					style: {
 						padding: "20px",
 						background: "rgba(255, 255, 255, 0.03)",
 						border: "1px solid rgba(255, 255, 255, 0.08)",
-						borderRadius: "12px",
+						borderRadius: "0 0 12px 12px",
+						backdropFilter: "blur(30px) saturate(150%)",
+						WebkitBackdropFilter: "blur(30px) saturate(150%)",
 					}
 				},
 					react.createElement("p", { 
@@ -2046,24 +2440,27 @@ function openConfig() {
 		left: 0;
 		width: 100%;
 		height: 100%;
-		background: rgba(0, 0, 0, 0.8);
+		background: rgba(0, 0, 0, 0.2);
 		z-index: 9999;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		backdrop-filter: blur(10px);
+		backdrop-filter: blur(20px) saturate(120%);
+		-webkit-backdrop-filter: blur(5px) saturate(120%);
 	`;
 
 	const modalContainer = document.createElement('div');
 	modalContainer.style.cssText = `
-		background: var(--spice-main);
-		border-radius: 12px;
+		background: rgba(0, 0, 0, 0.6);
+		backdrop-filter: blur(60px) saturate(200%) brightness(1.1);
+		-webkit-backdrop-filter: blur(60px) saturate(200%) brightness(1.1);
+		border-radius: 16px;
 		max-width: 90vw;
 		max-height: 90vh;
 		width: 800px;
 		overflow: hidden;
-		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-		border: 1px solid var(--spice-card-border);
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.1) inset;
+		border: 1px solid rgba(255, 255, 255, 0.1);
 	`;
 
 	// Close on outside click

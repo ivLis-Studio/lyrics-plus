@@ -384,6 +384,15 @@ const CONFIG = {
 		"original-font-size": localStorage.getItem("lyrics-plus:visual:original-font-size") || "32",
 		"translation-font-weight": localStorage.getItem("lyrics-plus:visual:translation-font-weight") || "300",
 		"translation-font-size": localStorage.getItem("lyrics-plus:visual:translation-font-size") || "24",
+		"translation-spacing": localStorage.getItem("lyrics-plus:visual:translation-spacing") || "8",
+		"phonetic-font-weight": localStorage.getItem("lyrics-plus:visual:phonetic-font-weight") || "400",
+		"phonetic-font-size": localStorage.getItem("lyrics-plus:visual:phonetic-font-size") || "20",
+		"phonetic-opacity": localStorage.getItem("lyrics-plus:visual:phonetic-opacity") || "70",
+		"phonetic-spacing": localStorage.getItem("lyrics-plus:visual:phonetic-spacing") || "4",
+		"furigana-font-weight": localStorage.getItem("lyrics-plus:visual:furigana-font-weight") || "300",
+		"furigana-font-size": localStorage.getItem("lyrics-plus:visual:furigana-font-size") || "14",
+		"furigana-opacity": localStorage.getItem("lyrics-plus:visual:furigana-opacity") || "80",
+		"furigana-spacing": localStorage.getItem("lyrics-plus:visual:furigana-spacing") || "2",
 		"text-shadow-enabled": StorageManager.get("lyrics-plus:visual:text-shadow-enabled", true),
 		"text-shadow-color": localStorage.getItem("lyrics-plus:visual:text-shadow-color") || "#000000",
 		"text-shadow-opacity": localStorage.getItem("lyrics-plus:visual:text-shadow-opacity") || "50",
@@ -439,6 +448,7 @@ const CONFIG = {
 		"hans-detect-threshold": localStorage.getItem("lyrics-plus:visual:hans-detect-threshold") || "40",
 		"fade-blur": StorageManager.get("lyrics-plus:visual:fade-blur"),
 		"karaoke-bounce": StorageManager.get("lyrics-plus:visual:karaoke-bounce", true),
+		"karaoke-mode-enabled": StorageManager.get("lyrics-plus:visual:karaoke-mode-enabled", true),
 		"fullscreen-key": localStorage.getItem("lyrics-plus:visual:fullscreen-key") || "f12",
 			"synced-compact": StorageManager.get("lyrics-plus:visual:synced-compact"),
 		"global-delay": Number(localStorage.getItem("lyrics-plus:visual:global-delay")) || 0,
@@ -749,6 +759,7 @@ class LyricsContainer extends react.Component {
 			isFADMode: false,
 			isCached: false,
 			language: null,
+			isPhoneticLoading: false,
 			isTranslationLoading: false,
 		};
 		this.currentTrackUri = "";
@@ -770,11 +781,33 @@ class LyricsContainer extends react.Component {
 		this.lastProcessedUri = null;
 		this.lastProcessedMode = null;
 
-		// Translation loading timer
+		// Translation loading timers - separate for phonetic and translation
+		this.phoneticLoadingTimer = null;
 		this.translationLoadingTimer = null;
 
 		// Bind regenerate translation method
 		this.regenerateTranslation = this.regenerateTranslation.bind(this);
+	}
+
+	/**
+	 * 발음 로딩 상태를 시작합니다 (1초 후에 로딩 메시지 표시)
+	 */
+	startPhoneticLoading() {
+		this.clearPhoneticLoading();
+		this.phoneticLoadingTimer = setTimeout(() => {
+			this.setState({ isPhoneticLoading: true });
+		}, 1000);
+	}
+
+	/**
+	 * 발음 로딩 상태를 종료합니다
+	 */
+	clearPhoneticLoading() {
+		if (this.phoneticLoadingTimer) {
+			clearTimeout(this.phoneticLoadingTimer);
+			this.phoneticLoadingTimer = null;
+		}
+		this.setState({ isPhoneticLoading: false });
 	}
 
 	/**
@@ -1242,10 +1275,16 @@ class LyricsContainer extends react.Component {
 		this.displayMode2 = displayMode2;
 
 		const processMode = async (mode, baseLyrics) => {
-			if (!mode || mode === "none") return null;
+			if (!mode || mode === "none") {
+				console.log('[processMode] Mode is none or empty:', mode);
+				return null;
+			}
+			console.log('[processMode] Processing mode:', mode);
 			try {
 				if (String(mode).startsWith("gemini")) {
-					return await this.getGeminiTranslation(lyricsState, baseLyrics, mode);
+					const result = await this.getGeminiTranslation(lyricsState, baseLyrics, mode);
+					console.log('[processMode] Gemini result sample:', result?.[0]);
+					return result;
 				} else {
 					return await this.getTraditionalConversion(lyricsState, baseLyrics, originalLanguage, mode);
 				}
@@ -1260,13 +1299,35 @@ class LyricsContainer extends react.Component {
 
 		// If no display modes are active, just optimize the original lyrics (e.g., to handle note lines)
 		if ((!displayMode1 || displayMode1 === "none") && (!displayMode2 || displayMode2 === "none")) {
-			const optimizedLyrics = this.optimizeTranslations(lyrics, null, null);
+			const optimizedLyrics = this.optimizeTranslations(lyrics, null, null, null, null);
 			this.setState({ currentLyrics: Array.isArray(optimizedLyrics) ? optimizedLyrics : [] });
 			return;
 		}
 
+		// 즉시 원문 표시 - 번역이 로딩되는 동안에도 사용자가 가사를 볼 수 있도록
+		// URI 체크: 곡이 변경되지 않았을 때만 표시
+		if (this.state.uri === uri) {
+			const optimizedOriginal = this.optimizeTranslations(lyrics, null, null, null, null);
+			this.setState({ currentLyrics: Array.isArray(optimizedOriginal) ? optimizedOriginal : [] });
+		}
+
 		// Progressive loading: keep results per track so Mode 1 does not disappear when Mode 2 finishes
+		// Check if display modes changed - if so, clear cached results
+		if (this._dmResults[currentUri]) {
+			const cached = this._dmResults[currentUri];
+			// If mode settings changed, invalidate cache for that mode
+			if (cached.lastMode1 !== displayMode1) {
+				cached.mode1 = null;
+			}
+			if (cached.lastMode2 !== displayMode2) {
+				cached.mode2 = null;
+			}
+		}
+		
 		this._dmResults[currentUri] = this._dmResults[currentUri] || { mode1: null, mode2: null };
+		this._dmResults[currentUri].lastMode1 = displayMode1;
+		this._dmResults[currentUri].lastMode2 = displayMode2;
+		
 		let lyricsMode1 = this._dmResults[currentUri].mode1;
 		let lyricsMode2 = this._dmResults[currentUri].mode2;
 
@@ -1275,32 +1336,101 @@ class LyricsContainer extends react.Component {
 			if (this.state.uri !== uri) {
 				return;
 			}
-			// Smart deduplication and optimization
-			const optimizedTranslations = this.optimizeTranslations(lyrics, lyricsMode1, lyricsMode2);
+			console.log('[updateCombinedLyrics] Mode1 data:', lyricsMode1 ? 'present' : 'null');
+			console.log('[updateCombinedLyrics] Mode2 data:', lyricsMode2 ? 'present' : 'null');
+			// Smart deduplication and optimization - pass display modes
+			const optimizedTranslations = this.optimizeTranslations(
+				lyrics, 
+				lyricsMode1, 
+				lyricsMode2,
+				lyricsMode1 ? displayMode1 : null,
+				lyricsMode2 ? displayMode2 : null
+			);
 			this.setState({ currentLyrics: Array.isArray(optimizedTranslations) ? optimizedTranslations : [] });
 		};
 
-		// Start both requests, but don't wait for both to finish to update UI
-		const promise1 = processMode(displayMode1, lyrics);
-		const promise2 = processMode(displayMode2, lyrics);
+		// 스마트 로딩 전략: 두 모드 모두 활성화된 경우 둘 다 완료될 때까지 기다림
+		const mode1Active = displayMode1 && displayMode1 !== "none";
+		const mode2Active = displayMode2 && displayMode2 !== "none";
+		
+		console.log('[displayTranslations] Mode1:', displayMode1, 'Active:', mode1Active);
+		console.log('[displayTranslations] Mode2:', displayMode2, 'Active:', mode2Active);
 
-		promise1.then(result => {
-			lyricsMode1 = result;
-			this._dmResults[currentUri].mode1 = result;
-			updateCombinedLyrics();
-		}).catch(error => {
-			// Still update UI even if one mode fails
-			updateCombinedLyrics();
-		});
+		if (mode1Active && mode2Active) {
+			// 두 개 모드 모두 활성화: 각각 완료되는 즉시 업데이트 (Progressive Loading)
+			// 캐시된 결과가 있으면 재사용, 없으면 새로 요청
+			const promise1 = lyricsMode1 ? Promise.resolve(lyricsMode1) : processMode(displayMode1, lyrics);
+			const promise2 = lyricsMode2 ? Promise.resolve(lyricsMode2) : processMode(displayMode2, lyrics);
 
-		promise2.then(result => {
-			lyricsMode2 = result;
-			this._dmResults[currentUri].mode2 = result;
-			updateCombinedLyrics();
-		}).catch(error => {
-			// Still update UI even if one mode fails
-			updateCombinedLyrics();
-		});
+			// 각 promise가 완료되는 즉시 업데이트
+			promise1.then(result => {
+				// Guard clause: 다른 곡으로 변경되었는지 확인
+				if (this.state.uri !== uri) {
+					return;
+				}
+				if (result) {
+					lyricsMode1 = result;
+					this._dmResults[currentUri].mode1 = result;
+					updateCombinedLyrics(); // 첫 번째 결과가 나오면 즉시 표시
+				}
+			}).catch(error => {
+				console.error('[Mode1] Error:', error);
+				// 실패해도 계속 진행
+			});
+
+			promise2.then(result => {
+				// Guard clause: 다른 곡으로 변경되었는지 확인
+				if (this.state.uri !== uri) {
+					return;
+				}
+				if (result) {
+					lyricsMode2 = result;
+					this._dmResults[currentUri].mode2 = result;
+					updateCombinedLyrics(); // 두 번째 결과가 나오면 즉시 추가 표시
+				}
+			}).catch(error => {
+				console.error('[Mode2] Error:', error);
+				// 실패해도 계속 진행
+			});
+		} else if (mode1Active) {
+			// Mode1만 활성화: Mode1 완료 시 바로 업데이트
+			// Mode2는 비활성화되었으므로 null로 설정
+			lyricsMode2 = null;
+			this._dmResults[currentUri].mode2 = null;
+			
+			// 캐시된 결과가 있으면 바로 업데이트, 없으면 새로 요청
+			if (lyricsMode1) {
+				updateCombinedLyrics();
+			} else {
+				processMode(displayMode1, lyrics).then(result => {
+					lyricsMode1 = result;
+					this._dmResults[currentUri].mode1 = result;
+					updateCombinedLyrics();
+				}).catch(error => {
+					// 실패해도 UI 업데이트 (원문은 이미 표시됨)
+					updateCombinedLyrics();
+				});
+			}
+		} else if (mode2Active) {
+			// Mode2만 활성화: Mode2 완료 시 바로 업데이트
+			// Mode1은 비활성화되었으므로 null로 설정
+			lyricsMode1 = null;
+			this._dmResults[currentUri].mode1 = null;
+			
+			// 캐시된 결과가 있으면 바로 업데이트, 없으면 새로 요청
+			if (lyricsMode2) {
+				updateCombinedLyrics();
+			} else {
+				processMode(displayMode2, lyrics).then(result => {
+					lyricsMode2 = result;
+					this._dmResults[currentUri].mode2 = result;
+					updateCombinedLyrics();
+				}).catch(error => {
+					// 실패해도 UI 업데이트 (원문은 이미 표시됨)
+					updateCombinedLyrics();
+				});
+			}
+		}
 	}
 
 	/**
@@ -1308,13 +1438,19 @@ class LyricsContainer extends react.Component {
 	 * @param {Array} originalLyrics - Original lyrics
 	 * @param {Array} mode1 - Translation from Display Mode 1
 	 * @param {Array} mode2 - Translation from Display Mode 2
+	 * @param {String} displayMode1 - Mode type for mode1 (e.g., "gemini_romaji", "gemini_ko")
+	 * @param {String} displayMode2 - Mode type for mode2
 	 * @returns {Array} Optimized lyrics with smart deduplication
 	 */
-	optimizeTranslations(originalLyrics, mode1, mode2) {
+	optimizeTranslations(originalLyrics, mode1, mode2, displayMode1, displayMode2) {
 		// React 31 방지: 배열 유효성 검사
 		if (!originalLyrics || !Array.isArray(originalLyrics)) {
 			return [];
 		}
+
+		// Determine which mode is phonetic (romaji) and which is translation
+		const mode1IsPhonetic = displayMode1 === "gemini_romaji";
+		const mode2IsPhonetic = displayMode2 === "gemini_romaji";
 
 		// Helper: note/placeholder-only line (e.g., ♪, …)
 		const isNoteLine = (text) => {
@@ -1385,17 +1521,51 @@ class LyricsContainer extends react.Component {
 			const translationsSame = normalizedTrans1 && normalizedTrans2 &&
 				(normalizedTrans1 === normalizedTrans2 || areTranslationsSimilar(translation1, translation2));
 
-			let finalText = null;
-			let finalText2 = null;
+			let finalText = null;  // This will be phonetic (romaji/발음)
+			let finalText2 = null; // This will be translation (번역)
 
+			// Assign to correct slots based on mode types
+			let phoneticText = '';
+			let translationText = '';
+
+			if (mode1IsPhonetic) {
+				phoneticText = translation1;
+			} else if (mode1) {
+				translationText = translation1;
+			}
+
+			if (mode2IsPhonetic) {
+				phoneticText = translation2;
+			} else if (mode2) {
+				translationText = translation2;
+			}
+
+			// Deduplication logic
 			if (translationsSame) {
+				// Both are the same, always show in translation slot (not phonetic)
+				const combinedText = translation1 || translation2;
 				if (!trans1SameAsOriginal) {
-					finalText = translation1 || translation2;
+					finalText2 = combinedText; // Always use translation slot when they're the same
 				}
 			} else {
-				if (!trans1SameAsOriginal && translation1) finalText = translation1;
-				if (!trans2SameAsOriginal && translation2) finalText2 = translation2;
-				if (!finalText && finalText2) { finalText = finalText2; finalText2 = null; }
+				// Different results - assign to correct slots
+				// finalText = phonetic, finalText2 = translation
+				if (!trans1SameAsOriginal && phoneticText) finalText = phoneticText;
+				if (!trans2SameAsOriginal && translationText) finalText2 = translationText;
+				// Also handle case where trans1 is same but trans2 is not
+				if (trans1SameAsOriginal && !trans2SameAsOriginal) {
+					if (mode2IsPhonetic) {
+						finalText = translation2;
+					} else {
+						finalText2 = translation2;
+					}
+				} else if (!trans1SameAsOriginal && trans2SameAsOriginal) {
+					if (mode1IsPhonetic) {
+						finalText = translation1;
+					} else {
+						finalText2 = translation1;
+					}
+				}
 			}
 
 			// Create safe line object ensuring all properties are valid
@@ -1458,8 +1628,12 @@ class LyricsContainer extends react.Component {
 			const nonSectionLines = allLines.filter(line => !Utils.isSectionHeader(line));
 			const text = nonSectionLines.join("\n");
 
-			// Start translation loading indicator (1초 후 표시)
-			this.startTranslationLoading();
+			// Start appropriate loading indicator based on mode type (1초 후 표시)
+			if (wantSmartPhonetic) {
+				this.startPhoneticLoading();
+			} else {
+				this.startTranslationLoading();
+			}
 
 			const inflightPromise = Translator.callGemini({ 
 				apiKey, 
@@ -1548,7 +1722,12 @@ class LyricsContainer extends react.Component {
 					return mapped;
 				})
 				.finally(() => {
-					this.clearTranslationLoading();
+					// Clear appropriate loading indicator based on mode type
+					if (wantSmartPhonetic) {
+						this.clearPhoneticLoading();
+					} else {
+						this.clearTranslationLoading();
+					}
 					this._inflightGemini = this._inflightGemini || new Map();
 					this._inflightGemini?.delete(inflightKey);
 				});
@@ -2011,6 +2190,16 @@ class LyricsContainer extends react.Component {
 		this.mousetrap.reset();
 		this.mousetrap.bind(CONFIG.visual["fullscreen-key"], this.toggleFullscreen);
 		window.addEventListener("fad-request", lyricContainerUpdate);
+		
+		// 설정 변경 리스너 - 노래방 모드 토글 처리
+		this.handleConfigChange = (event) => {
+			if (event.detail?.name === "karaoke-mode-enabled") {
+				// 노래방 모드 설정이 변경되면 현재 모드를 다시 계산
+				this.state.explicitMode = -1; // 명시적 모드 초기화
+				this.forceUpdate();
+			}
+		};
+		window.addEventListener("lyrics-plus", this.handleConfigChange);
 	}
 
 	componentWillUnmount() {
@@ -2019,6 +2208,7 @@ class LyricsContainer extends react.Component {
 		this.configButton?.deregister();
 		this.mousetrap?.reset();
 		window.removeEventListener("fad-request", lyricContainerUpdate);
+		window.removeEventListener("lyrics-plus", this.handleConfigChange);
 
 		// Clean up translation loading timer
 		this.clearTranslationLoading();
@@ -2072,14 +2262,13 @@ class LyricsContainer extends react.Component {
 			this.styleVariables = {
 				"--lyrics-color-active": CONFIG.visual["active-color"],
 				"--lyrics-color-inactive": CONFIG.visual["inactive-color"],
-				"--lyrics-color-background": CONFIG.visual["background-color"],
 				"--lyrics-highlight-background": CONFIG.visual["highlight-color"],
 				"--lyrics-background-noise": CONFIG.visual.noise ? "var(--background-noise)" : "unset",
 			};
 		} else if (CONFIG.visual.colorful) {
 			this.styleVariables = {
 				"--lyrics-color-active": "white",
-				"--lyrics-color-inactive": "rgba(255, 255, 255, 0.7)",
+				"--lyrics-color-inactive": "rgba(255, 255, 255, 0.4)",
 				"--lyrics-color-background": this.state.colors.background || "transparent",
 				"--lyrics-highlight-background": this.state.colors.inactive,
 				"--lyrics-background-noise": CONFIG.visual.noise ? "var(--background-noise)" : "unset",
@@ -2105,7 +2294,8 @@ class LyricsContainer extends react.Component {
 			mode = this.state.lockMode;
 		} else {
 			// Auto switch: prefer karaoke, then synced, then unsynced
-			if (this.state.karaoke) {
+			// 노래방 모드가 비활성화되어 있으면 karaoke를 건너뛰고 synced부터 시작
+			if (this.state.karaoke && CONFIG.visual["karaoke-mode-enabled"]) {
 				mode = KARAOKE;
 			} else if (this.state.synced) {
 				mode = SYNCED;
@@ -2150,12 +2340,13 @@ class LyricsContainer extends react.Component {
 
 		if (this.state.isFADMode) {
 			// Text colors will be set by FAD extension
+			// Disable colorful backgrounds in FAD mode
 			this.styleVariables = {};
 		} else if (CONFIG.visual.colorful && this.state.colors.background) {
 			const isLight = Utils.isColorLight(this.state.colors.background);
 			this.styleVariables = {
 				"--lyrics-color-active": isLight ? "black" : "white",
-				"--lyrics-color-inactive": isLight ? "rgba(0, 0, 0, 0.7)" : "rgba(255, 255, 255, 0.7)",
+				"--lyrics-color-inactive": isLight ? "rgba(0, 0, 0, 0.4)" : "rgba(255, 255, 255, 0.4)",
 				"--lyrics-color-background": this.state.colors.background,
 				"--lyrics-highlight-background": this.state.colors.inactive,
 				"--lyrics-background-noise": CONFIG.visual.noise ? "var(--background-noise)" : "unset",
@@ -2163,7 +2354,23 @@ class LyricsContainer extends react.Component {
 		}
 
 		const backgroundStyle = {};
-		if (CONFIG.visual["gradient-background"] && this.state.colors.background) {
+		// Disable background features when in FAD mode (Full Screen extension)
+		if (!this.state.isFADMode && CONFIG.visual["gradient-background"]) {
+			const brightness = CONFIG.visual["background-brightness"] / 100;
+			// 앨범 커버 이미지 가져오기
+			const albumArtUrl = Spicetify.Player.data?.item?.metadata?.image_xlarge_url || 
+								Spicetify.Player.data?.item?.metadata?.image_large_url ||
+								Spicetify.Player.data?.item?.metadata?.image_url;
+			
+			if (albumArtUrl) {
+				backgroundStyle.backgroundImage = `url(${albumArtUrl})`;
+				backgroundStyle.backgroundSize = "cover";
+				backgroundStyle.backgroundPosition = "center";
+				backgroundStyle.backgroundRepeat = "no-repeat";
+				backgroundStyle.filter = `brightness(${brightness}) blur(20px)`;
+				backgroundStyle.transform = "scale(1)"; // 블러 경계선 숨기기
+			}
+		} else if (!this.state.isFADMode && CONFIG.visual.colorful && this.state.colors.background) {
 			const brightness = CONFIG.visual["background-brightness"] / 100;
 			backgroundStyle.backgroundColor = this.state.colors.background;
 			backgroundStyle.filter = `brightness(${brightness})`;
@@ -2195,6 +2402,15 @@ class LyricsContainer extends react.Component {
 			"--lyrics-original-font-size": `${CONFIG.visual["original-font-size"]}px`,
 			"--lyrics-translation-font-weight": CONFIG.visual["translation-font-weight"],
 			"--lyrics-translation-font-size": `${CONFIG.visual["translation-font-size"]}px`,
+			"--lyrics-translation-spacing": `${CONFIG.visual["translation-spacing"] || 8}px`,
+			"--lyrics-phonetic-font-weight": CONFIG.visual["phonetic-font-weight"] || "400",
+			"--lyrics-phonetic-font-size": `${CONFIG.visual["phonetic-font-size"] || 20}px`,
+			"--lyrics-phonetic-opacity": (CONFIG.visual["phonetic-opacity"] || 70) / 100,
+			"--lyrics-phonetic-spacing": `${CONFIG.visual["phonetic-spacing"] || 4}px`,
+			"--lyrics-furigana-font-weight": CONFIG.visual["furigana-font-weight"],
+			"--lyrics-furigana-font-size": `${CONFIG.visual["furigana-font-size"]}px`,
+			"--lyrics-furigana-opacity": CONFIG.visual["furigana-opacity"] / 100,
+			"--lyrics-furigana-spacing": `${CONFIG.visual["furigana-spacing"]}px`,
 			"--lyrics-line-spacing": `${CONFIG.visual["line-spacing"] || 8}px`,
 			"--lyrics-text-shadow": textShadow,
 			"--lyrics-original-opacity": CONFIG.visual["original-opacity"] / 100,
@@ -2339,12 +2555,31 @@ class LyricsContainer extends react.Component {
 			react.createElement("div", {
 				className: "lyrics-lyricsContainer-LyricsBackground",
 			}),
+			// Phonetic loading indicator
+			this.state.isPhoneticLoading &&
+				react.createElement(
+					"div",
+					{
+						className: "lyrics-translation-loading-indicator",
+					},
+					react.createElement(
+						"div",
+						{
+							className: "lyrics-translation-loading-content",
+						},
+						react.createElement("div", {
+							className: "lyrics-translation-loading-spinner",
+						}),
+						react.createElement("span", null, "발음을 요청하고 있습니다. 30초 정도 소요됩니다")
+					)
+				),
 			// Translation loading indicator
 			this.state.isTranslationLoading &&
 				react.createElement(
 					"div",
 					{
 						className: "lyrics-translation-loading-indicator",
+						style: { top: this.state.isPhoneticLoading ? "100px" : "20px" }
 					},
 					react.createElement(
 						"div",

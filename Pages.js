@@ -251,7 +251,7 @@ const useTrackPosition = (callback) => {
 	}, []);
 };
 
-// 새로운 가라오케 컴포넌트 - synced 모드 기반의 간단한 구조
+// 새로운 노래방 컴포넌트 - synced 모드 기반의 간단한 구조
 const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0, activeGlobalCharIndex = -1 }) => {
 	if (!line || !line.syllables || !Array.isArray(line.syllables)) {
 		return line?.text || "";
@@ -799,7 +799,7 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 						// Safe rendering for main text
 						(() => {
 							if (isKara) {
-								// 새로운 가라오케 모드 - 전역 글자 인덱스 전달
+								// 새로운 노래방 모드 - 전역 글자 인덱스 전달
 								const currentLineIndex = lineNumber - 2; // emptyLine 2개 제외
 								const globalOffset = currentLineIndex >= 0 && currentLineIndex < globalCharOffsets.length 
 									? globalCharOffsets[currentLineIndex] 
@@ -826,7 +826,7 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 					(() => {
 						if (!subText) return null;
 						const props = {
-							className: "lyrics-lyricsContainer-LyricsLine-sub",
+							className: "lyrics-lyricsContainer-LyricsLine-phonetic",
 							style: { "--sub-lyric-color": CONFIG.visual["inactive-color"] },
 						};
 						// React 310 방지: 문자열이고 빈 문자열이 아닐 때만 dangerouslySetInnerHTML 사용
@@ -839,7 +839,7 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 					(() => {
 						if (!subText2) return null;
 						const props2 = {
-							className: "lyrics-lyricsContainer-LyricsLine-sub",
+							className: "lyrics-lyricsContainer-LyricsLine-translation",
 							style: { "--sub-lyric-color": CONFIG.visual["inactive-color"] },
 						};
 						// React 310 방지: 문자열이고 빈 문자열이 아닐 때만 dangerouslySetInnerHTML 사용
@@ -1246,7 +1246,7 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 				),
 				// React 310 방지: subText가 문자열이고 비어있지 않을 때만 렌더링
 				subText && typeof subText === "string" && subText && react.createElement("p", {
-					className: "lyrics-lyricsContainer-LyricsLine-sub",
+					className: "lyrics-lyricsContainer-LyricsLine-phonetic",
 					style: {
 						"--sub-lyric-color": CONFIG.visual["inactive-color"],
 					},
@@ -1256,7 +1256,7 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 				}),
 				// React 310 방지: subText2가 문자열이고 비어있지 않을 때만 렌더링
 				subText2 && typeof subText2 === "string" && subText2 && react.createElement("p", {
-					className: "lyrics-lyricsContainer-LyricsLine-sub",
+					className: "lyrics-lyricsContainer-LyricsLine-translation",
 					style: {
 						"--sub-lyric-color": CONFIG.visual["inactive-color"],
 					},
@@ -1361,7 +1361,7 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 					react.createElement(
 						"p",
 						{
-							className: "lyrics-lyricsContainer-LyricsLine-sub",
+							className: "lyrics-lyricsContainer-LyricsLine-phonetic",
 							style: { 
 								"--sub-lyric-color": CONFIG.visual["inactive-color"]
 							},
@@ -1382,7 +1382,7 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 					react.createElement(
 						"p",
 						{
-							className: "lyrics-lyricsContainer-LyricsLine-sub",
+							className: "lyrics-lyricsContainer-LyricsLine-translation",
 							style: { 
 								"--sub-lyric-color": CONFIG.visual["inactive-color"]
 							},
