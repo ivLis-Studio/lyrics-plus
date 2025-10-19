@@ -331,7 +331,6 @@
 .lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine > p {
 	display: block;
 	padding: 0;
-	margin: 0;
 	white-space: normal; /* Allow text wrapping */
 	overflow-wrap: break-word;
 	width: 100%; /* Ensure full width for wrapping */
