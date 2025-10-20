@@ -1551,14 +1551,14 @@ const ConfigModal = () => {
 			}),
 			react.createElement(TabButton, {
 				id: "lyrics",
-				label: "가사",
+				label: "동작",
 				icon: "",
 				isActive: activeTab === "lyrics",
 				onClick: setActiveTab
 			}),
 			react.createElement(TabButton, {
 				id: "translation",
-				label: "번역",
+				label: "제공자",
 				icon: "",
 				isActive: activeTab === "translation",
 				onClick: setActiveTab
@@ -2298,76 +2298,229 @@ const ConfigModal = () => {
 									const updateInfo = await Utils.checkForUpdates();
 									
 									if (resultContainer) {
-										let bgColor, borderColor, textColor, message, showLink = false;
+										let message, showUpdateSection = false, showCopyButton = false;
+										const platform = Utils.detectPlatform();
+										const platformName = Utils.getPlatformName();
+										const installCommand = Utils.getInstallCommand();
 										
 										if (updateInfo.error) {
-											bgColor = 'rgba(61, 26, 26, 0.5)';
-											borderColor = 'rgba(139, 46, 46, 0.3)';
-											textColor = '#ff6b6b';
-											message = `❌ 업데이트 확인 실패: ${updateInfo.error}`;
+											message = `업데이트 확인 실패: ${updateInfo.error}`;
+											resultContainer.innerHTML = `
+												<div style="
+													padding: 16px 20px;
+													background: rgba(255, 255, 255, 0.03);
+													border: 1px solid rgba(255, 107, 107, 0.2);
+													border-left: 1px solid rgba(255, 255, 255, 0.08);
+													border-right: 1px solid rgba(255, 255, 255, 0.08);
+													border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+													border-bottom-left-radius: 12px;
+													border-bottom-right-radius: 12px;
+													backdrop-filter: blur(30px) saturate(150%);
+													-webkit-backdrop-filter: blur(30px) saturate(150%);
+												">
+													<div style="
+														display: flex;
+														align-items: center;
+														gap: 12px;
+														color: rgba(255, 107, 107, 0.9);
+														font-size: 13px;
+														font-weight: 500;
+													">
+														<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+															<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+														</svg>
+														<div>
+															<div style="font-weight: 600; margin-bottom: 2px;">업데이트 확인 실패</div>
+															<div style="opacity: 0.8; font-size: 12px;">네트워크 연결을 확인하세요</div>
+														</div>
+													</div>
+												</div>
+											`;
 										} else if (updateInfo.hasUpdate) {
-											bgColor = 'rgba(26, 61, 46, 0.5)';
-											borderColor = 'rgba(46, 139, 87, 0.3)';
-											textColor = '#4ade80';
-											message = `✨ 업데이트 가능: v${updateInfo.latestVersion} (현재: v${updateInfo.currentVersion})`;
-											showLink = true;
+											showUpdateSection = true;
+											showCopyButton = true;
+											
+											resultContainer.innerHTML = `
+												<div style="
+													padding: 20px;
+													background: rgba(255, 255, 255, 0.04);
+													border: 1px solid rgba(74, 222, 128, 0.15);
+													border-left: 1px solid rgba(255, 255, 255, 0.08);
+													border-right: 1px solid rgba(255, 255, 255, 0.08);
+													border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+													border-bottom-left-radius: 12px;
+													border-bottom-right-radius: 12px;
+													backdrop-filter: blur(30px) saturate(150%);
+													-webkit-backdrop-filter: blur(30px) saturate(150%);
+												">
+													<div style="margin-bottom: 16px;">
+														<div style="
+															display: flex;
+															align-items: center;
+															gap: 12px;
+															margin-bottom: 12px;
+														">
+															<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(74, 222, 128, 0.9)" stroke-width="2">
+																<circle cx="12" cy="12" r="10"/>
+																<path d="M12 6v6l4 2"/>
+															</svg>
+															<div>
+																<div style="
+																	font-size: 14px;
+																	font-weight: 600;
+																	color: rgba(255, 255, 255, 0.95);
+																	margin-bottom: 2px;
+																	letter-spacing: -0.01em;
+																">업데이트 사용 가능</div>
+																<div style="
+																	font-size: 12px;
+																	color: rgba(255, 255, 255, 0.5);
+																">버전 ${updateInfo.currentVersion} → ${updateInfo.latestVersion}</div>
+															</div>
+														</div>
+													</div>
+													
+													<div style="
+														background: rgba(0, 0, 0, 0.25);
+														border: 1px solid rgba(255, 255, 255, 0.08);
+														border-radius: 8px;
+														padding: 12px 14px;
+														margin-bottom: 12px;
+													">
+														<div style="
+															font-size: 12px;
+															color: rgba(255, 255, 255, 0.6);
+															margin-bottom: 8px;
+															font-weight: 500;
+														">${platformName}</div>
+														<code style="
+															font-family: Consolas, Monaco, 'Courier New', monospace;
+															font-size: 12px;
+															color: rgba(255, 255, 255, 0.85);
+															word-break: break-all;
+															line-height: 1.6;
+															user-select: all;
+														">${installCommand}</code>
+													</div>
+													
+													<div style="display: flex; gap: 8px;">
+														<button id="copy-install-command-btn" style="
+															flex: 1;
+															background: rgba(255, 255, 255, 0.1);
+															border: 1px solid rgba(255, 255, 255, 0.15);
+															color: rgba(255, 255, 255, 0.9);
+															padding: 10px 16px;
+															border-radius: 8px;
+															cursor: pointer;
+															font-size: 13px;
+															font-weight: 600;
+															transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+															letter-spacing: -0.01em;
+														">명령어 복사</button>
+														<a href="https://github.com/ivLis-Studio/lyrics-plus/releases/tag/v${updateInfo.latestVersion}" 
+														   target="_blank"
+														   style="
+															flex: 1;
+															background: rgba(255, 255, 255, 0.08);
+															border: 1px solid rgba(255, 255, 255, 0.15);
+															color: rgba(255, 255, 255, 0.9);
+															padding: 10px 16px;
+															border-radius: 8px;
+															text-decoration: none;
+															font-size: 13px;
+															font-weight: 600;
+															transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+															display: flex;
+															align-items: center;
+															justify-content: center;
+															letter-spacing: -0.01em;
+														">릴리즈 노트</a>
+													</div>
+												</div>
+											`;
+											
+											// Add copy button handler
+											const copyBtn = resultContainer.querySelector('#copy-install-command-btn');
+											if (copyBtn) {
+												copyBtn.addEventListener('click', async () => {
+													const success = await Utils.copyToClipboard(installCommand);
+													if (success) {
+														copyBtn.textContent = '복사됨';
+														copyBtn.style.background = 'rgba(16, 185, 129, 0.15)';
+														copyBtn.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+														copyBtn.style.color = 'rgba(16, 185, 129, 1)';
+														copyBtn.style.cursor = 'default';
+														copyBtn.disabled = true;
+														Spicetify.showNotification('설치 명령어가 복사되었습니다');
+													} else {
+														Spicetify.showNotification('복사에 실패했습니다', true);
+													}
+												});
+											}
 										} else {
-											bgColor = 'rgba(26, 45, 61, 0.5)';
-											borderColor = 'rgba(46, 90, 139, 0.3)';
-											textColor = '#60a5fa';
-											message = `✓ 최신 버전입니다: v${updateInfo.currentVersion}`;
+											resultContainer.innerHTML = `
+												<div style="
+													padding: 16px 20px;
+													background: rgba(255, 255, 255, 0.03);
+													border: 1px solid rgba(96, 165, 250, 0.15);
+													border-left: 1px solid rgba(255, 255, 255, 0.08);
+													border-right: 1px solid rgba(255, 255, 255, 0.08);
+													border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+													border-bottom-left-radius: 12px;
+													border-bottom-right-radius: 12px;
+													backdrop-filter: blur(30px) saturate(150%);
+													-webkit-backdrop-filter: blur(30px) saturate(150%);
+												">
+													<div style="
+														display: flex;
+														align-items: center;
+														gap: 12px;
+														color: rgba(96, 165, 250, 0.9);
+														font-size: 13px;
+													">
+														<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+															<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+														</svg>
+														<div>
+															<div style="font-weight: 600; margin-bottom: 2px;">최신 버전입니다</div>
+															<div style="opacity: 0.8; font-size: 12px;">버전 ${updateInfo.currentVersion}</div>
+														</div>
+													</div>
+												</div>
+											`;
 										}
-										
-										resultContainer.innerHTML = `
-											<div style="
-												padding: 16px;
-												background: ${bgColor};
-												border: 1px solid ${borderColor};
-												border-left: 1px solid rgba(255, 255, 255, 0.08);
-												border-right: 1px solid rgba(255, 255, 255, 0.08);
-												border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-												border-bottom-left-radius: 12px;
-												border-bottom-right-radius: 12px;
-												color: ${textColor};
-												font-size: 13px;
-												line-height: 1.6;
-												backdrop-filter: blur(30px) saturate(150%);
-												-webkit-backdrop-filter: blur(30px) saturate(150%);
-											">
-												<div style="font-weight: 600; margin-bottom: 8px;">${message}</div>
-												${showLink ? `
-													<a href="https://github.com/ivLis-Studio/lyrics-plus/releases/latest" 
-													   target="_blank" 
-													   style="
-														   color: #4ade80;
-														   text-decoration: underline;
-														   cursor: pointer;
-													   ">
-														→ GitHub에서 다운로드하기
-													</a>
-												` : ''}
-											</div>
-										`;
 									}
 								} catch (error) {
 									if (resultContainer) {
 										resultContainer.innerHTML = `
 											<div style="
-												padding: 16px;
-												background: rgba(61, 26, 26, 0.5);
-												border: 1px solid rgba(139, 46, 46, 0.3);
+												padding: 16px 20px;
+												background: rgba(255, 255, 255, 0.03);
+												border: 1px solid rgba(255, 107, 107, 0.2);
 												border-left: 1px solid rgba(255, 255, 255, 0.08);
 												border-right: 1px solid rgba(255, 255, 255, 0.08);
 												border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 												border-bottom-left-radius: 12px;
 												border-bottom-right-radius: 12px;
-												color: #ff6b6b;
-												font-size: 13px;
 												backdrop-filter: blur(30px) saturate(150%);
 												-webkit-backdrop-filter: blur(30px) saturate(150%);
 											">
-												<div style="font-weight: 600;">❌ 업데이트 확인 실패</div>
-												<div style="margin-top: 4px; opacity: 0.9;">네트워크 연결을 확인하세요.</div>
+												<div style="
+													display: flex;
+													align-items: center;
+													gap: 12px;
+													color: rgba(255, 107, 107, 0.9);
+													font-size: 13px;
+													font-weight: 500;
+												">
+													<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+														<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+													</svg>
+													<div>
+														<div style="font-weight: 600; margin-bottom: 2px;">업데이트 확인 실패</div>
+														<div style="opacity: 0.8; font-size: 12px;">네트워크 연결을 확인하세요</div>
+													</div>
+												</div>
 											</div>
 										`;
 									}

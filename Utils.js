@@ -670,7 +670,7 @@ const Utils = {
 	/**
 	 * Current version of the lyrics-plus app
 	 */
-	currentVersion: "2.0.1",
+	currentVersion: "2.0.2",
 
 	/**
 	 * Check for updates from remote repository
@@ -787,12 +787,15 @@ const Utils = {
 	/**
 	 * Show update notification if available
 	 */
-		async showUpdateNotificationIfAvailable() {
+	async showUpdateNotificationIfAvailable() {
 		try {
 			const updateInfo = await this.checkForUpdates();
 
+			console.log('[Lyrics Plus] Update check result:', updateInfo);
+
 			// Don't show notification if there was an error
 			if (updateInfo.error) {
+				console.log('[Lyrics Plus] Update check error:', updateInfo.error);
 				return updateInfo;
 			}
 
@@ -800,19 +803,33 @@ const Utils = {
 				const updateKey = `lyrics-plus:update-dismissed:${updateInfo.latestVersion}`;
 				const isDismissed = localStorage.getItem(updateKey);
 
-				if (!isDismissed) {
-					Spicetify.showNotification(
-						`가사 플러스 업데이트 가능: v${updateInfo.latestVersion} (현재: v${updateInfo.currentVersion})`,
-						false,
-						5000
-					);
+				console.log('[Lyrics Plus] Update available:', updateInfo.latestVersion, 'Dismissed:', isDismissed);
 
-					// Mark this version as notified, but don't dismiss permanently
-					// Users can still see the notification again after restart
-					setTimeout(() => {
-						localStorage.setItem(updateKey, "notified");
-					}, 5000);
+				if (!isDismissed) {
+					// Store update info for the banner component
+					window.lyricsPlus_updateInfo = {
+						available: true,
+						currentVersion: updateInfo.currentVersion,
+						latestVersion: updateInfo.latestVersion,
+						releaseUrl: `https://github.com/ivLis-Studio/lyrics-plus/releases/tag/v${updateInfo.latestVersion}`
+					};
+
+					console.log('[Lyrics Plus] Update banner info stored:', window.lyricsPlus_updateInfo);
+
+					// Trigger re-render if lyrics container exists
+					if (window.lyricContainer) {
+						try {
+							console.log('[Lyrics Plus] Triggering lyricContainer re-render');
+							window.lyricContainer.forceUpdate();
+						} catch (e) {
+							console.error('[Lyrics Plus] Failed to trigger re-render:', e);
+						}
+					} else {
+						console.warn('[Lyrics Plus] lyricContainer not found');
+					}
 				}
+			} else {
+				console.log('[Lyrics Plus] Already up to date');
 			}
 
 			return updateInfo;
@@ -825,6 +842,77 @@ const Utils = {
 				error: error.message
 			};
 		}
+	},
+
+	/**
+	 * Dismiss update notification
+	 */
+	dismissUpdate(version) {
+		const updateKey = `lyrics-plus:update-dismissed:${version}`;
+		localStorage.setItem(updateKey, "dismissed");
+		window.lyricsPlus_updateInfo = null;
+		
+		// Trigger re-render
+		if (window.lyricContainer) {
+			try {
+				window.lyricContainer.forceUpdate();
+			} catch (e) {}
+		}
+	},
+
+	/**
+	 * Copy to clipboard using Spicetify API
+	 */
+	async copyToClipboard(text) {
+		try {
+			if (Spicetify?.Platform?.ClipboardAPI?.copy) {
+				await Spicetify.Platform.ClipboardAPI.copy(text);
+				return true;
+			}
+			// Fallback
+			if (navigator.clipboard?.writeText) {
+				await navigator.clipboard.writeText(text);
+				return true;
+			}
+			return false;
+		} catch (error) {
+			console.error('[Utils] Copy failed:', error);
+			return false;
+		}
+	},
+
+	/**
+	 * Detect platform
+	 */
+	detectPlatform() {
+		const userAgent = navigator.userAgent.toLowerCase();
+		if (userAgent.includes('win')) return 'windows';
+		if (userAgent.includes('mac')) return 'mac';
+		return 'linux';
+	},
+
+	/**
+	 * Get install command for current platform
+	 */
+	getInstallCommand() {
+		const commands = {
+			windows: 'iwr -useb https://ivlis.kr/lyrics-plus/install.ps1 | iex',
+			mac: 'curl -fsSL https://ivlis.kr/lyrics-plus/install.sh | sh',
+			linux: 'curl -fsSL https://ivlis.kr/lyrics-plus/install.sh | sh'
+		};
+		return commands[this.detectPlatform()];
+	},
+
+	/**
+	 * Get platform name in Korean
+	 */
+	getPlatformName() {
+		const names = {
+			windows: 'Windows PowerShell',
+			mac: 'Terminal (터미널)',
+			linux: 'Terminal'
+		};
+		return names[this.detectPlatform()];
 	},
 	
 	// Track-specific sync offset management

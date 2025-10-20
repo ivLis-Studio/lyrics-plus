@@ -66,6 +66,62 @@
 	100% { transform: rotate(360deg); }
 }
 
+@keyframes slideDown {
+	from {
+		opacity: 0;
+		transform: translateY(-12px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes expandDown {
+	from {
+		opacity: 0;
+		max-height: 0;
+	}
+	to {
+		opacity: 1;
+		max-height: 500px;
+	}
+}
+
+/* Update Banner Styles - Fluent Design */
+.lyrics-plus-update-banner {
+	animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lyrics-update-button-primary:hover {
+	background: rgba(255, 255, 255, 0.22) !important;
+	transform: scale(1.02);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.lyrics-update-button-primary:active {
+	transform: scale(0.98);
+}
+
+.lyrics-update-button-secondary:hover:not(:disabled) {
+	background: rgba(255, 255, 255, 0.12) !important;
+	transform: translateY(-1px);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.lyrics-update-button-secondary:active:not(:disabled) {
+	transform: translateY(0);
+}
+
+.lyrics-update-button-close:hover {
+	background: rgba(255, 255, 255, 0.1) !important;
+	color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.lyrics-update-button-close:active {
+	transform: scale(0.9);
+}
+
 @media (min-width: 768px) {
 	.container {
 		width: 750px;

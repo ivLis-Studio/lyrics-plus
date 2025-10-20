@@ -257,6 +257,230 @@ if (typeof window.kuromoji === 'undefined') {
 /** @type {React} */
 const react = Spicetify.React;
 const { useState, useEffect, useCallback, useMemo, useRef } = react;
+
+// Update Banner Component - Fluent Design Style
+const UpdateBanner = ({ updateInfo, onDismiss }) => {
+	const [copied, setCopied] = useState(false);
+	const [isExpanded, setIsExpanded] = useState(false);
+	const platform = Utils.detectPlatform();
+	const installCommand = Utils.getInstallCommand();
+	const platformName = Utils.getPlatformName();
+
+	const handleCopy = async () => {
+		const success = await Utils.copyToClipboard(installCommand);
+		if (success) {
+			setCopied(true);
+			Spicetify.showNotification('설치 명령어가 복사되었습니다');
+			setTimeout(() => setCopied(false), 2500);
+		} else {
+			Spicetify.showNotification('복사에 실패했습니다', true);
+		}
+	};
+
+	return react.createElement(
+		'div',
+		{
+			className: 'lyrics-plus-update-banner',
+			style: {
+				background: 'rgba(255, 255, 255, 0.05)',
+				border: '1px solid rgba(255, 255, 255, 0.1)',
+				borderRadius: '12px',
+				margin: '12px 16px',
+				backdropFilter: 'blur(40px) saturate(180%)',
+				WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+				boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.18), inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
+				animation: 'slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+				position: 'relative',
+				zIndex: 100,
+				overflow: 'hidden',
+				transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+			}
+		},
+		react.createElement(
+			'div',
+			{ 
+				style: { 
+					padding: '16px 20px',
+					display: 'flex',
+					justifyContent: 'space-between',
+					alignItems: 'center',
+					gap: '16px'
+				} 
+			},
+			react.createElement(
+				'div',
+				{ style: { flex: 1, minWidth: 0 } },
+				react.createElement(
+					'div',
+					{ 
+						style: { 
+							fontSize: '15px', 
+							fontWeight: '600',
+							color: 'rgba(255, 255, 255, 0.95)',
+							marginBottom: '6px',
+							letterSpacing: '-0.01em'
+						} 
+					},
+					'업데이트 사용 가능'
+				),
+				react.createElement(
+					'div',
+					{ 
+						style: { 
+							fontSize: '13px',
+							color: 'rgba(255, 255, 255, 0.6)',
+							lineHeight: '1.5'
+						} 
+					},
+					`버전 ${updateInfo.currentVersion} → ${updateInfo.latestVersion}`
+				)
+			),
+			react.createElement(
+				'div',
+				{ style: { display: 'flex', gap: '8px', alignItems: 'center' } },
+				react.createElement(
+					'button',
+					{
+						onClick: () => setIsExpanded(!isExpanded),
+						className: 'lyrics-update-button-primary',
+						style: {
+							background: 'rgba(255, 255, 255, 0.15)',
+							border: '1px solid rgba(255, 255, 255, 0.2)',
+							color: 'rgba(255, 255, 255, 0.95)',
+							padding: '8px 16px',
+							borderRadius: '8px',
+							cursor: 'pointer',
+							fontSize: '13px',
+							fontWeight: '600',
+							transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+							backdropFilter: 'blur(10px)',
+							letterSpacing: '-0.01em'
+						}
+					},
+					isExpanded ? '간단히' : '자세히'
+				),
+				react.createElement(
+					'button',
+					{
+						onClick: onDismiss,
+						className: 'lyrics-update-button-close',
+						style: {
+							background: 'transparent',
+							border: 'none',
+							color: 'rgba(255, 255, 255, 0.5)',
+							cursor: 'pointer',
+							fontSize: '20px',
+							padding: '4px 8px',
+							borderRadius: '6px',
+							transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+							lineHeight: '1',
+							display: 'flex',
+							alignItems: 'center',
+							justifyContent: 'center'
+						}
+					},
+					'×'
+				)
+			)
+		),
+		isExpanded && react.createElement(
+			'div',
+			{
+				style: {
+					padding: '0 20px 20px 20px',
+					borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+					animation: 'expandDown 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+				}
+			},
+			react.createElement(
+				'div',
+				{ style: { marginTop: '16px' } },
+				react.createElement(
+					'div',
+					{ 
+						style: { 
+							fontSize: '13px',
+							color: 'rgba(255, 255, 255, 0.7)',
+							marginBottom: '10px',
+							fontWeight: '500'
+						} 
+					},
+					platformName
+				),
+				react.createElement(
+					'div',
+					{
+						style: {
+							background: 'rgba(0, 0, 0, 0.25)',
+							border: '1px solid rgba(255, 255, 255, 0.08)',
+							borderRadius: '8px',
+							padding: '12px 14px',
+							fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+							fontSize: '12px',
+							color: 'rgba(255, 255, 255, 0.85)',
+							wordBreak: 'break-all',
+							lineHeight: '1.6',
+							marginBottom: '12px',
+							userSelect: 'all'
+						}
+					},
+					installCommand
+				)
+			),
+			react.createElement(
+				'div',
+				{ style: { display: 'flex', gap: '8px', marginTop: '12px' } },
+				react.createElement(
+					'button',
+					{
+						onClick: handleCopy,
+						className: 'lyrics-update-button-secondary',
+						disabled: copied,
+						style: {
+							flex: 1,
+							background: copied ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+							border: copied ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(255, 255, 255, 0.15)',
+							color: copied ? 'rgba(16, 185, 129, 1)' : 'rgba(255, 255, 255, 0.9)',
+							padding: '10px 16px',
+							borderRadius: '8px',
+							cursor: copied ? 'default' : 'pointer',
+							fontSize: '13px',
+							fontWeight: '600',
+							transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+							letterSpacing: '-0.01em'
+						}
+					},
+					copied ? '복사됨' : '명령어 복사'
+				),
+				react.createElement(
+					'a',
+					{
+						href: updateInfo.releaseUrl,
+						target: '_blank',
+						rel: 'noopener noreferrer',
+						style: {
+							flex: 1,
+							background: 'rgba(255, 255, 255, 0.08)',
+							border: '1px solid rgba(255, 255, 255, 0.15)',
+							color: 'rgba(255, 255, 255, 0.9)',
+							padding: '10px 16px',
+							borderRadius: '8px',
+							textDecoration: 'none',
+							fontSize: '13px',
+							fontWeight: '600',
+							transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+							display: 'flex',
+							alignItems: 'center',
+							justifyContent: 'center',
+							letterSpacing: '-0.01em'
+						}
+					},
+					'릴리즈 노트'
+				)
+			)
+		)
+	);
+};
 /** @type {import("react").ReactDOM | null} */
 let reactDOM = Spicetify.ReactDOM;
 
@@ -2524,7 +2748,17 @@ class LyricsContainer extends react.Component {
 
 	const topBarContent = typeof TopBarContent === "function"
 		? react.createElement(TopBarContent, topBarProps)
-		: null;		const out = react.createElement(
+		: null;
+
+		// Update banner component
+		const updateBanner = window.lyricsPlus_updateInfo?.available
+			? react.createElement(UpdateBanner, {
+				updateInfo: window.lyricsPlus_updateInfo,
+				onDismiss: () => Utils.dismissUpdate(window.lyricsPlus_updateInfo.latestVersion)
+			})
+			: null;
+
+		const out = react.createElement(
 			"div",
 			{
 				className: `lyrics-lyricsContainer-LyricsContainer${CONFIG.visual["fade-blur"] ? " blur-enabled" : ""}${
@@ -2538,6 +2772,8 @@ class LyricsContainer extends react.Component {
 			},
 			// Tab bar for mode switching
 			topBarContent,
+			// Update notification banner
+			updateBanner,
 			react.createElement("div", {
 				id: "lyrics-plus-gradient-background",
 				style: backgroundStyle,
