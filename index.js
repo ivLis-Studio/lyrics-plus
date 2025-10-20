@@ -238,16 +238,6 @@ if (typeof window.kuromoji === 'undefined') {
 								window.lyricContainer.forceUpdate();
 							} catch (e) {}
 						}
-						// Also try to refresh by simulating a track change
-						try {
-							const currentTrack = Spicetify.Player.data?.item?.uri;
-							if (currentTrack) {
-								// Small delay to ensure everything is ready
-								setTimeout(() => {
-									Spicetify.Player.playUri(currentTrack);
-								}, 200);
-							}
-						} catch (e) {}
 					}
 				})
 				.catch(err => {});
