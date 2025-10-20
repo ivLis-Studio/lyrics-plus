@@ -1,10 +1,50 @@
-# 업데이트 방법
-https://github.com/ivLis-Studio/lyrics-plus/releases/latest
-에서 최신버전 zip 파일을 다운로드 받고, 기존처럼 폴더에 붙여 넣은 후, 
+# 간편 설치 & 업데이트
+
+## Lyrics-Plus 설치 & 업데이트
+설치와 업데이트 모두 동일한 방법으로 아래 명령어 하나로 한 번에 가능합니다.
+
+Windows : 
+1. 시작 버튼을 누르고 "Windows Powershell" 프로그램을 실행합니다.
+2. 아래 코드를 복사해서 붙여넣기 합니다.
+    ```
+   iwr -useb https://ivlis.kr/lyrics-plus/install.ps1 | iex
+    ```
+3. 엔터를 누릅니다.
+
+Mac Os :
+1. Terminal (터미널) 앱을 실행합니다.
+2. 아래 코드를 복사해서 붙여넣기 합니다.
    ```
-   spicetify apply
+   curl -fsSL https://ivlis.kr/lyrics-plus/install.sh | sh
    ```
-명령어 실행하시면 됩니다.
+3. 엔터를 누릅니다
+
+## Spicetify 설치
+Lyrics-Plus 는 spicetify의 확장 프로그램으로, Spicetify 가 설치되어 있어야 사용할 수 있습니다.
+Spicetify 설치 방법은 아래를 참고하십시오.
+
+
+*주의* : 관리자 권한으로 실행하면 안됩니다.
+
+Windows : 
+1. 시작 버튼을 누르고 "Windows Powershell" 프로그램을 실행합니다.
+2. 아래 코드를 복사해서 붙여넣기 합니다.
+   ```
+   iwr -useb https://raw.githubusercontent.com/spicetify/cli/main/install.ps1 | iex
+   ```
+5. 엔터를 누릅니다.
+
+Mac Os :
+1. Terminal (터미널) 앱을 실행합니다.
+2. 아래 코드를 복사해서 붙여넣기 합니다.
+   ```
+   curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh
+   ```
+4. 엔터를 누릅니다
+
+설치 과정에서 Marketplace를 설치할지 물어보는 질문이 있습니다.
+Marketplace에서 다운로드 받을 수 있는 FullScreen 확장프로그램과 Lyrics-Plus의 궁합이 아주 좋으므로 설치를 권장합니다.
+설치 과정에서 영어로 묻는 질문에 엔터 또는 Y 로 설치 가능합니다.
 
 # Lyrics Plus (한국어 커스텀 버전)
 
@@ -38,7 +78,7 @@ Google의 LLM 모델을 사용하여 자연스럽고 정확한 가사 번역을 
 
 ---
 
-## 🚀 설치 방법
+## 🚀 수동 설치 방법 (자동 설치로 불가능한 경우 시도해보십시오.)
 
 ### 1. 사전 준비
 - Spotify (웹 버전 설치 필요, Microsoft Store 버전 불가)
