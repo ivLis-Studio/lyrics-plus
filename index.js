@@ -594,6 +594,10 @@ const CONFIG = {
 		"lines-before": localStorage.getItem("lyrics-plus:visual:lines-before") || "0",
 		"lines-after": localStorage.getItem("lyrics-plus:visual:lines-after") || "2",
 		"font-size": localStorage.getItem("lyrics-plus:visual:font-size") || "32",
+		"font-family": localStorage.getItem("lyrics-plus:visual:font-family") || "Pretendard Variable",
+		"original-font-family": localStorage.getItem("lyrics-plus:visual:original-font-family") || "Pretendard Variable",
+		"phonetic-font-family": localStorage.getItem("lyrics-plus:visual:phonetic-font-family") || "Pretendard Variable",
+		"translation-font-family": localStorage.getItem("lyrics-plus:visual:translation-font-family") || "Pretendard Variable",
 		"original-font-weight": localStorage.getItem("lyrics-plus:visual:original-font-weight") || "400",
 		"original-font-size": localStorage.getItem("lyrics-plus:visual:original-font-size") || "32",
 		"translation-font-weight": localStorage.getItem("lyrics-plus:visual:translation-font-weight") || "300",
@@ -2494,6 +2498,10 @@ class LyricsContainer extends react.Component {
 			"--lyrics-align-text": CONFIG.visual.alignment,
 			"--lyrics-font-size": `${CONFIG.visual["font-size"]}px`,
 			"--animation-tempo": this.state.tempo,
+			"--lyrics-font-family": CONFIG.visual["font-family"] || "var(--font-family)",
+			"--lyrics-original-font-family": CONFIG.visual["original-font-family"] || "var(--font-family)",
+			"--lyrics-phonetic-font-family": CONFIG.visual["phonetic-font-family"] || "var(--font-family)",
+			"--lyrics-translation-font-family": CONFIG.visual["translation-font-family"] || "var(--font-family)",
 		};
 
 		this.mousetrap.reset();
@@ -2612,6 +2620,10 @@ class LyricsContainer extends react.Component {
 			...this.styleVariables,
 			"--lyrics-align-text": CONFIG.visual.alignment,
 			"--lyrics-font-size": `${CONFIG.visual["font-size"]}px`,
+			"--lyrics-font-family": CONFIG.visual["font-family"] || "var(--font-family)",
+			"--lyrics-original-font-family": CONFIG.visual["original-font-family"] || "var(--font-family)",
+			"--lyrics-phonetic-font-family": CONFIG.visual["phonetic-font-family"] || "var(--font-family)",
+			"--lyrics-translation-font-family": CONFIG.visual["translation-font-family"] || "var(--font-family)",
 			"--lyrics-original-font-weight": CONFIG.visual["original-font-weight"],
 			"--lyrics-original-font-size": `${CONFIG.visual["original-font-size"]}px`,
 			"--lyrics-translation-font-weight": CONFIG.visual["translation-font-weight"],
@@ -2969,3 +2981,65 @@ class LyricsContainer extends react.Component {
 		this.fetchLyrics();
 	}
 }
+
+// 초기화 시 저장된 Google Fonts 로드
+(function loadGoogleFonts() {
+	const GOOGLE_FONTS = [
+		"Noto Sans KR",
+		"Nanum Gothic",
+		"Nanum Myeongjo",
+		"Black Han Sans",
+		"Do Hyeon",
+		"Jua",
+		"Nanum Gothic Coding",
+		"Gowun Batang",
+		"Gowun Dodum",
+		"IBM Plex Sans KR",
+		"Roboto",
+		"Open Sans",
+		"Lato",
+		"Montserrat",
+		"Poppins",
+		"Inter",
+		"Raleway",
+		"Oswald",
+		"Merriweather",
+		"Playfair Display"
+	];
+	
+	const fontsToLoad = new Set();
+	
+	// 전체 폰트 (레거시)
+	if (CONFIG.visual["font-family"] && GOOGLE_FONTS.includes(CONFIG.visual["font-family"])) {
+		fontsToLoad.add(CONFIG.visual["font-family"]);
+	}
+	
+	// 개별 폰트
+	if (CONFIG.visual["original-font-family"] && GOOGLE_FONTS.includes(CONFIG.visual["original-font-family"])) {
+		fontsToLoad.add(CONFIG.visual["original-font-family"]);
+	}
+	if (CONFIG.visual["phonetic-font-family"] && GOOGLE_FONTS.includes(CONFIG.visual["phonetic-font-family"])) {
+		fontsToLoad.add(CONFIG.visual["phonetic-font-family"]);
+	}
+	if (CONFIG.visual["translation-font-family"] && GOOGLE_FONTS.includes(CONFIG.visual["translation-font-family"])) {
+		fontsToLoad.add(CONFIG.visual["translation-font-family"]);
+	}
+	
+	// Google Fonts 로드
+	fontsToLoad.forEach(font => {
+		const linkId = `lyrics-plus-google-font-${font.replace(/ /g, "-")}`;
+		if (!document.getElementById(linkId)) {
+			const link = document.createElement("link");
+			link.id = linkId;
+			link.rel = "stylesheet";
+			// Pretendard는 CDN에서 로드
+			if (font === "Pretendard Variable") {
+				link.href = "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
+			} else {
+				link.href = `https://fonts.googleapis.com/css2?family=${font.replace(/ /g, "+")}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+			}
+			document.head.appendChild(link);
+		}
+	});
+})();
+

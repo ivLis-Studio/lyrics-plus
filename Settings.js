@@ -313,6 +313,155 @@ const ConfigInput = ({ name, defaultValue, onChange = () => {} }) => {
 	);
 };
 
+// Google Fonts 목록 (한글 + 인기 라틴 폰트)
+const GOOGLE_FONTS = [
+	"Pretendard Variable",
+	"Noto Sans KR",
+	"Nanum Gothic",
+	"Nanum Myeongjo",
+	"Black Han Sans",
+	"Do Hyeon",
+	"Jua",
+	"Nanum Gothic Coding",
+	"Gowun Batang",
+	"Gowun Dodum",
+	"IBM Plex Sans KR",
+	"Roboto",
+	"Open Sans",
+	"Lato",
+	"Montserrat",
+	"Poppins",
+	"Inter",
+	"Raleway",
+	"Oswald",
+	"Merriweather",
+	"Playfair Display"
+];
+
+const ConfigFontSelector = ({ name, info, defaultValue, onChange = () => {} }) => {
+	const [useCustomFont, setUseCustomFont] = useState(() => {
+		// 기본값이 Google Fonts 목록에 없으면 커스텀 폰트 사용 중
+		return defaultValue && !GOOGLE_FONTS.includes(defaultValue);
+	});
+	const [selectedFont, setSelectedFont] = useState(() => {
+		if (defaultValue && GOOGLE_FONTS.includes(defaultValue)) {
+			return defaultValue;
+		}
+		return "Pretendard Variable";
+	});
+	const [customFont, setCustomFont] = useState(() => {
+		if (defaultValue && !GOOGLE_FONTS.includes(defaultValue)) {
+			return defaultValue;
+		}
+		return "";
+	});
+
+	useEffect(() => {
+		const isCustom = defaultValue && !GOOGLE_FONTS.includes(defaultValue);
+		setUseCustomFont(isCustom);
+		if (isCustom) {
+			setCustomFont(defaultValue);
+		} else if (defaultValue) {
+			setSelectedFont(defaultValue);
+		}
+	}, [defaultValue]);
+
+	const handleFontChange = (event) => {
+		const font = event.target.value;
+		setSelectedFont(font);
+		if (!useCustomFont) {
+			onChange(font);
+		}
+	};
+
+	const handleCustomFontChange = (event) => {
+		const font = event.target.value;
+		setCustomFont(font);
+		if (useCustomFont) {
+			onChange(font);
+		}
+	};
+
+	const handleCheckboxChange = () => {
+		const newUseCustom = !useCustomFont;
+		setUseCustomFont(newUseCustom);
+		if (newUseCustom) {
+			onChange(customFont || "");
+		} else {
+			onChange(selectedFont);
+		}
+	};
+
+	const commonStyle = {
+		width: "200px",
+		height: "32px",
+		padding: "4px 8px",
+		fontSize: "14px",
+		border: "1px solid var(--spice-button-disabled)",
+		borderRadius: "4px",
+		backgroundColor: "var(--spice-button)",
+		color: "var(--spice-text)",
+		boxSizing: "border-box"
+	};
+
+	const fontSelector = react.createElement(
+		"div",
+		{ style: { display: "flex", gap: "10px", alignItems: "center" } },
+		useCustomFont
+			? react.createElement("input", {
+					type: "text",
+					value: customFont,
+					onChange: handleCustomFontChange,
+					placeholder: "폰트명 입력 (예: Arial, 맑은 고딕)",
+					style: commonStyle
+				})
+			: react.createElement("select", {
+					value: selectedFont,
+					onChange: handleFontChange,
+					style: commonStyle
+				},
+				GOOGLE_FONTS.map(font =>
+					react.createElement("option", { key: font, value: font }, font)
+				)
+			),
+		react.createElement(ButtonSVG, {
+			icon: Spicetify.SVGIcons.edit,
+			active: useCustomFont,
+			onClick: handleCheckboxChange
+		})
+	);
+
+	// name이 있으면 전체 setting-row로 래핑, 없으면 컨트롤만 반환
+	if (name) {
+		return react.createElement(
+			"div",
+			{ className: "setting-row" },
+			react.createElement(
+				"div",
+				{ className: "setting-row-content" },
+				react.createElement(
+					"div",
+					{ className: "setting-row-left" },
+					react.createElement("div", { className: "setting-name" }, name),
+					info && react.createElement("div", {
+						className: "setting-description",
+						dangerouslySetInnerHTML: {
+							__html: info,
+						},
+					})
+				),
+				react.createElement(
+					"div",
+					{ className: "setting-row-right" },
+					fontSelector
+				)
+			)
+		);
+	}
+
+	return fontSelector;
+};
+
 const ConfigAdjust = ({ name, defaultValue, step, min, max, onChange = () => {} }) => {
 	const [value, setValue] = useState(defaultValue);
 
@@ -1749,6 +1898,9 @@ const ConfigModal = () => {
 							style: {
 								fontSize: `${CONFIG.visual["original-font-size"] || 20}px`,
 								fontWeight: CONFIG.visual["original-font-weight"] || "400",
+								fontFamily: CONFIG.visual["separate-fonts"] 
+									? (CONFIG.visual["original-font-family"] || CONFIG.visual["font-family"] || "var(--font-family)")
+									: (CONFIG.visual["font-family"] || "var(--font-family)"),
 								textAlign: CONFIG.visual["alignment"] || "left",
 								opacity: (CONFIG.visual["original-opacity"] || 100) / 100,
 								textShadow: CONFIG.visual["text-shadow-enabled"] ?
@@ -1761,11 +1913,14 @@ const ConfigModal = () => {
 							style: {
 								fontSize: `${CONFIG.visual["phonetic-font-size"] || 20}px`,
 								fontWeight: CONFIG.visual["phonetic-font-weight"] || "400",
+								fontFamily: CONFIG.visual["separate-fonts"] 
+									? (CONFIG.visual["phonetic-font-family"] || CONFIG.visual["font-family"] || "var(--font-family)")
+									: (CONFIG.visual["font-family"] || "var(--font-family)"),
 								textAlign: CONFIG.visual["alignment"] || "left",
 								lineHeight: "1.3",
 								opacity: (CONFIG.visual["phonetic-opacity"] || 70) / 100,
 								color: "rgba(255,255,255,0.7)",
-								marginTop: `${parseInt(CONFIG.visual["phonetic-spacing"]) || 4}px`,
+								marginTop: `${(parseInt(CONFIG.visual["phonetic-spacing"]) || 4) - 10}px`,
 								textShadow: CONFIG.visual["text-shadow-enabled"] ?
 									`0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"}${Math.round((CONFIG.visual["text-shadow-opacity"] || 50) * 2.55).toString(16).padStart(2, '0')}` :
 									"none"
@@ -1776,6 +1931,9 @@ const ConfigModal = () => {
 							style: {
 								fontSize: `${CONFIG.visual["translation-font-size"] || 16}px`,
 								fontWeight: CONFIG.visual["translation-font-weight"] || "400",
+								fontFamily: CONFIG.visual["separate-fonts"] 
+									? (CONFIG.visual["translation-font-family"] || CONFIG.visual["font-family"] || "var(--font-family)")
+									: (CONFIG.visual["font-family"] || "var(--font-family)"),
 								textAlign: CONFIG.visual["alignment"] || "left",
 								lineHeight: "1.4",
 								opacity: (CONFIG.visual["translation-opacity"] || 100) / 100,
@@ -1789,6 +1947,58 @@ const ConfigModal = () => {
 					)
 				),
 				react.createElement(SectionTitle, { title: "원문 스타일", subtitle: "가사 원문의 글꼴 설정" }),
+				react.createElement(
+					"div",
+					{ className: "setting-row" },
+					react.createElement(
+						"div",
+						{ className: "setting-row-content" },
+						react.createElement(
+							"div",
+							{ className: "setting-row-left" },
+							react.createElement("div", { className: "setting-name" }, "폰트 패밀리"),
+							react.createElement("div", { className: "setting-description" }, "원문 가사에 적용할 폰트를 선택하세요")
+						),
+						react.createElement(
+							"div",
+							{ className: "setting-row-right font-selector-container" },
+							react.createElement(ConfigFontSelector, {
+								name: "",
+								defaultValue: CONFIG.visual["original-font-family"] || "Pretendard Variable",
+								onChange: (value) => {
+									CONFIG.visual["original-font-family"] = value;
+									localStorage.setItem(`${APP_NAME}:visual:original-font-family`, value);
+									
+									if (GOOGLE_FONTS.includes(value)) {
+										const linkId = "lyrics-plus-google-font-original";
+										let link = document.getElementById(linkId);
+										if (!link) {
+											link = document.createElement("link");
+											link.id = linkId;
+											link.rel = "stylesheet";
+											document.head.appendChild(link);
+										}
+										if (value === "Pretendard Variable") {
+											link.href = "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
+										} else {
+											link.href = `https://fonts.googleapis.com/css2?family=${value.replace(/ /g, "+")}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+										}
+									}
+									
+									const lyricsPreview = document.getElementById("lyrics-preview");
+									if (lyricsPreview) {
+										lyricsPreview.style.fontFamily = value;
+									}
+									
+									lyricContainerUpdate?.();
+									window.dispatchEvent(new CustomEvent("lyrics-plus", {
+										detail: { type: "config", name: "original-font-family", value },
+									}));
+								}
+							})
+						)
+					)
+				),
 				react.createElement(OptionList, {
 					items: [
 						{
@@ -1845,6 +2055,58 @@ const ConfigModal = () => {
 					},
 				}),
 				react.createElement(SectionTitle, { title: "발음 스타일", subtitle: "로마자 발음 표기(Romaji, Romaja, Pinyin)의 글꼴 설정" }),
+				react.createElement(
+					"div",
+					{ className: "setting-row" },
+					react.createElement(
+						"div",
+						{ className: "setting-row-content" },
+						react.createElement(
+							"div",
+							{ className: "setting-row-left" },
+							react.createElement("div", { className: "setting-name" }, "폰트 패밀리"),
+							react.createElement("div", { className: "setting-description" }, "로마자 발음 표기에 적용할 폰트를 선택하세요")
+						),
+						react.createElement(
+							"div",
+							{ className: "setting-row-right font-selector-container" },
+							react.createElement(ConfigFontSelector, {
+								name: "",
+								defaultValue: CONFIG.visual["phonetic-font-family"] || "Pretendard Variable",
+								onChange: (value) => {
+									CONFIG.visual["phonetic-font-family"] = value;
+									localStorage.setItem(`${APP_NAME}:visual:phonetic-font-family`, value);
+									
+									if (GOOGLE_FONTS.includes(value)) {
+										const linkId = "lyrics-plus-google-font-phonetic";
+										let link = document.getElementById(linkId);
+										if (!link) {
+											link = document.createElement("link");
+											link.id = linkId;
+											link.rel = "stylesheet";
+											document.head.appendChild(link);
+										}
+										if (value === "Pretendard Variable") {
+											link.href = "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
+										} else {
+											link.href = `https://fonts.googleapis.com/css2?family=${value.replace(/ /g, "+")}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+										}
+									}
+									
+									const phoneticPreview = document.getElementById("phonetic-preview");
+									if (phoneticPreview) {
+										phoneticPreview.style.fontFamily = value;
+									}
+									
+									lyricContainerUpdate?.();
+									window.dispatchEvent(new CustomEvent("lyrics-plus", {
+										detail: { type: "config", name: "phonetic-font-family", value },
+									}));
+								}
+							})
+						)
+					)
+				),
 				react.createElement(OptionList, {
 					items: [
 						{
@@ -1912,6 +2174,58 @@ const ConfigModal = () => {
 					},
 				}),
 				react.createElement(SectionTitle, { title: "번역문 스타일", subtitle: "번역된 가사의 글꼴 설정" }),
+				react.createElement(
+					"div",
+					{ className: "setting-row" },
+					react.createElement(
+						"div",
+						{ className: "setting-row-content" },
+						react.createElement(
+							"div",
+							{ className: "setting-row-left" },
+							react.createElement("div", { className: "setting-name" }, "폰트 패밀리"),
+							react.createElement("div", { className: "setting-description" }, "번역된 가사에 적용할 폰트를 선택하세요")
+						),
+						react.createElement(
+							"div",
+							{ className: "setting-row-right font-selector-container" },
+							react.createElement(ConfigFontSelector, {
+								name: "",
+								defaultValue: CONFIG.visual["translation-font-family"] || "Pretendard Variable",
+								onChange: (value) => {
+									CONFIG.visual["translation-font-family"] = value;
+									localStorage.setItem(`${APP_NAME}:visual:translation-font-family`, value);
+									
+									if (GOOGLE_FONTS.includes(value)) {
+										const linkId = "lyrics-plus-google-font-translation";
+										let link = document.getElementById(linkId);
+										if (!link) {
+											link = document.createElement("link");
+											link.id = linkId;
+											link.rel = "stylesheet";
+											document.head.appendChild(link);
+										}
+										if (value === "Pretendard Variable") {
+											link.href = "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
+										} else {
+											link.href = `https://fonts.googleapis.com/css2?family=${value.replace(/ /g, "+")}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+										}
+									}
+									
+									const translationPreview = document.getElementById("translation-preview");
+									if (translationPreview) {
+										translationPreview.style.fontFamily = value;
+									}
+									
+									lyricContainerUpdate?.();
+									window.dispatchEvent(new CustomEvent("lyrics-plus", {
+										detail: { type: "config", name: "translation-font-family", value },
+									}));
+								}
+							})
+						)
+					)
+				),
 				react.createElement(OptionList, {
 					items: [
 						{
