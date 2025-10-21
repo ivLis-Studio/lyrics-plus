@@ -100,9 +100,9 @@ Google의 LLM 모델을 사용하여 자연스럽고 정확한 가사 번역을 
 ## 🛠️ 초기 설정
 
 1. Spotify 실행 후 Lyrics Plus 앱 열기
-2. 아바타 클릭 → **Lyrics Plus config** 선택
-3. GEMINI API 키 입력 API 발급은 여기서 -> https://aistudio.google.com/apikey?hl=ko
-4. 음악 재생 후 가사 영역에 마우스 호버 → 번역 버튼(⇄) 클릭하여 번역 모드 활성화
+2. 우측 하단 설정 버튼 -> 고급 -> Gemini API 키 입력
+    ㄴ GEMINI API 키 입력 API 발급은 여기서 -> https://aistudio.google.com/apikey?hl=ko
+3. 음악 재생 후 가사 영역에 마우스 호버 → 변환 버튼클릭하여 발음 및 번역 모드 활성화
 
 ---
 
