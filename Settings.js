@@ -826,6 +826,96 @@ const ConfigModal = () => {
 		return !!document.getElementById("fad-lyrics-plus-container");
 	}, []);
 
+	// 컴포넌트 마운트 시 저장된 폰트 설정 로드 및 Google Font 링크 추가
+	react.useEffect(() => {
+		const loadFont = (fontFamily, linkId) => {
+			console.log(`[Lyrics Plus] Attempting to load font: ${fontFamily} (${linkId})`);
+			if (fontFamily && GOOGLE_FONTS.includes(fontFamily)) {
+				let link = document.getElementById(linkId);
+				if (!link) {
+					link = document.createElement("link");
+					link.id = linkId;
+					link.rel = "stylesheet";
+					document.head.appendChild(link);
+					console.log(`[Lyrics Plus] Created new link element for: ${fontFamily}`);
+				}
+				if (fontFamily === "Pretendard Variable") {
+					link.href = "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
+				} else {
+					link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, "+")}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+				}
+				console.log(`[Lyrics Plus] Font link href set to: ${link.href}`);
+			} else {
+				console.log(`[Lyrics Plus] Font ${fontFamily} not in GOOGLE_FONTS list or invalid`);
+			}
+		};
+
+		// 기본 폰트 로드 (separate-fonts가 false일 때 사용)
+		const baseFont = CONFIG.visual["font-family"];
+		console.log(`[Lyrics Plus] Base font from CONFIG: ${baseFont}`);
+		loadFont(baseFont, "lyrics-plus-google-font-base");
+		
+		// 원문 폰트 로드
+		const originalFont = CONFIG.visual["original-font-family"];
+		console.log(`[Lyrics Plus] Original font from CONFIG: ${originalFont}`);
+		loadFont(originalFont, "lyrics-plus-google-font-original");
+		
+		// 발음 폰트 로드
+		const phoneticFont = CONFIG.visual["phonetic-font-family"];
+		console.log(`[Lyrics Plus] Phonetic font from CONFIG: ${phoneticFont}`);
+		loadFont(phoneticFont, "lyrics-plus-google-font-phonetic");
+		
+		// 번역 폰트 로드
+		const translationFont = CONFIG.visual["translation-font-family"];
+		console.log(`[Lyrics Plus] Translation font from CONFIG: ${translationFont}`);
+		loadFont(translationFont, "lyrics-plus-google-font-translation");
+	}, []);
+
+	// 외관 탭으로 전환될 때 미리보기 폰트 강제 업데이트
+	react.useEffect(() => {
+		if (activeTab === "appearance") {
+			console.log(`[Lyrics Plus] Appearance tab activated, updating preview fonts`);
+			// 약간의 지연을 주어 DOM이 렌더링된 후 실행
+			setTimeout(() => {
+				const lyricsPreview = document.getElementById("lyrics-preview");
+				const phoneticPreview = document.getElementById("phonetic-preview");
+				const translationPreview = document.getElementById("translation-preview");
+				
+				const originalFont = CONFIG.visual["original-font-family"];
+				const phoneticFont = CONFIG.visual["phonetic-font-family"];
+				const translationFont = CONFIG.visual["translation-font-family"];
+				
+				console.log(`[Lyrics Plus] Fonts - original: ${originalFont}, phonetic: ${phoneticFont}, translation: ${translationFont}`);
+				
+				if (lyricsPreview) {
+					// 기본값으로 초기화
+					lyricsPreview.style.fontFamily = "var(--font-family)";
+					// 짧은 지연 후 실제 폰트 적용
+					setTimeout(() => {
+						console.log(`[Lyrics Plus] Setting lyrics preview font to: ${originalFont}`);
+						lyricsPreview.style.fontFamily = originalFont || "Pretendard Variable";
+					}, 10);
+				}
+				
+				if (phoneticPreview) {
+					phoneticPreview.style.fontFamily = "var(--font-family)";
+					setTimeout(() => {
+						console.log(`[Lyrics Plus] Setting phonetic preview font to: ${phoneticFont}`);
+						phoneticPreview.style.fontFamily = phoneticFont || "Pretendard Variable";
+					}, 10);
+				}
+				
+				if (translationPreview) {
+					translationPreview.style.fontFamily = "var(--font-family)";
+					setTimeout(() => {
+						console.log(`[Lyrics Plus] Setting translation preview font to: ${translationFont}`);
+						translationPreview.style.fontFamily = translationFont || "Pretendard Variable";
+					}, 10);
+				}
+			}, 50);
+		}
+	}, [activeTab]);
+
 	const HeaderSection = () => {
 		return react.createElement(
 			"div",
@@ -911,7 +1001,7 @@ const ConfigModal = () => {
 /* 전체 컨테이너 - iOS 18 스타일 */
 #${APP_NAME}-config-container {
     padding: 0;
-    height: 90vh;
+    height: 80vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -966,7 +1056,7 @@ const ConfigModal = () => {
     background: #1c1c1e;
     border: none;
     border-radius: 10px;
-    color: #007aff;
+    color: #ffffffff;
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 14px;
@@ -1898,9 +1988,7 @@ const ConfigModal = () => {
 							style: {
 								fontSize: `${CONFIG.visual["original-font-size"] || 20}px`,
 								fontWeight: CONFIG.visual["original-font-weight"] || "400",
-								fontFamily: CONFIG.visual["separate-fonts"] 
-									? (CONFIG.visual["original-font-family"] || CONFIG.visual["font-family"] || "var(--font-family)")
-									: (CONFIG.visual["font-family"] || "var(--font-family)"),
+								fontFamily: CONFIG.visual["original-font-family"] || "Pretendard Variable",
 								textAlign: CONFIG.visual["alignment"] || "left",
 								opacity: (CONFIG.visual["original-opacity"] || 100) / 100,
 								textShadow: CONFIG.visual["text-shadow-enabled"] ?
@@ -1913,9 +2001,7 @@ const ConfigModal = () => {
 							style: {
 								fontSize: `${CONFIG.visual["phonetic-font-size"] || 20}px`,
 								fontWeight: CONFIG.visual["phonetic-font-weight"] || "400",
-								fontFamily: CONFIG.visual["separate-fonts"] 
-									? (CONFIG.visual["phonetic-font-family"] || CONFIG.visual["font-family"] || "var(--font-family)")
-									: (CONFIG.visual["font-family"] || "var(--font-family)"),
+								fontFamily: CONFIG.visual["phonetic-font-family"] || "Pretendard Variable",
 								textAlign: CONFIG.visual["alignment"] || "left",
 								lineHeight: "1.3",
 								opacity: (CONFIG.visual["phonetic-opacity"] || 70) / 100,
@@ -1931,9 +2017,7 @@ const ConfigModal = () => {
 							style: {
 								fontSize: `${CONFIG.visual["translation-font-size"] || 16}px`,
 								fontWeight: CONFIG.visual["translation-font-weight"] || "400",
-								fontFamily: CONFIG.visual["separate-fonts"] 
-									? (CONFIG.visual["translation-font-family"] || CONFIG.visual["font-family"] || "var(--font-family)")
-									: (CONFIG.visual["font-family"] || "var(--font-family)"),
+								fontFamily: CONFIG.visual["translation-font-family"] || "Pretendard Variable",
 								textAlign: CONFIG.visual["alignment"] || "left",
 								lineHeight: "1.4",
 								opacity: (CONFIG.visual["translation-opacity"] || 100) / 100,
