@@ -2975,9 +2975,17 @@ class LyricsContainer extends react.Component {
 	}
 
 		lockIn(mode) {
-		CONFIG.locked = mode;
-		localStorage.setItem("lyrics-plus:lock-mode", mode.toString());
-		this.setState({ lockMode: mode });
+		// 토글: 이미 같은 모드로 고정되어 있으면 해제
+		if (this.state.lockMode === mode) {
+			CONFIG.locked = -1;
+			localStorage.removeItem("lyrics-plus:lock-mode");
+			this.setState({ lockMode: -1 });
+		} else {
+			// 새로운 모드로 고정
+			CONFIG.locked = mode;
+			localStorage.setItem("lyrics-plus:lock-mode", mode.toString());
+			this.setState({ lockMode: mode });
+		}
 		this.fetchLyrics();
 	}
 }
