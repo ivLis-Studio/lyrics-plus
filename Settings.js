@@ -233,6 +233,228 @@ const ConfigColorPicker = ({ name, defaultValue, onChange = () => {} }) => {
 	);
 };
 
+
+
+const ColorPresetSelector = ({ name, defaultValue, onChange = () => {} }) => {
+	const [selectedColor, setSelectedColor] = useState(defaultValue);
+	const [showAll, setShowAll] = useState(false);
+	
+	useEffect(() => {
+		setSelectedColor(defaultValue);
+	}, [defaultValue]);
+	
+	// 엄선된 인기 색상 (24개)
+	const colorPresets = [
+		{ name: '블랙', color: '#000000' },
+		{ name: '차콜', color: '#1a1a1a' },
+		{ name: '다크 슬레이트', color: '#334155' },
+		{ name: '그레이', color: '#64748b' },
+		
+		{ name: '다크 네이비', color: '#0f172a' },
+		{ name: '네이비', color: '#1e3a8a' },
+		{ name: '로얄 블루', color: '#2563eb' },
+		{ name: '스카이', color: '#0ea5e9' },
+		
+		{ name: '인디고', color: '#4f46e5' },
+		{ name: '퍼플', color: '#8b5cf6' },
+		{ name: '푸시아', color: '#d946ef' },
+		{ name: '핑크', color: '#ec4899' },
+		
+		{ name: '와인', color: '#7f1d1d' },
+		{ name: '레드', color: '#dc2626' },
+		{ name: '오렌지', color: '#f97316' },
+		{ name: '앰버', color: '#f59e0b' },
+		
+		{ name: '골드', color: '#ca8a04' },
+		{ name: '라임', color: '#84cc16' },
+		{ name: '그린', color: '#22c55e' },
+		{ name: '에메랄드', color: '#10b981' },
+		
+		{ name: '틸', color: '#14b8a6' },
+		{ name: '청록', color: '#06b6d4' },
+		{ name: '브라운', color: '#92400e' },
+		{ name: '초콜릿', color: '#78350f' }
+	];
+	
+	const handleColorClick = (color) => {
+		setSelectedColor(color);
+		onChange(color);
+	};
+	
+	// 현재 선택된 색상 찾기
+	const selectedPreset = colorPresets.find(p => p.color === selectedColor);
+	
+	return react.createElement(
+		'div',
+		{ style: { display: 'flex', flexDirection: 'column', gap: '10px', width: '300px' } },
+		// 현재 선택된 색상 표시
+		react.createElement(
+			'div',
+			{
+				style: {
+					display: 'flex',
+					alignItems: 'center',
+					gap: '12px',
+					padding: '8px 12px',
+					backgroundColor: 'var(--spice-button)',
+					borderRadius: '8px',
+					border: '1px solid var(--spice-button)',
+					width: '100%'
+				}
+			},
+			react.createElement('div', {
+				style: {
+					width: '32px',
+					height: '32px',
+					borderRadius: '6px',
+					backgroundColor: selectedColor,
+					border: '2px solid var(--spice-text)',
+					boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+					flexShrink: '0'
+				}
+			}),
+			react.createElement('div', {
+				style: {
+					display: 'flex',
+					flexDirection: 'column',
+					flex: '1',
+					minWidth: '0',
+					overflow: 'hidden'
+				}
+			},
+				react.createElement('span', {
+					style: {
+						color: 'var(--spice-text)',
+						fontSize: '13px',
+						fontWeight: '500',
+						whiteSpace: 'nowrap',
+						overflow: 'hidden',
+						textOverflow: 'ellipsis'
+					}
+				}, selectedPreset ? selectedPreset.name : '사용자 지정'),
+				react.createElement('span', {
+					style: {
+						color: 'var(--spice-subtext)',
+						fontSize: '11px',
+						fontFamily: 'monospace',
+						whiteSpace: 'nowrap'
+					}
+				}, selectedColor.toUpperCase())
+			),
+			react.createElement('button', {
+				onClick: () => setShowAll(!showAll),
+				style: {
+					padding: '6px 12px',
+					backgroundColor: 'transparent',
+					color: 'var(--spice-text)',
+					border: '1px solid var(--spice-text)',
+					borderRadius: '6px',
+					fontSize: '12px',
+					cursor: 'pointer',
+					transition: 'all 0.2s ease',
+					flexShrink: '0',
+					whiteSpace: 'nowrap'
+				},
+				onMouseEnter: (e) => {
+					e.target.style.backgroundColor = 'var(--spice-text)';
+					e.target.style.color = 'var(--spice-card)';
+				},
+				onMouseLeave: (e) => {
+					e.target.style.backgroundColor = 'transparent';
+					e.target.style.color = 'var(--spice-text)';
+				}
+			}, showAll ? '접기 ▲' : '더보기 ▼')
+		),
+		// 색상 팔레트
+		showAll && react.createElement(
+			'div',
+			{
+				style: {
+					display: 'grid',
+					gridTemplateColumns: 'repeat(6, 1fr)',
+					gap: '6px',
+					padding: '12px',
+					backgroundColor: 'rgba(var(--spice-rgb-button), 0.3)',
+					borderRadius: '8px',
+					border: '1px solid var(--spice-button)'
+				}
+			},
+			...colorPresets.map((preset, index) =>
+				react.createElement(
+					'button',
+					{
+						key: index,
+						onClick: () => handleColorClick(preset.color),
+						title: preset.name,
+						'aria-label': preset.name,
+						style: {
+							width: '100%',
+							aspectRatio: '1',
+							borderRadius: '6px',
+							backgroundColor: preset.color,
+							border: selectedColor === preset.color 
+								? '2.5px solid var(--spice-text)' 
+								: '1.5px solid rgba(0,0,0,0.2)',
+							cursor: 'pointer',
+							transition: 'all 0.15s ease',
+							outline: 'none',
+							boxShadow: selectedColor === preset.color 
+								? '0 0 0 3px rgba(var(--spice-rgb-text), 0.2), 0 2px 4px rgba(0,0,0,0.2)' 
+								: '0 1px 2px rgba(0,0,0,0.1)'
+						},
+						onMouseEnter: (e) => {
+							e.target.style.transform = 'scale(1.1)';
+							e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+						},
+						onMouseLeave: (e) => {
+							e.target.style.transform = 'scale(1)';
+							e.target.style.boxShadow = selectedColor === preset.color 
+								? '0 0 0 3px rgba(var(--spice-rgb-text), 0.2), 0 2px 4px rgba(0,0,0,0.2)' 
+								: '0 1px 2px rgba(0,0,0,0.1)';
+						}
+					}
+				)
+			)
+		)
+	);
+};
+
+const ConfigWarning = ({ message }) => {
+	return react.createElement(
+		"div",
+		{
+			className: "setting-row",
+			style: {
+				backgroundColor: "rgba(var(--spice-rgb-warning), 0.25)"
+			}
+		},
+		react.createElement(
+			"div",
+			{ className: "setting-row-content" },
+			react.createElement(
+				"div",
+				{ className: "setting-row-left" },
+				react.createElement(
+					"div",
+					{ 
+						className: "setting-name",
+						style: { color: "var(--spice-text)", fontWeight: "600" }
+					},
+					"ℹ️ 단색 배경 사용 중"
+				),
+				react.createElement(
+					"div",
+					{
+						className: "setting-description",
+						style: { color: "var(--spice-subtext)" }
+					},
+					message
+				)
+			)
+		)
+	);
+};
+
 const ConfigSelection = ({ name, defaultValue, options, disabled, onChange = () => {} }) => {
 	const [value, setValue] = useState(defaultValue);
 
@@ -720,16 +942,16 @@ const OptionList = ({ type, items, onChange }) => {
 		return () => document.removeEventListener("lyrics-plus", eventListener);
 	}, []);
 
-	const renderedItems = itemList.map((item, index) => {
+	const renderedItems = (itemList || []).map((item, index) => {
 		if (!item || (item.when && !item.when())) {
 			return;
 		}
 
 		const onChangeItem = item.onChange || onChange;
-		const isDisabled = item.disabled || false;
+		const isDisabled = typeof item.disabled === "function" ? item.disabled() : (item.disabled || false);
 
 		// ConfigButton, ConfigInput, ConfigHotkey는 자체적으로 setting-row를 만들므로 wrapper 불필요
-		if (item.type === ConfigButton || item.type === ConfigInput || item.type === ConfigHotkey) {
+		if (item.type === ConfigButton || item.type === ConfigInput || item.type === ConfigHotkey || item.type === ConfigWarning) {
 			return react.createElement(item.type, {
 				...item,
 				key: index,
@@ -1897,11 +2119,33 @@ const ConfigModal = () => {
 					disabled: isFadActive,
 				},
 				{
+					desc: "단색 배경",
+					info: "사용자 지정 단색을 배경으로 사용합니다",
+					key: "solid-background",
+					type: ConfigSlider,
+					disabled: isFadActive,
+				},
+				{
+					desc: "단색 배경 색상",
+					key: "solid-background-color",
+					info: "단색 배경에 사용할 색상을 선택하세요",
+					type: ColorPresetSelector,
+					disabled: isFadActive,
+					when: () => CONFIG.visual["solid-background"],
+				},
+				{
+					desc: "",
+					key: "solid-background-warning",
+					type: ConfigWarning,
+					message: "단색 배경을 사용할 때는 배경 밝기 조절이 적용되지 않습니다.",
+					when: () => CONFIG.visual["solid-background"],
+				},
+				{
 					desc: "배경 밝기",
 					key: "background-brightness",
 					info: "배경의 밝기 수준을 조절합니다 (0-100%)",
 					type: ConfigSliderRange,
-					disabled: isFadActive,
+					disabled: () => isFadActive || CONFIG.visual["solid-background"],
 					min: 0,
 					max: 100,
 					step: 1,
@@ -1909,13 +2153,22 @@ const ConfigModal = () => {
 				},
 			],
 			onChange: (name, value) => {
-				// 컬러풀 배경과 앨범 커버 배경은 상호 배타적으로 동작
+				// 컬러풀 배경, 앨범 커버 배경, 단색 배경은 상호 배타적으로 동작
 				if (name === "colorful" && value) {
 					CONFIG.visual["gradient-background"] = false;
+					CONFIG.visual["solid-background"] = false;
 					StorageManager.saveConfig("gradient-background", false);
+					StorageManager.saveConfig("solid-background", false);
 				} else if (name === "gradient-background" && value) {
 					CONFIG.visual["colorful"] = false;
+					CONFIG.visual["solid-background"] = false;
 					StorageManager.saveConfig("colorful", false);
+					StorageManager.saveConfig("solid-background", false);
+				} else if (name === "solid-background" && value) {
+					CONFIG.visual["colorful"] = false;
+					CONFIG.visual["gradient-background"] = false;
+					StorageManager.saveConfig("colorful", false);
+					StorageManager.saveConfig("gradient-background", false);
 				}
 				
 				CONFIG.visual[name] = value;

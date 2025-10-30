@@ -585,6 +585,8 @@ const CONFIG = {
 	colorful: StorageManager.get("lyrics-plus:visual:colorful"),
 	"gradient-background": StorageManager.get("lyrics-plus:visual:gradient-background"),
 	"background-brightness": localStorage.getItem("lyrics-plus:visual:background-brightness") || "80",
+	"solid-background": StorageManager.get("lyrics-plus:visual:solid-background", false),
+	"solid-background-color": localStorage.getItem("lyrics-plus:visual:solid-background-color") || "#1e3a8a",
 	noise: StorageManager.get("lyrics-plus:visual:noise"),
 		"background-color": localStorage.getItem("lyrics-plus:visual:background-color") || "var(--spice-main)",
 		"active-color": localStorage.getItem("lyrics-plus:visual:active-color") || "var(--spice-text)",
@@ -2573,6 +2575,15 @@ class LyricsContainer extends react.Component {
 				"--lyrics-highlight-background": this.state.colors.inactive,
 				"--lyrics-background-noise": CONFIG.visual.noise ? "var(--background-noise)" : "unset",
 			};
+		} else if (CONFIG.visual["solid-background"]) {
+			const isLight = Utils.isColorLight(CONFIG.visual["solid-background-color"]);
+			this.styleVariables = {
+				"--lyrics-color-active": isLight ? "black" : "white",
+				"--lyrics-color-inactive": isLight ? "rgba(0, 0, 0, 0.4)" : "rgba(255, 255, 255, 0.4)",
+				"--lyrics-color-background": CONFIG.visual["solid-background-color"],
+				"--lyrics-highlight-background": isLight ? "rgba(0, 0, 0, 0.1)" : "rgba(255, 255, 255, 0.1)",
+				"--lyrics-background-noise": CONFIG.visual.noise ? "var(--background-noise)" : "unset",
+			};
 		}
 
 		const backgroundStyle = {};
@@ -2595,6 +2606,10 @@ class LyricsContainer extends react.Component {
 		} else if (!this.state.isFADMode && CONFIG.visual.colorful && this.state.colors.background) {
 			const brightness = CONFIG.visual["background-brightness"] / 100;
 			backgroundStyle.backgroundColor = this.state.colors.background;
+			backgroundStyle.filter = `brightness(${brightness})`;
+		} else if (!this.state.isFADMode && CONFIG.visual["solid-background"]) {
+			const brightness = CONFIG.visual["background-brightness"] / 100;
+			backgroundStyle.backgroundColor = CONFIG.visual["solid-background-color"];
 			backgroundStyle.filter = `brightness(${brightness})`;
 		}
 
