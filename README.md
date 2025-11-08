@@ -109,6 +109,19 @@ Mac Os :
 
 ---
 
+## 긴급 초기화 방법
+뭔가 제대로 동작이 안되는 것 같아요.
+-> 초기화해봅시다!
+
+1. cmd 혹은 터미널을 열고, spicetify enable-devtools 를 입력해줍니다.
+2. spotify 창 아무곳이나 우클릭 후 Devtools를 열어줍니다.
+3. Application -> Storage -> Clear site data 를 눌러줍니다.
+<img width="917" height="311" alt="image" src="https://github.com/user-attachments/assets/ed560e07-f39e-4bfb-b514-ddf70277fada" />
+4. 스포티파이를 클릭하고 컨트롤(커맨드) + 쉬프트 + R
+5. 끝! 
+
+---
+
 ## 업데이트 내역
 
 - [ ] 발음 / 번역 둘 다 꺼져있을 때, 발음칸에 원어가 표시되는 문제 수정
