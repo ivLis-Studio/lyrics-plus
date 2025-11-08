@@ -3643,13 +3643,15 @@ const ConfigModal = () => {
 
                 try {
                   const cfg = StorageManager.exportConfig();
-                  const text = JSON.stringify(cfg);
+                  const u8 = settingsObject.serialize(cfg);
                   // download as file
-                  const blob = new Blob([text], { type: "application/json" });
+                  const blob = new Blob([u8], {
+                    type: "application/octet-stream",
+                  });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
                   a.href = url;
-                  a.download = "lyrics-plus-config.json";
+                  a.download = "lyrics-plus.lpconfig";
                   document.body.appendChild(a);
                   a.click();
                   document.body.removeChild(a);
@@ -3771,7 +3773,7 @@ const ConfigModal = () => {
                 try {
                   const fileInput = document.createElement("input");
                   fileInput.type = "file";
-                  fileInput.accept = "application/json";
+                  fileInput.accept = ".lpconfig,.json";
                   fileInput.onchange = async (e) => {
                     if (!fileInput.files || fileInput.files.length === 0) {
                       button.textContent = originalText;
@@ -3783,8 +3785,27 @@ const ConfigModal = () => {
                     reader.onload = async (e) => {
                       const contents = e.target.result;
                       try {
-                        const cfg = JSON.parse(contents);
-                        StorageManager.importConfig(cfg);
+                        // check file type
+                        const fileType = file.type;
+                        const isLpconfig =
+                          !fileType && file.name.includes("lpconfig");
+                        const isJson = fileType && fileType.includes("json");
+                        if (!isLpconfig && !isJson) {
+                          console.log(fileType);
+                          console.log(file.name);
+                          throw new Error("Invalid file type " + fileType);
+                        }
+                        if (isJson) {
+                          const arraBuffer2Text = (ab) => {
+                            return new TextDecoder("utf-8").decode(ab);
+                          };
+                          const cfg = JSON.parse(arraBuffer2Text(contents));
+                          StorageManager.importConfig(cfg);
+                        } else {
+                          const u8 = new Uint8Array(contents);
+                          const cfg = settingsObject.deserialize(u8);
+                          StorageManager.importConfig(cfg);
+                        }
 
                         const settingRow = button.closest(".setting-row");
                         let resultContainer = settingRow?.nextElementSibling;
@@ -3888,7 +3909,7 @@ const ConfigModal = () => {
                         button.disabled = false;
                       }
                     };
-                    reader.readAsText(file);
+                    reader.readAsArrayBuffer(file);
                   };
                   document.body.appendChild(fileInput);
                   fileInput.click();
