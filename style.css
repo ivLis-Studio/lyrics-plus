@@ -176,6 +176,7 @@
 	width: 100%;
 	top: 0;
 	background: transparent;
+	/* overflow: hidden 제거 - 스크롤을 위해 */
 }
 
 .lyrics-lyricsContainer-Loading {
@@ -206,6 +207,32 @@
 	text-align: var(--lyrics-align-text);
 	z-index: 2;
 	position: relative;
+	/* 자체 스크롤 가능하도록 설정 */
+	overflow-y: auto;
+	overflow-x: hidden;
+	height: 100%;
+	/* 스크롤바 스타일링 */
+	scrollbar-width: thin;
+	scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+/* 웹킷 브라우저용 스크롤바 스타일 */
+.lyrics-lyricsContainer-UnsyncedLyricsPage::-webkit-scrollbar {
+	width: 8px;
+}
+
+.lyrics-lyricsContainer-UnsyncedLyricsPage::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.lyrics-lyricsContainer-UnsyncedLyricsPage::-webkit-scrollbar-thumb {
+	background-color: rgba(255, 255, 255, 0.3);
+	border-radius: 4px;
+	transition: background-color 0.2s;
+}
+
+.lyrics-lyricsContainer-UnsyncedLyricsPage::-webkit-scrollbar-thumb:hover {
+	background-color: rgba(255, 255, 255, 0.5);
 }
 
 .lyrics-lyricsContainer-LyricsUnsyncedPadding {
@@ -280,17 +307,24 @@
 	color: var(--lyrics-color-active);
 }
 
+/* 일반 가사: 기본적으로 비활성화 상태 (투명도 낮음) */
 .lyrics-lyricsContainer-UnsyncedLyricsPage .lyrics-lyricsContainer-LyricsLine {
 	color: var(--lyrics-color-inactive);
-	transition: color 0.25s cubic-bezier(0, 0, 0.58, 1);
+	opacity: 0.5;
+	transition: color 0.25s cubic-bezier(0, 0, 0.58, 1), opacity 0.25s cubic-bezier(0, 0, 0.58, 1);
 }
 
+/* 일반 가사: active 클래스 제거 (더 이상 사용하지 않음) */
 .lyrics-lyricsContainer-UnsyncedLyricsPage .lyrics-lyricsContainer-LyricsLine-active {
-	color: var(--lyrics-color-active);
+	/* 기본 상태와 동일하게 설정 */
+	color: var(--lyrics-color-inactive);
+	opacity: 0.5;
 }
 
+/* 일반 가사: 마우스 호버 시 진하게 표시 */
 .lyrics-lyricsContainer-UnsyncedLyricsPage .lyrics-lyricsContainer-LyricsLine:hover {
 	color: var(--lyrics-color-active);
+	opacity: 1;
 }
 
 
@@ -1089,7 +1123,7 @@ div.lyrics-tabBar-headerItemLink {
 }
 
 #lyrics-plus-gradient-background {
-    position: absolute;
+    position: fixed; /* 배경을 화면에 고정 */
     top: 0;
     left: 0;
     width: 100%;
