@@ -50,7 +50,7 @@ const CacheButton = () => {
 
   try {
     const localLyrics = JSON.parse(
-      localStorage.getItem("lyrics-plus:local-lyrics")
+      StorageManager.getItem("lyrics-plus:local-lyrics")
     );
     if (!localLyrics || typeof localLyrics !== "object") {
       throw "";
@@ -68,7 +68,7 @@ const CacheButton = () => {
     {
       className: "btn",
       onClick: () => {
-        localStorage.removeItem("lyrics-plus:local-lyrics");
+        StorageManager.setItem("lyrics-plus:local-lyrics");
         setCount(0);
       },
       disabled: !count,
@@ -2515,7 +2515,7 @@ const ConfigModal = () => {
                   "Pretendard Variable",
                 onChange: (value) => {
                   CONFIG.visual["original-font-family"] = value;
-                  localStorage.setItem(
+                  StorageManager.setItem(
                     `${APP_NAME}:visual:original-font-family`,
                     value
                   );
@@ -2603,7 +2603,7 @@ const ConfigModal = () => {
           ],
           onChange: (name, value) => {
             CONFIG.visual[name] = value;
-            localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
+            StorageManager.setItem(`${APP_NAME}:visual:${name}`, value);
             const lyricsPreview = document.getElementById("lyrics-preview");
             if (lyricsPreview) {
               if (name === "original-font-size")
@@ -2655,7 +2655,7 @@ const ConfigModal = () => {
                   "Pretendard Variable",
                 onChange: (value) => {
                   CONFIG.visual["phonetic-font-family"] = value;
-                  localStorage.setItem(
+                  StorageManager.setItem(
                     `${APP_NAME}:visual:phonetic-font-family`,
                     value
                   );
@@ -2753,7 +2753,7 @@ const ConfigModal = () => {
           ],
           onChange: (name, value) => {
             CONFIG.visual[name] = value;
-            localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
+            StorageManager.setItem(`${APP_NAME}:visual:${name}`, value);
             const phoneticPreview = document.getElementById("phonetic-preview");
             if (phoneticPreview) {
               if (name === "phonetic-font-size")
@@ -2807,7 +2807,7 @@ const ConfigModal = () => {
                   "Pretendard Variable",
                 onChange: (value) => {
                   CONFIG.visual["translation-font-family"] = value;
-                  localStorage.setItem(
+                  StorageManager.setItem(
                     `${APP_NAME}:visual:translation-font-family`,
                     value
                   );
@@ -2906,7 +2906,7 @@ const ConfigModal = () => {
           ],
           onChange: (name, value) => {
             CONFIG.visual[name] = value;
-            localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
+            StorageManager.setItem(`${APP_NAME}:visual:${name}`, value);
             const translationPreview = document.getElementById(
               "translation-preview"
             );
@@ -2971,7 +2971,7 @@ const ConfigModal = () => {
           ],
           onChange: (name, value) => {
             CONFIG.visual[name] = value;
-            localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
+            StorageManager.setItem(`${APP_NAME}:visual:${name}`, value);
             const lyricsPreview = document.getElementById("lyrics-preview");
             const phoneticPreview = document.getElementById("phonetic-preview");
             const translationPreview = document.getElementById(
@@ -3120,7 +3120,7 @@ const ConfigModal = () => {
           itemsList: CONFIG.providersOrder,
           onListChange: (list) => {
             CONFIG.providersOrder = list;
-            localStorage.setItem(
+            StorageManager.setItem(
               `${APP_NAME}:services-order`,
               JSON.stringify(list)
             );
@@ -3128,12 +3128,12 @@ const ConfigModal = () => {
           },
           onToggle: (name, value) => {
             CONFIG.providers[name].on = value;
-            localStorage.setItem(`${APP_NAME}:provider:${name}:on`, value);
+            StorageManager.setItem(`${APP_NAME}:provider:${name}:on`, value);
             reloadLyrics?.();
           },
           onTokenChange: (name, value) => {
             CONFIG.providers[name].token = value;
-            localStorage.setItem(`${APP_NAME}:provider:${name}:token`, value);
+            StorageManager.setItem(`${APP_NAME}:provider:${name}:token`, value);
             reloadLyrics?.();
           },
         })
@@ -3620,7 +3620,288 @@ const ConfigModal = () => {
             },
             "오픈소스 프로젝트에 기여해주신 모든 분들께 감사드립니다."
           )
-        )
+        ),
+
+        react.createElement(SectionTitle, {
+          title: "설정 내보내기/가져오기",
+          subtitle: "다른 기기로 설정을 옮기세요",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "설정 내보내기",
+              info: `현재 설정을 파일로 내보냅니다.`,
+              key: "export-settings",
+              text: "내보내기",
+              type: ConfigButton,
+              onChange: async (_, event) => {
+                const button = event?.target;
+                if (!button) return;
+                const originalText = button.textContent;
+                button.textContent = "내보내는 중...";
+                button.disabled = true;
+
+                try {
+                  const cfg = StorageManager.exportConfig();
+                  const text = JSON.stringify(cfg);
+                  // download as file
+                  const blob = new Blob([text], { type: "application/json" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "lyrics-plus-config.json";
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+
+                  const settingRow = button.closest(".setting-row");
+                  let resultContainer = settingRow?.nextElementSibling;
+
+                  if (
+                    !resultContainer ||
+                    !resultContainer.id ||
+                    resultContainer.id !== "export-result-container"
+                  ) {
+                    // 결과 컨테이너가 없으면 생성
+                    resultContainer = document.createElement("div");
+                    resultContainer.id = "export-result-container";
+                    resultContainer.style.cssText = "margin-top: -1px;";
+                    settingRow?.parentNode?.insertBefore(
+                      resultContainer,
+                      settingRow.nextSibling
+                    );
+                  }
+
+                  resultContainer.innerHTML = `<div style="
+													padding: 16px 20px;
+													background: rgba(255, 255, 255, 0.03);
+													border: 1px solid rgba(96, 165, 250, 0.15);
+													border-left: 1px solid rgba(255, 255, 255, 0.08);
+													border-right: 1px solid rgba(255, 255, 255, 0.08);
+													border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+													backdrop-filter: blur(30px) saturate(150%);
+													-webkit-backdrop-filter: blur(30px) saturate(150%);
+												">
+													<div style="
+														display: flex;
+														align-items: center;
+														gap: 12px;
+														color: rgba(96, 165, 250, 0.9);
+														font-size: 13px;
+													">
+														<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+															<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+														</svg>
+														<div>
+															<div style="font-weight: 600; margin-bottom: 2px;">내보내기에 성공했습니다</div>
+															<div style="opacity: 0.8; font-size: 12px;">설정파일을 다운로드 폴더에 저장합니다.</div>
+														</div>
+													</div>
+												</div>`;
+                } catch (e) {
+                  const settingRow = button.closest(".setting-row");
+                  let resultContainer = settingRow?.nextElementSibling;
+
+                  if (
+                    !resultContainer ||
+                    !resultContainer.id ||
+                    resultContainer.id !== "export-result-container"
+                  ) {
+                    // 결과 컨테이너가 없으면 생성
+                    resultContainer = document.createElement("div");
+                    resultContainer.id = "export-result-container";
+                    resultContainer.style.cssText = "margin-top: -1px;";
+                    settingRow?.parentNode?.insertBefore(
+                      resultContainer,
+                      settingRow.nextSibling
+                    );
+                  }
+                  resultContainer.innerHTML = `
+											<div style="
+												padding: 16px 20px;
+												background: rgba(255, 255, 255, 0.03);
+												border: 1px solid rgba(255, 107, 107, 0.2);
+												border-left: 1px solid rgba(255, 255, 255, 0.08);
+												border-right: 1px solid rgba(255, 255, 255, 0.08);
+												border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+												backdrop-filter: blur(30px) saturate(150%);
+												-webkit-backdrop-filter: blur(30px) saturate(150%);
+											">
+												<div style="
+													display: flex;
+													align-items: center;
+													gap: 12px;
+													color: rgba(255, 107, 107, 0.9);
+													font-size: 13px;
+													font-weight: 500;
+												">
+													<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+														<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+													</svg>
+													<div>
+														<div style="font-weight: 600; margin-bottom: 2px;">설정 내보내기 실패</div>
+														<div style="opacity: 0.8; font-size: 12px;">${
+                              e.message || e.reason || e.toString()
+                            }</div>
+													</div>
+												</div>
+											</div>
+										`;
+                } finally {
+                  button.textContent = originalText;
+                  button.disabled = false;
+                }
+              },
+            },
+
+            {
+              desc: "설정 불러오기",
+              info: `설정 파일을 불러옵니다`,
+              key: "import-settings",
+              text: "불러오기",
+              type: ConfigButton,
+              onChange: async (_, event) => {
+                const button = event?.target;
+                if (!button) return;
+                const originalText = button.textContent;
+                button.textContent = "불러오는 중...";
+                button.disabled = true;
+
+                try {
+                  const fileInput = document.createElement("input");
+                  fileInput.type = "file";
+                  fileInput.accept = "application/json";
+                  fileInput.onchange = async (e) => {
+                    if (!fileInput.files || fileInput.files.length === 0) {
+                      button.textContent = originalText;
+                      button.disabled = false;
+                      return;
+                    }
+                    const file = fileInput.files[0];
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                      const contents = e.target.result;
+                      try {
+                        const cfg = JSON.parse(contents);
+                        StorageManager.importConfig(cfg);
+
+                        const settingRow = button.closest(".setting-row");
+                        let resultContainer = settingRow?.nextElementSibling;
+
+                        if (
+                          !resultContainer ||
+                          !resultContainer.id ||
+                          resultContainer.id !== "export-result-container"
+                        ) {
+                          // 결과 컨테이너가 없으면 생성
+                          resultContainer = document.createElement("div");
+                          resultContainer.id = "export-result-container";
+                          resultContainer.style.cssText = "margin-top: -1px;";
+                          settingRow?.parentNode?.insertBefore(
+                            resultContainer,
+                            settingRow.nextSibling
+                          );
+                        }
+
+                        resultContainer.innerHTML = `<div style="
+													padding: 16px 20px;
+													background: rgba(255, 255, 255, 0.03);
+													border: 1px solid rgba(96, 165, 250, 0.15);
+													border-left: 1px solid rgba(255, 255, 255, 0.08);
+													border-right: 1px solid rgba(255, 255, 255, 0.08);
+													border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+													border-bottom-left-radius: 12px;
+													border-bottom-right-radius: 12px;
+													backdrop-filter: blur(30px) saturate(150%);
+													-webkit-backdrop-filter: blur(30px) saturate(150%);
+												">
+													<div style="
+														display: flex;
+														align-items: center;
+														gap: 12px;
+														color: rgba(96, 165, 250, 0.9);
+														font-size: 13px;
+													">
+														<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+															<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+														</svg>
+														<div>
+															<div style="font-weight: 600; margin-bottom: 2px;">불러오기에 성공했습니다</div>
+															<div style="opacity: 0.8; font-size: 12px;">재시작이 필요할 수 있습니다</div>
+														</div>
+													</div>
+												</div>`;
+                      } catch (e) {
+                        const settingRow = button.closest(".setting-row");
+                        let resultContainer = settingRow?.nextElementSibling;
+
+                        if (
+                          !resultContainer ||
+                          !resultContainer.id ||
+                          resultContainer.id !== "export-result-container"
+                        ) {
+                          // 결과 컨테이너가 없으면 생성
+                          resultContainer = document.createElement("div");
+                          resultContainer.id = "export-result-container";
+                          resultContainer.style.cssText = "margin-top: -1px;";
+                          settingRow?.parentNode?.insertBefore(
+                            resultContainer,
+                            settingRow.nextSibling
+                          );
+                        }
+                        resultContainer.innerHTML = `
+											<div style="
+												padding: 16px 20px;
+												background: rgba(255, 255, 255, 0.03);
+												border: 1px solid rgba(255, 107, 107, 0.2);
+												border-left: 1px solid rgba(255, 255, 255, 0.08);
+												border-right: 1px solid rgba(255, 255, 255, 0.08);
+												border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+												border-bottom-left-radius: 12px;
+												border-bottom-right-radius: 12px;
+												backdrop-filter: blur(30px) saturate(150%);
+												-webkit-backdrop-filter: blur(30px) saturate(150%);
+											">
+												<div style="
+													display: flex;
+													align-items: center;
+													gap: 12px;
+													color: rgba(255, 107, 107, 0.9);
+													font-size: 13px;
+													font-weight: 500;
+												">
+													<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+														<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+													</svg>
+													<div>
+														<div style="font-weight: 600; margin-bottom: 2px;">설정 불러오기 실패</div>
+														<div style="opacity: 0.8; font-size: 12px;">${
+                              e.message || e.reason || e.toString()
+                            }</div>
+													</div>
+												</div>
+											</div>
+										`;
+                      } finally {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                      }
+                    };
+                    reader.readAsText(file);
+                  };
+                  document.body.appendChild(fileInput);
+                  fileInput.click();
+                  document.body.removeChild(fileInput);
+                } catch (e) {
+                  button.textContent = originalText;
+                  button.disabled = false;
+                }
+              },
+            },
+          ],
+          onChange: () => {},
+        })
       )
     )
   );

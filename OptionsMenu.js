@@ -633,14 +633,17 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
   const open = () => {
     // Force geminiKo provider
     CONFIG.visual["translate:translated-lyrics-source"] = "geminiKo";
-    localStorage.setItem(
+    StorageManager.setItem(
       `${APP_NAME}:visual:translate:translated-lyrics-source`,
       "geminiKo"
     );
 
     // Force "below" display mode
     CONFIG.visual["translate:display-mode"] = "below";
-    localStorage.setItem(`${APP_NAME}:visual:translate:display-mode`, "below");
+    StorageManager.setItem(
+      `${APP_NAME}:visual:translate:display-mode`,
+      "below"
+    );
 
     // Determine the correct mode key based on language
     const provider = CONFIG.visual["translate:translated-lyrics-source"];
@@ -757,7 +760,7 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
       }
 
       CONFIG.visual[name] = value;
-      localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
+      StorageManager.setItem(`${APP_NAME}:visual:${name}`, value);
 
       if (name.startsWith("translation-mode")) {
         if (window.lyricContainer) {
