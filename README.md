@@ -11,7 +11,7 @@ Spicetify용 **Lyrics Plus** 커스텀 앱을 뼈대만 남기고 모조리 다 
 <a href="https://www.buymeacoffee.com/ivlis" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 
-각종 오류 및 ivLyrics의 싱크, 번역 문제는 디스코드에서 문의해주세요. : [https://discord.gg/3yeeNSfjhw](https://discord.gg/uhu9XSwxQf)
+각종 오류 및 ivLyrics의 싱크, 번역 문제는 디스코드에서 문의해주세요. : https://discord.gg/2fu36fUzdE
 
 
 https://github.com/user-attachments/assets/c865affb-1a7b-405c-86ac-e1421f426c58
