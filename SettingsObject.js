@@ -175,7 +175,6 @@ if (PRE_DEFINED_VALUES.length >= 255) {
 
 const toIgnore = new Set([
   "lyrics-plus:local-lyrics",
-  "lyrics-plus:track-sync-offsets",
 ]);
 
 class SettingsObject {
@@ -210,8 +209,17 @@ class SettingsObject {
       cbytes.push(length & 0xff);
     };
 
+    const append2BNumberForString = (length) => {
+      // 문자열 길이는 항상 2바이트(최대 65535)로 저장
+      if (length < 0 || length >= 65536) {
+        throw new Error("String length out of bounds " + length);
+      }
+      cbytes.push((length >> 8) & 0xff);
+      cbytes.push(length & 0xff);
+    };
+
     const appendString = (str) => {
-      append2BNumber(str.length);
+      append2BNumberForString(str.length);
       for (let j = 0; j < str.length; j++) {
         cbytes.push(str.charCodeAt(j));
       }

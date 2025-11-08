@@ -828,21 +828,22 @@ const RegenerateTranslationButton = react.memo(
 );
 
 const SyncAdjustButton = react.memo(
-  ({ trackUri, currentOffset, onOffsetChange }) => {
+  ({ trackUri, onOffsetChange }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [offset, setOffset] = useState(
-      Utils.getTrackSyncOffset(trackUri) || 0
-    );
+    const [offset, setOffset] = useState(0);
 
     // Load offset when trackUri changes
     useEffect(() => {
-      const savedOffset = Utils.getTrackSyncOffset(trackUri) || 0;
-      setOffset(savedOffset);
+      const loadOffset = async () => {
+        const savedOffset = (await Utils.getTrackSyncOffset(trackUri)) || 0;
+        setOffset(savedOffset);
+      };
+      loadOffset();
     }, [trackUri]);
 
-    const handleOffsetChange = (newOffset) => {
+    const handleOffsetChange = async (newOffset) => {
       setOffset(newOffset);
-      Utils.setTrackSyncOffset(trackUri, newOffset);
+      await Utils.setTrackSyncOffset(trackUri, newOffset);
       if (onOffsetChange) {
         onOffsetChange(newOffset);
       }

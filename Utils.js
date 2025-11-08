@@ -721,7 +721,7 @@ const Utils = {
   /**
    * Current version of the lyrics-plus app
    */
-  currentVersion: "2.0.8",
+  currentVersion: "2.0.9",
 
   /**
    * Check for updates from remote repository
@@ -979,50 +979,36 @@ const Utils = {
     return names[this.detectPlatform()];
   },
 
-  // Track-specific sync offset management
-  getTrackSyncOffset(trackUri) {
+  // Track-specific sync offset management (using IndexedDB)
+  async getTrackSyncOffset(trackUri) {
     if (!trackUri) return 0;
-    const offsetData = StorageManager.getItem("lyrics-plus:track-sync-offsets");
-    if (!offsetData) return 0;
     try {
-      const offsets = JSON.parse(offsetData);
-      return offsets[trackUri] || 0;
-    } catch {
+      return await TrackSyncDB.getOffset(trackUri);
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to get track sync offset:", error);
       return 0;
     }
   },
 
-  setTrackSyncOffset(trackUri, offset) {
+  async setTrackSyncOffset(trackUri, offset) {
     if (!trackUri) return;
-    let offsets = {};
-    const offsetData = StorageManager.getItem("lyrics-plus:track-sync-offsets");
-    if (offsetData) {
-      try {
-        offsets = JSON.parse(offsetData);
-      } catch {
-        offsets = {};
-      }
+    try {
+      await TrackSyncDB.setOffset(trackUri, offset);
+      // Dispatch custom event to notify offset change
+      window.dispatchEvent(new CustomEvent('lyrics-plus:offset-changed', { 
+        detail: { trackUri, offset } 
+      }));
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to set track sync offset:", error);
     }
-    offsets[trackUri] = offset;
-    StorageManager.setItem(
-      "lyrics-plus:track-sync-offsets",
-      JSON.stringify(offsets)
-    );
   },
 
-  clearTrackSyncOffset(trackUri) {
+  async clearTrackSyncOffset(trackUri) {
     if (!trackUri) return;
-    const offsetData = StorageManager.getItem("lyrics-plus:track-sync-offsets");
-    if (!offsetData) return;
     try {
-      const offsets = JSON.parse(offsetData);
-      delete offsets[trackUri];
-      StorageManager.setItem(
-        "lyrics-plus:track-sync-offsets",
-        JSON.stringify(offsets)
-      );
-    } catch {
-      // Ignore errors
+      await TrackSyncDB.clearOffset(trackUri);
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to clear track sync offset:", error);
     }
   },
 };

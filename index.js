@@ -532,6 +532,167 @@ function render() {
 // Optimized utility functions with better error handling and performance
 const APP_NAME = "lyrics-plus";
 
+// IndexedDB for track sync offsets
+const DB_NAME = "lyrics-plus-db";
+const DB_VERSION = 1;
+const STORE_NAME = "track-sync-offsets";
+
+let dbInstance = null;
+
+const initDB = () => {
+  return new Promise((resolve, reject) => {
+    if (dbInstance) {
+      resolve(dbInstance);
+      return;
+    }
+
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onerror = () => {
+      console.error("[Lyrics Plus] IndexedDB error:", request.error);
+      reject(request.error);
+    };
+
+    request.onsuccess = () => {
+      dbInstance = request.result;
+      console.log("[Lyrics Plus] IndexedDB initialized");
+      resolve(dbInstance);
+    };
+
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+        console.log("[Lyrics Plus] IndexedDB object store created");
+      }
+    };
+  });
+};
+
+const TrackSyncDB = {
+  async getOffset(trackUri) {
+    try {
+      const db = await initDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], "readonly");
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.get(trackUri);
+
+        request.onsuccess = () => resolve(request.result || 0);
+        request.onerror = () => reject(request.error);
+      });
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to get offset:", error);
+      return 0;
+    }
+  },
+
+  async setOffset(trackUri, offset) {
+    try {
+      const db = await initDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], "readwrite");
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.put(offset, trackUri);
+
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to set offset:", error);
+    }
+  },
+
+  async clearOffset(trackUri) {
+    try {
+      const db = await initDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], "readwrite");
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.delete(trackUri);
+
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to clear offset:", error);
+    }
+  },
+
+  async getAllOffsets() {
+    try {
+      const db = await initDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], "readonly");
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.getAllKeys();
+
+        request.onsuccess = () => {
+          const keys = request.result;
+          const getAllRequest = store.getAll();
+
+          getAllRequest.onsuccess = () => {
+            const values = getAllRequest.result;
+            const result = {};
+            keys.forEach((key, index) => {
+              result[key] = values[index];
+            });
+            resolve(result);
+          };
+
+          getAllRequest.onerror = () => reject(getAllRequest.error);
+        };
+
+        request.onerror = () => reject(request.error);
+      });
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to get all offsets:", error);
+      return {};
+    }
+  },
+
+  async importOffsets(offsetsObj) {
+    try {
+      const db = await initDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([STORE_NAME], "readwrite");
+        const store = transaction.objectStore(STORE_NAME);
+
+        // Clear existing data first
+        const clearRequest = store.clear();
+
+        clearRequest.onsuccess = () => {
+          // Add all new offsets
+          Object.entries(offsetsObj).forEach(([trackUri, offset]) => {
+            store.put(offset, trackUri);
+          });
+        };
+
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+      });
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to import offsets:", error);
+    }
+  },
+};
+
+// Migrate from localStorage to IndexedDB
+(async () => {
+  try {
+    const oldOffsets = localStorage.getItem("lyrics-plus:track-sync-offsets");
+    if (oldOffsets) {
+      console.log("[Lyrics Plus] Migrating track-sync-offsets to IndexedDB");
+      const offsetsObj = JSON.parse(oldOffsets);
+      await TrackSyncDB.importOffsets(offsetsObj);
+      localStorage.removeItem("lyrics-plus:track-sync-offsets");
+      console.log("[Lyrics Plus] Migration complete");
+    }
+  } catch (error) {
+    console.error("[Lyrics Plus] Migration failed:", error);
+  }
+})();
+
 const __storageKeys = localStorage.getItem(`${APP_NAME}:storage-keys`);
 const StorageKeys = new Set(__storageKeys ? JSON.parse(__storageKeys) : []);
 /**
@@ -652,15 +813,40 @@ const StorageManager = {
     return Spicetify.LocalStorage.get(key);
   },
 
-  exportConfig() {
+  async exportConfig() {
     const config = {};
     StorageKeys.forEach((key) => {
       const val = StorageManager.getItem(key);
       if (val !== null) config[key] = StorageManager.getItem(key);
     });
+    
+    // IndexedDB의 track-sync-offsets를 포함
+    const trackSyncOffsets = await TrackSyncDB.getAllOffsets();
+    if (Object.keys(trackSyncOffsets).length > 0) {
+      config["lyrics-plus:track-sync-offsets"] = JSON.stringify(trackSyncOffsets);
+      console.log("[Lyrics Plus] Exporting track-sync-offsets from IndexedDB:", trackSyncOffsets);
+    } else {
+      console.log("[Lyrics Plus] No track-sync-offsets found in IndexedDB");
+    }
+    
+    console.log("[Lyrics Plus] Exported config keys:", Object.keys(config));
+    
     return config;
   },
-  importConfig(config) {
+  async importConfig(config) {
+    // track-sync-offsets를 IndexedDB로 가져오기
+    if (config["lyrics-plus:track-sync-offsets"]) {
+      try {
+        const offsetsObj = JSON.parse(config["lyrics-plus:track-sync-offsets"]);
+        await TrackSyncDB.importOffsets(offsetsObj);
+        console.log("[Lyrics Plus] Imported track-sync-offsets to IndexedDB");
+        delete config["lyrics-plus:track-sync-offsets"]; // localStorage에 저장하지 않음
+      } catch (error) {
+        console.error("[Lyrics Plus] Failed to import track-sync-offsets:", error);
+      }
+    }
+
+    // 나머지 설정을 localStorage에 저장
     Object.entries(config).forEach(([key, value]) => {
       StorageManager.setItemRaw(key, value);
       saveStorageKeys(key);
@@ -678,13 +864,13 @@ const CONFIG = {
       "lyrics-plus:visual:playbar-button",
       false
     ),
-    colorful: StorageManager.get("lyrics-plus:visual:colorful"),
+    colorful: StorageManager.get("lyrics-plus:visual:colorful", false),
     "gradient-background": StorageManager.get(
       "lyrics-plus:visual:gradient-background"
     ),
     "background-brightness":
       StorageManager.getItem("lyrics-plus:visual:background-brightness") ||
-      "80",
+      "30",
     "solid-background": StorageManager.get(
       "lyrics-plus:visual:solid-background",
       false
@@ -3555,7 +3741,6 @@ class LyricsContainer extends react.Component {
         }),
         react.createElement(SyncAdjustButton, {
           trackUri: this.currentTrackUri,
-          currentOffset: Utils.getTrackSyncOffset(this.currentTrackUri),
           onOffsetChange: (offset) => {
             this.forceUpdate();
           },

@@ -1264,6 +1264,147 @@ const ConfigModal = () => {
     }
   }, [activeTab]);
 
+  // 패치노트 불러오기
+  useEffect(() => {
+    if (activeTab === "about") {
+      const loadPatchNotes = async () => {
+        const container = document.getElementById("patch-notes-container");
+        if (!container) return;
+
+        try {
+          const response = await fetch(
+            "https://api.github.com/repos/ivLis-Studio/lyrics-plus/releases/latest"
+          );
+          
+          if (!response.ok) {
+            throw new Error("Failed to fetch release notes");
+          }
+
+          const data = await response.json();
+          const version = data.tag_name || "Unknown";
+          const publishedDate = data.published_at
+            ? new Date(data.published_at).toLocaleDateString("ko-KR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })
+            : "Unknown";
+          
+          // Markdown을 HTML로 변환
+          let body = data.body || "패치 노트가 없습니다.";
+          
+          // 마크다운 변환 (순서 중요)
+          body = body
+            // 코드 블록 먼저 처리 (```로 감싼 부분)
+            .replace(/```[\s\S]*?```/g, (match) => {
+              return `<pre style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px; overflow-x: auto; margin: 12px 0;"><code style="font-family: monospace; font-size: 13px; color: rgba(255,255,255,0.9);">${match.slice(3, -3).trim()}</code></pre>`;
+            })
+            // 헤딩 처리
+            .replace(/^#### (.*?)$/gm, '<h5 style="margin: 14px 0 6px; color: #ffffff; font-size: 15px; font-weight: 600;">$1</h5>')
+            .replace(/^### (.*?)$/gm, '<h4 style="margin: 16px 0 8px; color: #ffffff; font-size: 16px; font-weight: 600;">$1</h4>')
+            .replace(/^## (.*?)$/gm, '<h3 style="margin: 20px 0 10px; color: #ffffff; font-size: 18px; font-weight: 700;">$1</h3>')
+            .replace(/^# (.*?)$/gm, '<h2 style="margin: 24px 0 12px; color: #ffffff; font-size: 20px; font-weight: 700;">$1</h2>')
+            // 인라인 코드
+            .replace(/`([^`]+)`/g, '<code style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.9em; color: #fbbf24;">$1</code>')
+            // 볼드와 이탤릭
+            .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            // 링크
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color: #60a5fa; text-decoration: none; border-bottom: 1px solid rgba(96, 165, 250, 0.3); transition: border-color 0.2s;" onmouseover="this.style.borderBottomColor=\'rgba(96, 165, 250, 0.8)\'" onmouseout="this.style.borderBottomColor=\'rgba(96, 165, 250, 0.3)\'">$1</a>')
+            // 체크박스 리스트
+            .replace(/^- \[x\] (.*?)$/gm, '<li style="margin: 6px 0; list-style: none;"><span style="color: #4ade80; margin-right: 6px;">✓</span>$1</li>')
+            .replace(/^- \[ \] (.*?)$/gm, '<li style="margin: 6px 0; list-style: none;"><span style="color: rgba(255,255,255,0.3); margin-right: 6px;">○</span>$1</li>')
+            // 일반 리스트 (-, *, +)
+            .replace(/^[\-\*\+] (.*?)$/gm, '<li style="margin: 6px 0; padding-left: 4px;">$1</li>')
+            // 숫자 리스트
+            .replace(/^\d+\. (.*?)$/gm, '<li style="margin: 6px 0; padding-left: 4px;">$1</li>')
+            // 블록쿼트
+            .replace(/^> (.*?)$/gm, '<blockquote style="margin: 12px 0; padding-left: 16px; border-left: 3px solid rgba(96, 165, 250, 0.5); color: rgba(255,255,255,0.7); font-style: italic;">$1</blockquote>')
+            // 구분선
+            .replace(/^---$/gm, '<hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;" />')
+            .replace(/^\*\*\*$/gm, '<hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;" />')
+            // 줄바꿈 처리 (두 번 연속된 줄바꿈은 단락 구분)
+            .replace(/\n\n/g, '</p><p style="margin: 12px 0; line-height: 1.7;">');
+
+          // li 태그들을 ul/ol로 감싸기
+          body = body.replace(/(<li[^>]*>.*?<\/li>(\s|<br\/>)*)+/gs, (match) => {
+            // 체크박스나 일반 리스트인 경우
+            if (match.includes('list-style: none')) {
+              return `<ul style="margin: 8px 0 16px; padding-left: 8px; list-style: none;">${match}</ul>`;
+            }
+            return `<ul style="margin: 8px 0 16px; padding-left: 24px; list-style: disc;">${match}</ul>`;
+          });
+
+          // 시작 p 태그 추가
+          if (!body.startsWith('<h') && !body.startsWith('<ul') && !body.startsWith('<pre')) {
+            body = `<p style="margin: 12px 0; line-height: 1.7;">${body}`;
+          }
+          // 끝 p 태그 추가
+          if (!body.endsWith('</p>') && !body.endsWith('</ul>') && !body.endsWith('</pre>')) {
+            body = `${body}</p>`;
+          }
+
+          container.style.display = "block";
+          container.style.alignItems = "flex-start";
+          container.style.justifyContent = "flex-start";
+          container.innerHTML = `
+            <div style="width: 100%;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div>
+                  <h3 style="margin: 0; font-size: 18px; color: #ffffff; font-weight: 700;">${version}</h3>
+                  <p style="margin: 4px 0 0; font-size: 13px; color: rgba(255,255,255,0.5);">${publishedDate}</p>
+                </div>
+                <a href="${data.html_url}" target="_blank" style="
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 6px;
+                  padding: 6px 12px;
+                  background: rgba(255,255,255,0.05);
+                  border: 1px solid rgba(255,255,255,0.1);
+                  border-radius: 8px;
+                  color: #60a5fa;
+                  text-decoration: none;
+                  font-size: 13px;
+                  font-weight: 600;
+                  transition: all 0.2s;
+                " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                  GitHub에서 보기
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M3.75 2A1.75 1.75 0 002 3.75v8.5c0 .966.784 1.75 1.75 1.75h8.5A1.75 1.75 0 0014 12.25v-3.5a.75.75 0 00-1.5 0v3.5a.25.25 0 01-.25.25h-8.5a.25.25 0 01-.25-.25v-8.5a.25.25 0 01.25-.25h3.5a.75.75 0 000-1.5h-3.5z"/>
+                    <path d="M10.75 1a.75.75 0 000 1.5h1.69L8.22 6.72a.75.75 0 001.06 1.06l4.22-4.22v1.69a.75.75 0 001.5 0V1h-4.25z"/>
+                  </svg>
+                </a>
+              </div>
+              <div style="line-height: 1.7; color: rgba(255,255,255,0.85); font-size: 14px;">
+                ${body}
+              </div>
+            </div>
+          `;
+        } catch (error) {
+          console.error("Failed to load patch notes:", error);
+          container.style.display = "flex";
+          container.style.alignItems = "center";
+          container.style.justifyContent = "center";
+          container.innerHTML = `
+            <div style="text-align: center; color: rgba(255,255,255,0.5);">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="margin-bottom: 12px; opacity: 0.3;">
+                <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                <line x1="12" y1="8" x2="12" y2="12" stroke-width="2" stroke-linecap="round"/>
+                <line x1="12" y1="16" x2="12.01" y2="16" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <p style="margin: 0; font-size: 14px;">패치 노트를 불러올 수 없습니다</p>
+              <p style="margin: 4px 0 0; font-size: 12px; opacity: 0.7;">GitHub 릴리스 페이지를 확인해주세요</p>
+            </div>
+          `;
+        }
+      };
+
+      // 짧은 지연 후 로드 (DOM이 준비되도록)
+      setTimeout(loadPatchNotes, 100);
+    }
+  }, [activeTab]);
+
   const HeaderSection = () => {
     return react.createElement(
       "div",
@@ -1282,27 +1423,54 @@ const ConfigModal = () => {
           )
         ),
         react.createElement(
-          "button",
-          {
-            className: "settings-github-btn",
-            onClick: () =>
-              window.open(
-                "https://github.com/ivLis-Studio/lyrics-plus",
-                "_blank"
-              ),
-            title: "GitHub 저장소 방문",
-          },
-          react.createElement("svg", {
-            width: 16,
-            height: 16,
-            viewBox: "0 0 16 16",
-            fill: "currentColor",
-            dangerouslySetInnerHTML: {
-              __html:
-                '<path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>',
+          "div",
+          { className: "settings-buttons" },
+          react.createElement(
+            "button",
+            {
+              className: "settings-github-btn",
+              onClick: () =>
+                window.open(
+                  "https://github.com/ivLis-Studio/lyrics-plus",
+                  "_blank"
+                ),
+              title: "GitHub 저장소 방문",
             },
-          }),
-          react.createElement("span", null, "GitHub")
+            react.createElement("svg", {
+              width: 16,
+              height: 16,
+              viewBox: "0 0 16 16",
+              fill: "currentColor",
+              dangerouslySetInnerHTML: {
+                __html:
+                  '<path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>',
+              },
+            }),
+            react.createElement("span", null, "GitHub")
+          ),
+          react.createElement(
+            "button",
+            {
+              className: "settings-coffee-btn",
+              onClick: () =>
+                window.open(
+                  "https://buymeacoffee.com/ivlis",
+                  "_blank"
+                ),
+              title: "개발자에게 커피 한잔 사주기",
+            },
+            react.createElement("svg", {
+              width: 16,
+              height: 16,
+              viewBox: "0 0 24 24",
+              fill: "currentColor",
+              dangerouslySetInnerHTML: {
+                __html:
+                  '<path d="M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.11 0 2-.89 2-2V5c0-1.11-.89-2-2-2zm0 5h-2V5h2v3zM4 19h16v2H4z"/>',
+              },
+            }),
+            react.createElement("span", null, "후원")
+          )
         )
       )
     );
@@ -1392,6 +1560,12 @@ const ConfigModal = () => {
     gap: 12px;
 }
 
+#${APP_NAME}-config-container .settings-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 #${APP_NAME}-config-container .settings-title-section h1 {
     font-size: 34px;
     font-weight: 700;
@@ -1431,6 +1605,33 @@ const ConfigModal = () => {
 
 #${APP_NAME}-config-container .settings-github-btn:active {
     background: #3a3a3c;
+    transform: scale(0.98);
+}
+
+#${APP_NAME}-config-container .settings-coffee-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #FFDD00 0%, #FBB034 100%);
+    border: none;
+    border-radius: 10px;
+    color: #000000;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(255, 221, 0, 0.3);
+}
+
+#${APP_NAME}-config-container .settings-coffee-btn:hover {
+    background: linear-gradient(135deg, #FFE84D 0%, #FFBE5B 100%);
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(255, 221, 0, 0.4);
+}
+
+#${APP_NAME}-config-container .settings-coffee-btn:active {
+    background: linear-gradient(135deg, #E6C700 0%, #E29F2E 100%);
     transform: scale(0.98);
 }
 
@@ -3211,6 +3412,448 @@ const ConfigModal = () => {
               })
             );
           },
+        }),
+        react.createElement(SectionTitle, {
+          title: "설정 내보내기/가져오기",
+          subtitle: "다른 기기로 설정을 옮기세요",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "설정 내보내기",
+              info: `현재 설정을 파일로 내보냅니다.`,
+              key: "export-settings",
+              text: "내보내기",
+              type: ConfigButton,
+              onChange: async (_, event) => {
+                const button = event?.target;
+                if (!button) return;
+                const originalText = button.textContent;
+                button.textContent = "내보내는 중...";
+                button.disabled = true;
+
+                try {
+                  const cfg = await StorageManager.exportConfig();
+                  console.log("[Settings] Config before serialize:", cfg);
+                  console.log("[Settings] Has track-sync-offsets:", "lyrics-plus:track-sync-offsets" in cfg);
+                  const u8 = settingsObject.serialize(cfg);
+                  // download as file
+                  const blob = new Blob([u8], {
+                    type: "application/octet-stream",
+                  });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "lyrics-plus.lpconfig";
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+
+                  const settingRow = button.closest(".setting-row");
+                  let resultContainer = settingRow?.nextElementSibling;
+
+                  if (
+                    !resultContainer ||
+                    !resultContainer.id ||
+                    resultContainer.id !== "export-result-container"
+                  ) {
+                    // 결과 컨테이너가 없으면 생성
+                    resultContainer = document.createElement("div");
+                    resultContainer.id = "export-result-container";
+                    resultContainer.style.cssText = "margin-top: -1px;";
+                    settingRow?.parentNode?.insertBefore(
+                      resultContainer,
+                      settingRow.nextSibling
+                    );
+                  }
+
+                  resultContainer.innerHTML = `<div style="
+													padding: 16px 20px;
+													background: rgba(255, 255, 255, 0.03);
+													border: 1px solid rgba(96, 165, 250, 0.15);
+													border-left: 1px solid rgba(255, 255, 255, 0.08);
+													border-right: 1px solid rgba(255, 255, 255, 0.08);
+													border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+													backdrop-filter: blur(30px) saturate(150%);
+													-webkit-backdrop-filter: blur(30px) saturate(150%);
+												">
+													<div style="
+														display: flex;
+														align-items: center;
+														gap: 12px;
+														color: rgba(96, 165, 250, 0.9);
+														font-size: 13px;
+													">
+														<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+															<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+														</svg>
+														<div>
+															<div style="font-weight: 600; margin-bottom: 2px;">내보내기에 성공했습니다</div>
+															<div style="opacity: 0.8; font-size: 12px;">설정파일을 다운로드 폴더에 저장합니다.</div>
+														</div>
+													</div>
+												</div>`;
+                } catch (e) {
+                  const settingRow = button.closest(".setting-row");
+                  let resultContainer = settingRow?.nextElementSibling;
+
+                  if (
+                    !resultContainer ||
+                    !resultContainer.id ||
+                    resultContainer.id !== "export-result-container"
+                  ) {
+                    // 결과 컨테이너가 없으면 생성
+                    resultContainer = document.createElement("div");
+                    resultContainer.id = "export-result-container";
+                    resultContainer.style.cssText = "margin-top: -1px;";
+                    settingRow?.parentNode?.insertBefore(
+                      resultContainer,
+                      settingRow.nextSibling
+                    );
+                  }
+                  resultContainer.innerHTML = `
+											<div style="
+												padding: 16px 20px;
+												background: rgba(255, 255, 255, 0.03);
+												border: 1px solid rgba(255, 107, 107, 0.2);
+												border-left: 1px solid rgba(255, 255, 255, 0.08);
+												border-right: 1px solid rgba(255, 255, 255, 0.08);
+												border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+												backdrop-filter: blur(30px) saturate(150%);
+												-webkit-backdrop-filter: blur(30px) saturate(150%);
+											">
+												<div style="
+													display: flex;
+													align-items: center;
+													gap: 12px;
+													color: rgba(255, 107, 107, 0.9);
+													font-size: 13px;
+													font-weight: 500;
+												">
+													<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+														<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+													</svg>
+													<div>
+														<div style="font-weight: 600; margin-bottom: 2px;">설정 내보내기 실패</div>
+														<div style="opacity: 0.8; font-size: 12px;">${
+                              e.message || e.reason || e.toString()
+                            }</div>
+													</div>
+												</div>
+											</div>
+										`;
+                } finally {
+                  button.textContent = originalText;
+                  button.disabled = false;
+                }
+              },
+            },
+
+            {
+              desc: "설정 불러오기",
+              info: `설정 파일을 불러옵니다`,
+              key: "import-settings",
+              text: "불러오기",
+              type: ConfigButton,
+              onChange: async (_, event) => {
+                const button = event?.target;
+                if (!button) return;
+                const originalText = button.textContent;
+                button.textContent = "불러오는 중...";
+                button.disabled = true;
+
+                try {
+                  const fileInput = document.createElement("input");
+                  fileInput.type = "file";
+                  fileInput.accept = ".lpconfig,.json";
+                  fileInput.onchange = async (e) => {
+                    if (!fileInput.files || fileInput.files.length === 0) {
+                      button.textContent = originalText;
+                      button.disabled = false;
+                      return;
+                    }
+                    const file = fileInput.files[0];
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                      const contents = e.target.result;
+                      try {
+                        // check file type
+                        const fileType = file.type;
+                        const isLpconfig =
+                          !fileType && file.name.includes("lpconfig");
+                        const isJson = fileType && fileType.includes("json");
+                        if (!isLpconfig && !isJson) {
+                          console.log(fileType);
+                          console.log(file.name);
+                          throw new Error("Invalid file type " + fileType);
+                        }
+                        if (isJson) {
+                          const arraBuffer2Text = (ab) => {
+                            return new TextDecoder("utf-8").decode(ab);
+                          };
+                          const cfg = JSON.parse(arraBuffer2Text(contents));
+                          StorageManager.importConfig(cfg);
+                        } else {
+                          const u8 = new Uint8Array(contents);
+                          const cfg = settingsObject.deserialize(u8);
+                          StorageManager.importConfig(cfg);
+                        }
+
+                        const settingRow = button.closest(".setting-row");
+                        let resultContainer = settingRow?.nextElementSibling;
+
+                        if (
+                          !resultContainer ||
+                          !resultContainer.id ||
+                          resultContainer.id !== "export-result-container"
+                        ) {
+                          // 결과 컨테이너가 없으면 생성
+                          resultContainer = document.createElement("div");
+                          resultContainer.id = "export-result-container";
+                          resultContainer.style.cssText = "margin-top: -1px;";
+                          settingRow?.parentNode?.insertBefore(
+                            resultContainer,
+                            settingRow.nextSibling
+                          );
+                        }
+
+                        resultContainer.innerHTML = `<div style="
+													padding: 16px 20px;
+													background: rgba(255, 255, 255, 0.03);
+													border: 1px solid rgba(96, 165, 250, 0.15);
+													border-left: 1px solid rgba(255, 255, 255, 0.08);
+													border-right: 1px solid rgba(255, 255, 255, 0.08);
+													border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+													border-bottom-left-radius: 12px;
+													border-bottom-right-radius: 12px;
+													backdrop-filter: blur(30px) saturate(150%);
+													-webkit-backdrop-filter: blur(30px) saturate(150%);
+												">
+													<div style="
+														display: flex;
+														align-items: center;
+														gap: 12px;
+														color: rgba(96, 165, 250, 0.9);
+														font-size: 13px;
+													">
+														<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+															<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+														</svg>
+														<div>
+															<div style="font-weight: 600; margin-bottom: 2px;">불러오기에 성공했습니다</div>
+															<div style="opacity: 0.8; font-size: 12px;">잠시 후 페이지가 새로고침됩니다...</div>
+														</div>
+													</div>
+												</div>`;
+                        
+                        // 1.5초 후 자동 새로고침
+                        setTimeout(() => {
+                          location.reload();
+                        }, 1500);
+                      } catch (e) {
+                        const settingRow = button.closest(".setting-row");
+                        let resultContainer = settingRow?.nextElementSibling;
+
+                        if (
+                          !resultContainer ||
+                          !resultContainer.id ||
+                          resultContainer.id !== "export-result-container"
+                        ) {
+                          // 결과 컨테이너가 없으면 생성
+                          resultContainer = document.createElement("div");
+                          resultContainer.id = "export-result-container";
+                          resultContainer.style.cssText = "margin-top: -1px;";
+                          settingRow?.parentNode?.insertBefore(
+                            resultContainer,
+                            settingRow.nextSibling
+                          );
+                        }
+                        resultContainer.innerHTML = `
+											<div style="
+												padding: 16px 20px;
+												background: rgba(255, 255, 255, 0.03);
+												border: 1px solid rgba(255, 107, 107, 0.2);
+												border-left: 1px solid rgba(255, 255, 255, 0.08);
+												border-right: 1px solid rgba(255, 255, 255, 0.08);
+												border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+												border-bottom-left-radius: 12px;
+												border-bottom-right-radius: 12px;
+												backdrop-filter: blur(30px) saturate(150%);
+												-webkit-backdrop-filter: blur(30px) saturate(150%);
+											">
+												<div style="
+													display: flex;
+													align-items: center;
+													gap: 12px;
+													color: rgba(255, 107, 107, 0.9);
+													font-size: 13px;
+													font-weight: 500;
+												">
+													<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+														<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+													</svg>
+													<div>
+														<div style="font-weight: 600; margin-bottom: 2px;">설정 불러오기 실패</div>
+														<div style="opacity: 0.8; font-size: 12px;">${
+                              e.message || e.reason || e.toString()
+                            }</div>
+													</div>
+												</div>
+											</div>
+										`;
+                      } finally {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                      }
+                    };
+                    reader.readAsArrayBuffer(file);
+                  };
+                  document.body.appendChild(fileInput);
+                  fileInput.click();
+                  document.body.removeChild(fileInput);
+                } catch (e) {
+                  button.textContent = originalText;
+                  button.disabled = false;
+                }
+              },
+            },
+          ],
+          onChange: () => {},
+        }),
+        react.createElement(SectionTitle, {
+          title: "설정 초기화",
+          subtitle: "모든 설정을 기본값으로 되돌립니다",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "모든 설정 초기화",
+              info: "모든 설정을 기본값으로 되돌립니다. 이 작업은 되돌릴 수 없습니다",
+              key: "reset-settings",
+              text: "초기화",
+              type: ConfigButton,
+              onChange: async (_, event) => {
+                const button = event?.target;
+                if (!button) return;
+
+                // 확인 대화상자
+                const confirmed = confirm(
+                  "정말로 모든 설정을 초기화하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 모든 설정이 기본값으로 재설정됩니다.\n\n계속하시려면 '확인'을 클릭하세요."
+                );
+
+                if (!confirmed) return;
+
+                const originalText = button.textContent;
+                button.textContent = "초기화 중...";
+                button.disabled = true;
+
+                const settingRow = button.closest(".setting-row");
+                let resultContainer = settingRow?.nextElementSibling;
+
+                if (
+                  !resultContainer ||
+                  !resultContainer.id ||
+                  resultContainer.id !== "reset-result-container"
+                ) {
+                  resultContainer = document.createElement("div");
+                  resultContainer.id = "reset-result-container";
+                  resultContainer.style.cssText = "margin-top: -1px;";
+                  settingRow?.parentNode?.insertBefore(
+                    resultContainer,
+                    settingRow.nextSibling
+                  );
+                }
+
+                try {
+                  // localStorage에서 lyrics-plus 관련 모든 항목 제거
+                  const keysToRemove = [];
+                  for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith("lyrics-plus:")) {
+                      keysToRemove.push(key);
+                    }
+                  }
+                  
+                  keysToRemove.forEach((key) => {
+                    localStorage.removeItem(key);
+                  });
+
+                  resultContainer.innerHTML = `<div style="
+													padding: 16px 20px;
+													background: rgba(255, 255, 255, 0.03);
+													border: 1px solid rgba(96, 165, 250, 0.15);
+													border-left: 1px solid rgba(255, 255, 255, 0.08);
+													border-right: 1px solid rgba(255, 255, 255, 0.08);
+													border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+													border-bottom-left-radius: 12px;
+													border-bottom-right-radius: 12px;
+													backdrop-filter: blur(30px) saturate(150%);
+													-webkit-backdrop-filter: blur(30px) saturate(150%);
+												">
+													<div style="
+														display: flex;
+														align-items: center;
+														gap: 12px;
+														color: rgba(96, 165, 250, 0.9);
+														font-size: 13px;
+													">
+														<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+															<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+														</svg>
+														<div>
+															<div style="font-weight: 600; margin-bottom: 2px;">초기화가 완료되었습니다</div>
+															<div style="opacity: 0.8; font-size: 12px;">잠시 후 페이지가 새로고침됩니다...</div>
+														</div>
+													</div>
+												</div>`;
+
+                  // 1.5초 후 자동 새로고침
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1500);
+                } catch (e) {
+                  resultContainer.innerHTML = `
+											<div style="
+												padding: 16px 20px;
+												background: rgba(255, 255, 255, 0.03);
+												border: 1px solid rgba(255, 107, 107, 0.2);
+												border-left: 1px solid rgba(255, 255, 255, 0.08);
+												border-right: 1px solid rgba(255, 255, 255, 0.08);
+												border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+												border-bottom-left-radius: 12px;
+												border-bottom-right-radius: 12px;
+												backdrop-filter: blur(30px) saturate(150%);
+												-webkit-backdrop-filter: blur(30px) saturate(150%);
+											">
+												<div style="
+													display: flex;
+													align-items: center;
+													gap: 12px;
+													color: rgba(255, 107, 107, 0.9);
+													font-size: 13px;
+													font-weight: 500;
+												">
+													<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+														<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+													</svg>
+													<div>
+														<div style="font-weight: 600; margin-bottom: 2px;">초기화 실패</div>
+														<div style="opacity: 0.8; font-size: 12px;">${
+                            e.message || e.reason || e.toString()
+                          }</div>
+													</div>
+												</div>
+											</div>
+										`;
+
+                  button.textContent = originalText;
+                  button.disabled = false;
+                }
+              },
+            },
+          ],
+          onChange: () => {},
         })
       ),
       // 정보 탭
@@ -3256,7 +3899,7 @@ const ConfigModal = () => {
             "p",
             {
               style: {
-                margin: "0 0 8px",
+                margin: "0 0 16px",
                 color: "rgba(255,255,255,0.7)",
                 lineHeight: "1.6",
               },
@@ -3267,12 +3910,55 @@ const ConfigModal = () => {
             "p",
             {
               style: {
-                margin: "0",
+                margin: "0 0 8px",
                 color: "rgba(255,255,255,0.5)",
                 fontSize: "14px",
               },
             },
             `버전: ${Utils.currentVersion}`
+          ),
+          react.createElement("div", {
+            style: {
+              height: "1px",
+              background: "rgba(255, 255, 255, 0.1)",
+              margin: "16px 0",
+            },
+          }),
+          react.createElement(
+            "p",
+            {
+              style: {
+                margin: "0 0 12px",
+                color: "rgba(255,255,255,0.9)",
+                lineHeight: "1.6",
+              },
+            },
+            react.createElement("strong", null, "개발:"),
+            " ivLis Studio"
+          ),
+          react.createElement(
+            "p",
+            {
+              style: {
+                margin: "0 0 12px",
+                color: "rgba(255,255,255,0.9)",
+                lineHeight: "1.6",
+              },
+            },
+            react.createElement("strong", null, "원본 프로젝트:"),
+            " lyrics-plus by khanhas"
+          ),
+          react.createElement(
+            "p",
+            {
+              style: {
+                margin: "0",
+                color: "rgba(255,255,255,0.7)",
+                fontSize: "14px",
+                lineHeight: "1.6",
+              },
+            },
+            "오픈소스 프로젝트에 기여해주신 모든 분들께 감사드립니다."
           )
         ),
         react.createElement(SectionTitle, {
@@ -3567,14 +4253,15 @@ const ConfigModal = () => {
           ],
           onChange: () => {},
         }),
+
         react.createElement(SectionTitle, {
-          title: "크레딧",
-          subtitle: "개발자 및 기여자",
+          title: "패치 노트",
+          subtitle: "최신 업데이트 내역",
         }),
         react.createElement(
           "div",
           {
-            className: "info-card",
+            id: "patch-notes-container",
             style: {
               padding: "20px",
               background: "rgba(255, 255, 255, 0.03)",
@@ -3582,347 +4269,16 @@ const ConfigModal = () => {
               borderRadius: "0 0 12px 12px",
               backdropFilter: "blur(30px) saturate(150%)",
               WebkitBackdropFilter: "blur(30px) saturate(150%)",
+              marginBottom: "24px",
+              minHeight: "100px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "rgba(255,255,255,0.5)",
             },
           },
-          react.createElement(
-            "p",
-            {
-              style: {
-                margin: "0 0 12px",
-                color: "rgba(255,255,255,0.9)",
-                lineHeight: "1.6",
-              },
-            },
-            react.createElement("strong", null, "개발:"),
-            " ivLis Studio"
-          ),
-          react.createElement(
-            "p",
-            {
-              style: {
-                margin: "0 0 12px",
-                color: "rgba(255,255,255,0.9)",
-                lineHeight: "1.6",
-              },
-            },
-            react.createElement("strong", null, "원본 프로젝트:"),
-            " lyrics-plus by khanhas"
-          ),
-          react.createElement(
-            "p",
-            {
-              style: {
-                margin: "0",
-                color: "rgba(255,255,255,0.7)",
-                fontSize: "14px",
-                lineHeight: "1.6",
-              },
-            },
-            "오픈소스 프로젝트에 기여해주신 모든 분들께 감사드립니다."
-          )
-        ),
-
-        react.createElement(SectionTitle, {
-          title: "설정 내보내기/가져오기",
-          subtitle: "다른 기기로 설정을 옮기세요",
-        }),
-        react.createElement(OptionList, {
-          items: [
-            {
-              desc: "설정 내보내기",
-              info: `현재 설정을 파일로 내보냅니다.`,
-              key: "export-settings",
-              text: "내보내기",
-              type: ConfigButton,
-              onChange: async (_, event) => {
-                const button = event?.target;
-                if (!button) return;
-                const originalText = button.textContent;
-                button.textContent = "내보내는 중...";
-                button.disabled = true;
-
-                try {
-                  const cfg = StorageManager.exportConfig();
-                  const u8 = settingsObject.serialize(cfg);
-                  // download as file
-                  const blob = new Blob([u8], {
-                    type: "application/octet-stream",
-                  });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = "lyrics-plus.lpconfig";
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-
-                  const settingRow = button.closest(".setting-row");
-                  let resultContainer = settingRow?.nextElementSibling;
-
-                  if (
-                    !resultContainer ||
-                    !resultContainer.id ||
-                    resultContainer.id !== "export-result-container"
-                  ) {
-                    // 결과 컨테이너가 없으면 생성
-                    resultContainer = document.createElement("div");
-                    resultContainer.id = "export-result-container";
-                    resultContainer.style.cssText = "margin-top: -1px;";
-                    settingRow?.parentNode?.insertBefore(
-                      resultContainer,
-                      settingRow.nextSibling
-                    );
-                  }
-
-                  resultContainer.innerHTML = `<div style="
-													padding: 16px 20px;
-													background: rgba(255, 255, 255, 0.03);
-													border: 1px solid rgba(96, 165, 250, 0.15);
-													border-left: 1px solid rgba(255, 255, 255, 0.08);
-													border-right: 1px solid rgba(255, 255, 255, 0.08);
-													border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-													backdrop-filter: blur(30px) saturate(150%);
-													-webkit-backdrop-filter: blur(30px) saturate(150%);
-												">
-													<div style="
-														display: flex;
-														align-items: center;
-														gap: 12px;
-														color: rgba(96, 165, 250, 0.9);
-														font-size: 13px;
-													">
-														<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-															<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-														</svg>
-														<div>
-															<div style="font-weight: 600; margin-bottom: 2px;">내보내기에 성공했습니다</div>
-															<div style="opacity: 0.8; font-size: 12px;">설정파일을 다운로드 폴더에 저장합니다.</div>
-														</div>
-													</div>
-												</div>`;
-                } catch (e) {
-                  const settingRow = button.closest(".setting-row");
-                  let resultContainer = settingRow?.nextElementSibling;
-
-                  if (
-                    !resultContainer ||
-                    !resultContainer.id ||
-                    resultContainer.id !== "export-result-container"
-                  ) {
-                    // 결과 컨테이너가 없으면 생성
-                    resultContainer = document.createElement("div");
-                    resultContainer.id = "export-result-container";
-                    resultContainer.style.cssText = "margin-top: -1px;";
-                    settingRow?.parentNode?.insertBefore(
-                      resultContainer,
-                      settingRow.nextSibling
-                    );
-                  }
-                  resultContainer.innerHTML = `
-											<div style="
-												padding: 16px 20px;
-												background: rgba(255, 255, 255, 0.03);
-												border: 1px solid rgba(255, 107, 107, 0.2);
-												border-left: 1px solid rgba(255, 255, 255, 0.08);
-												border-right: 1px solid rgba(255, 255, 255, 0.08);
-												border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-												backdrop-filter: blur(30px) saturate(150%);
-												-webkit-backdrop-filter: blur(30px) saturate(150%);
-											">
-												<div style="
-													display: flex;
-													align-items: center;
-													gap: 12px;
-													color: rgba(255, 107, 107, 0.9);
-													font-size: 13px;
-													font-weight: 500;
-												">
-													<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-														<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-													</svg>
-													<div>
-														<div style="font-weight: 600; margin-bottom: 2px;">설정 내보내기 실패</div>
-														<div style="opacity: 0.8; font-size: 12px;">${
-                              e.message || e.reason || e.toString()
-                            }</div>
-													</div>
-												</div>
-											</div>
-										`;
-                } finally {
-                  button.textContent = originalText;
-                  button.disabled = false;
-                }
-              },
-            },
-
-            {
-              desc: "설정 불러오기",
-              info: `설정 파일을 불러옵니다`,
-              key: "import-settings",
-              text: "불러오기",
-              type: ConfigButton,
-              onChange: async (_, event) => {
-                const button = event?.target;
-                if (!button) return;
-                const originalText = button.textContent;
-                button.textContent = "불러오는 중...";
-                button.disabled = true;
-
-                try {
-                  const fileInput = document.createElement("input");
-                  fileInput.type = "file";
-                  fileInput.accept = ".lpconfig,.json";
-                  fileInput.onchange = async (e) => {
-                    if (!fileInput.files || fileInput.files.length === 0) {
-                      button.textContent = originalText;
-                      button.disabled = false;
-                      return;
-                    }
-                    const file = fileInput.files[0];
-                    const reader = new FileReader();
-                    reader.onload = async (e) => {
-                      const contents = e.target.result;
-                      try {
-                        // check file type
-                        const fileType = file.type;
-                        const isLpconfig =
-                          !fileType && file.name.includes("lpconfig");
-                        const isJson = fileType && fileType.includes("json");
-                        if (!isLpconfig && !isJson) {
-                          console.log(fileType);
-                          console.log(file.name);
-                          throw new Error("Invalid file type " + fileType);
-                        }
-                        if (isJson) {
-                          const arraBuffer2Text = (ab) => {
-                            return new TextDecoder("utf-8").decode(ab);
-                          };
-                          const cfg = JSON.parse(arraBuffer2Text(contents));
-                          StorageManager.importConfig(cfg);
-                        } else {
-                          const u8 = new Uint8Array(contents);
-                          const cfg = settingsObject.deserialize(u8);
-                          StorageManager.importConfig(cfg);
-                        }
-
-                        const settingRow = button.closest(".setting-row");
-                        let resultContainer = settingRow?.nextElementSibling;
-
-                        if (
-                          !resultContainer ||
-                          !resultContainer.id ||
-                          resultContainer.id !== "export-result-container"
-                        ) {
-                          // 결과 컨테이너가 없으면 생성
-                          resultContainer = document.createElement("div");
-                          resultContainer.id = "export-result-container";
-                          resultContainer.style.cssText = "margin-top: -1px;";
-                          settingRow?.parentNode?.insertBefore(
-                            resultContainer,
-                            settingRow.nextSibling
-                          );
-                        }
-
-                        resultContainer.innerHTML = `<div style="
-													padding: 16px 20px;
-													background: rgba(255, 255, 255, 0.03);
-													border: 1px solid rgba(96, 165, 250, 0.15);
-													border-left: 1px solid rgba(255, 255, 255, 0.08);
-													border-right: 1px solid rgba(255, 255, 255, 0.08);
-													border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-													border-bottom-left-radius: 12px;
-													border-bottom-right-radius: 12px;
-													backdrop-filter: blur(30px) saturate(150%);
-													-webkit-backdrop-filter: blur(30px) saturate(150%);
-												">
-													<div style="
-														display: flex;
-														align-items: center;
-														gap: 12px;
-														color: rgba(96, 165, 250, 0.9);
-														font-size: 13px;
-													">
-														<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-															<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-														</svg>
-														<div>
-															<div style="font-weight: 600; margin-bottom: 2px;">불러오기에 성공했습니다</div>
-															<div style="opacity: 0.8; font-size: 12px;">재시작이 필요할 수 있습니다</div>
-														</div>
-													</div>
-												</div>`;
-                      } catch (e) {
-                        const settingRow = button.closest(".setting-row");
-                        let resultContainer = settingRow?.nextElementSibling;
-
-                        if (
-                          !resultContainer ||
-                          !resultContainer.id ||
-                          resultContainer.id !== "export-result-container"
-                        ) {
-                          // 결과 컨테이너가 없으면 생성
-                          resultContainer = document.createElement("div");
-                          resultContainer.id = "export-result-container";
-                          resultContainer.style.cssText = "margin-top: -1px;";
-                          settingRow?.parentNode?.insertBefore(
-                            resultContainer,
-                            settingRow.nextSibling
-                          );
-                        }
-                        resultContainer.innerHTML = `
-											<div style="
-												padding: 16px 20px;
-												background: rgba(255, 255, 255, 0.03);
-												border: 1px solid rgba(255, 107, 107, 0.2);
-												border-left: 1px solid rgba(255, 255, 255, 0.08);
-												border-right: 1px solid rgba(255, 255, 255, 0.08);
-												border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-												border-bottom-left-radius: 12px;
-												border-bottom-right-radius: 12px;
-												backdrop-filter: blur(30px) saturate(150%);
-												-webkit-backdrop-filter: blur(30px) saturate(150%);
-											">
-												<div style="
-													display: flex;
-													align-items: center;
-													gap: 12px;
-													color: rgba(255, 107, 107, 0.9);
-													font-size: 13px;
-													font-weight: 500;
-												">
-													<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-														<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-													</svg>
-													<div>
-														<div style="font-weight: 600; margin-bottom: 2px;">설정 불러오기 실패</div>
-														<div style="opacity: 0.8; font-size: 12px;">${
-                              e.message || e.reason || e.toString()
-                            }</div>
-													</div>
-												</div>
-											</div>
-										`;
-                      } finally {
-                        button.textContent = originalText;
-                        button.disabled = false;
-                      }
-                    };
-                    reader.readAsArrayBuffer(file);
-                  };
-                  document.body.appendChild(fileInput);
-                  fileInput.click();
-                  document.body.removeChild(fileInput);
-                } catch (e) {
-                  button.textContent = originalText;
-                  button.disabled = false;
-                }
-              },
-            },
-          ],
-          onChange: () => {},
-        })
+          "패치 노트를 불러오는 중..."
+        )
       )
     )
   );

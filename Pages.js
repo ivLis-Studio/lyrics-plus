@@ -606,13 +606,38 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara }) => {
 	// 유효성 검사를 Hook 호출 전에 수행하지 않음 - Hook은 항상 같은 순서로 호출되어야 함
 	const [position, setPosition] = useState(0);
+	const [trackOffset, setTrackOffset] = useState(0);
 	const activeLineEle = useRef();
 	const lyricContainerEle = useRef();
 
+	// Load track offset asynchronously
+	useEffect(() => {
+		const loadOffset = async () => {
+			const trackUri = Spicetify.Player?.data?.item?.uri || "";
+			if (trackUri) {
+				const offset = (await Utils.getTrackSyncOffset(trackUri)) || 0;
+				setTrackOffset(offset);
+			}
+		};
+		
+		loadOffset();
+
+		// Listen for offset changes
+		const handleOffsetChange = (event) => {
+			const trackUri = Spicetify.Player?.data?.item?.uri || "";
+			if (event.detail.trackUri === trackUri) {
+				setTrackOffset(event.detail.offset);
+			}
+		};
+
+		window.addEventListener('lyrics-plus:offset-changed', handleOffsetChange);
+		return () => {
+			window.removeEventListener('lyrics-plus:offset-changed', handleOffsetChange);
+		};
+	}, [Spicetify.Player?.data?.item?.uri]);
+
 	useTrackPosition(() => {
 		const newPos = Spicetify.Player.getProgress();
-		const trackUri = Spicetify.Player?.data?.item?.uri || "";
-		const trackOffset = Utils.getTrackSyncOffset(trackUri);
 		const delay = CONFIG.visual["global-delay"] + CONFIG.visual.delay + trackOffset;
 		// Always update position for smoother karaoke animation
 		setPosition(newPos + delay);
@@ -1087,13 +1112,38 @@ function isInViewport(element) {
 const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara }) => {
 	// Hook은 항상 먼저 호출되어야 함 - React 130 방지
 	const [position, setPosition] = useState(0);
+	const [trackOffset, setTrackOffset] = useState(0);
 	const activeLineRef = useRef(null);
 	const pageRef = useRef(null);
 
+	// Load track offset asynchronously
+	useEffect(() => {
+		const loadOffset = async () => {
+			const trackUri = Spicetify.Player?.data?.item?.uri || "";
+			if (trackUri) {
+				const offset = (await Utils.getTrackSyncOffset(trackUri)) || 0;
+				setTrackOffset(offset);
+			}
+		};
+		
+		loadOffset();
+
+		// Listen for offset changes
+		const handleOffsetChange = (event) => {
+			const trackUri = Spicetify.Player?.data?.item?.uri || "";
+			if (event.detail.trackUri === trackUri) {
+				setTrackOffset(event.detail.offset);
+			}
+		};
+
+		window.addEventListener('lyrics-plus:offset-changed', handleOffsetChange);
+		return () => {
+			window.removeEventListener('lyrics-plus:offset-changed', handleOffsetChange);
+		};
+	}, [Spicetify.Player?.data?.item?.uri]);
+
 	useTrackPosition(() => {
 		const newPos = Spicetify.Player.getProgress();
-		const trackUri = Spicetify.Player?.data?.item?.uri || "";
-		const trackOffset = Utils.getTrackSyncOffset(trackUri);
 		const delay = CONFIG.visual["global-delay"] + CONFIG.visual.delay + trackOffset;
 		// Always update position for smoother karaoke animation
 		setPosition(newPos + delay);
