@@ -1,1225 +1,1364 @@
-const ButtonSVG = react.memo(({ icon, active = true, onClick }) => {
-	return react.createElement(
-		"button",
-		{
-			className: `switch-checkbox${active ? " active" : ""}`,
-			onClick,
-			"aria-checked": active,
-			role: "checkbox"
-		},
-		react.createElement("svg", {
-			width: 12,
-			height: 12,
-			viewBox: "0 0 16 16",
-			fill: "currentColor",
-			dangerouslySetInnerHTML: {
-				__html: icon,
-			},
-		})
-	);
-}, (prevProps, nextProps) => {
-	// active 상태가 변경되면 리렌더링 필요
-	return prevProps.active === nextProps.active;
-});
+const ButtonSVG = react.memo(
+  ({ icon, active = true, onClick }) => {
+    return react.createElement(
+      "button",
+      {
+        className: `switch-checkbox${active ? " active" : ""}`,
+        onClick,
+        "aria-checked": active,
+        role: "checkbox",
+      },
+      react.createElement("svg", {
+        width: 12,
+        height: 12,
+        viewBox: "0 0 16 16",
+        fill: "currentColor",
+        dangerouslySetInnerHTML: {
+          __html: icon,
+        },
+      })
+    );
+  },
+  (prevProps, nextProps) => {
+    // active 상태가 변경되면 리렌더링 필요
+    return prevProps.active === nextProps.active;
+  }
+);
 
 const SwapButton = ({ icon, disabled, onClick }) => {
-	return react.createElement(
-		"button",
-		{
-			className: "swap-button",
-			onClick,
-			disabled,
-		},
-		react.createElement("svg", {
-			width: 12,
-			height: 12,
-			viewBox: "0 0 16 16",
-			fill: "currentColor",
-			dangerouslySetInnerHTML: {
-				__html: icon,
-			},
-		})
-	);
+  return react.createElement(
+    "button",
+    {
+      className: "swap-button",
+      onClick,
+      disabled,
+    },
+    react.createElement("svg", {
+      width: 12,
+      height: 12,
+      viewBox: "0 0 16 16",
+      fill: "currentColor",
+      dangerouslySetInnerHTML: {
+        __html: icon,
+      },
+    })
+  );
 };
 
 const CacheButton = () => {
-	let lyrics = {};
+  let lyrics = {};
 
-	try {
-		const localLyrics = JSON.parse(localStorage.getItem("lyrics-plus:local-lyrics"));
-		if (!localLyrics || typeof localLyrics !== "object") {
-			throw "";
-		}
-		lyrics = localLyrics;
-	} catch {
-		lyrics = {};
-	}
+  try {
+    const localLyrics = JSON.parse(
+      localStorage.getItem("lyrics-plus:local-lyrics")
+    );
+    if (!localLyrics || typeof localLyrics !== "object") {
+      throw "";
+    }
+    lyrics = localLyrics;
+  } catch {
+    lyrics = {};
+  }
 
-	const [count, setCount] = useState(Object.keys(lyrics).length);
-	const text = count ? "캐시된 모든 가사 삭제" : "캐시된 가사 없음";
+  const [count, setCount] = useState(Object.keys(lyrics).length);
+  const text = count ? "캐시된 모든 가사 삭제" : "캐시된 가사 없음";
 
-	return react.createElement(
-		"button",
-		{
-			className: "btn",
-			onClick: () => {
-				localStorage.removeItem("lyrics-plus:local-lyrics");
-				setCount(0);
-			},
-			disabled: !count,
-		},
-		text
-	);
+  return react.createElement(
+    "button",
+    {
+      className: "btn",
+      onClick: () => {
+        localStorage.removeItem("lyrics-plus:local-lyrics");
+        setCount(0);
+      },
+      disabled: !count,
+    },
+    text
+  );
 };
-
 
 const ConfigButton = ({ name, info, text, onChange = () => {} }) => {
-	return react.createElement(
-		"div",
-		{
-			className: "setting-row",
-		},
-		react.createElement(
-			"div",
-			{ className: "setting-row-content" },
-			react.createElement(
-				"div",
-				{ className: "setting-row-left" },
-				react.createElement("div", { className: "setting-name" }, name),
-				info && react.createElement("div", {
-					className: "setting-description",
-					dangerouslySetInnerHTML: {
-						__html: info,
-					},
-				})
-			),
-			react.createElement(
-				"div",
-				{ className: "setting-row-right" },
-				react.createElement(
-					"button",
-					{
-						className: "btn",
-						onClick: onChange,
-					},
-					text
-				)
-			)
-		)
-	);
+  return react.createElement(
+    "div",
+    {
+      className: "setting-row",
+    },
+    react.createElement(
+      "div",
+      { className: "setting-row-content" },
+      react.createElement(
+        "div",
+        { className: "setting-row-left" },
+        react.createElement("div", { className: "setting-name" }, name),
+        info &&
+          react.createElement("div", {
+            className: "setting-description",
+            dangerouslySetInnerHTML: {
+              __html: info,
+            },
+          })
+      ),
+      react.createElement(
+        "div",
+        { className: "setting-row-right" },
+        react.createElement(
+          "button",
+          {
+            className: "btn",
+            onClick: onChange,
+          },
+          text
+        )
+      )
+    )
+  );
 };
 
-const ConfigSlider = react.memo(({ name, defaultValue, disabled, onChange = () => {} }) => {
-	const [active, setActive] = useState(defaultValue);
+const ConfigSlider = react.memo(
+  ({ name, defaultValue, disabled, onChange = () => {} }) => {
+    const [active, setActive] = useState(defaultValue);
 
-	useEffect(() => {
-		setActive(defaultValue);
-	}, [defaultValue]);
+    useEffect(() => {
+      setActive(defaultValue);
+    }, [defaultValue]);
 
-	const toggleState = useCallback(() => {
-		if (disabled) return;
-		setActive(prevActive => {
-			const newState = !prevActive;
-			onChange(newState);
-			return newState;
-		});
-	}, [onChange, disabled]);
+    const toggleState = useCallback(() => {
+      if (disabled) return;
+      setActive((prevActive) => {
+        const newState = !prevActive;
+        onChange(newState);
+        return newState;
+      });
+    }, [onChange, disabled]);
 
-	return react.createElement(ButtonSVG, {
-		icon: Spicetify.SVGIcons.check,
-		active,
-		onClick: toggleState,
-		disabled,
-	});
-});
+    return react.createElement(ButtonSVG, {
+      icon: Spicetify.SVGIcons.check,
+      active,
+      onClick: toggleState,
+      disabled,
+    });
+  }
+);
 
-const ConfigSliderRange = ({ name, defaultValue, min = 0, max = 100, step = 1, unit = "", disabled, onChange = () => {} }) => {
-	const [value, setValue] = useState(defaultValue);
-	const sliderRef = useRef(null);
+const ConfigSliderRange = ({
+  name,
+  defaultValue,
+  min = 0,
+  max = 100,
+  step = 1,
+  unit = "",
+  disabled,
+  onChange = () => {},
+}) => {
+  const [value, setValue] = useState(defaultValue);
+  const sliderRef = useRef(null);
 
-	useEffect(() => {
-		setValue(defaultValue);
-	}, [defaultValue]);
+  useEffect(() => {
+    setValue(defaultValue);
+  }, [defaultValue]);
 
-	const updateValue = useCallback((newValue) => {
-		if (disabled) return;
-		setValue(newValue);
-		onChange(newValue);
-	}, [onChange, disabled]);
+  const updateValue = useCallback(
+    (newValue) => {
+      if (disabled) return;
+      setValue(newValue);
+      onChange(newValue);
+    },
+    [onChange, disabled]
+  );
 
-	const handleInput = useCallback(
-		(event) => {
-			const newValue = Number(event.target.value);
-			updateValue(newValue);
-		},
-		[updateValue]
-	);
+  const handleInput = useCallback(
+    (event) => {
+      const newValue = Number(event.target.value);
+      updateValue(newValue);
+    },
+    [updateValue]
+  );
 
-	const handleChange = useCallback(
-		(event) => {
-			const newValue = Number(event.target.value);
-			updateValue(newValue);
-		},
-		[updateValue]
-	);
+  const handleChange = useCallback(
+    (event) => {
+      const newValue = Number(event.target.value);
+      updateValue(newValue);
+    },
+    [updateValue]
+  );
 
-	const sliderStyle = {
-		'--progress-percent': `${((value - min) / (max - min)) * 100}%`
-	};
+  const sliderStyle = {
+    "--progress-percent": `${((value - min) / (max - min)) * 100}%`,
+  };
 
-	return react.createElement(
-		"div",
-		{ className: `slider-container` },
-		react.createElement("input", {
-			ref: sliderRef,
-			type: "range",
-			min,
-			max,
-			step,
-			value,
-			disabled,
-			onInput: handleInput,
-			onChange: handleChange,
-			onMouseDown: (e) => {
-				if (disabled) return;
-				// 마우스 다운 시 즉시 값 업데이트
-				const newValue = Number(e.target.value);
-				updateValue(newValue);
-			},
-			className: "config-slider",
-			style: sliderStyle,
-		}),
-		react.createElement(
-			"span",
-			{ className: "slider-value" },
-			`${value}${unit}`
-		)
-	);
+  return react.createElement(
+    "div",
+    { className: `slider-container` },
+    react.createElement("input", {
+      ref: sliderRef,
+      type: "range",
+      min,
+      max,
+      step,
+      value,
+      disabled,
+      onInput: handleInput,
+      onChange: handleChange,
+      onMouseDown: (e) => {
+        if (disabled) return;
+        // 마우스 다운 시 즉시 값 업데이트
+        const newValue = Number(e.target.value);
+        updateValue(newValue);
+      },
+      className: "config-slider",
+      style: sliderStyle,
+    }),
+    react.createElement(
+      "span",
+      { className: "slider-value" },
+      `${value}${unit}`
+    )
+  );
 };
 
 const ConfigColorPicker = ({ name, defaultValue, onChange = () => {} }) => {
-	const [value, setValue] = useState(defaultValue);
+  const [value, setValue] = useState(defaultValue);
 
-	useEffect(() => {
-		setValue(defaultValue);
-	}, [defaultValue]);
+  useEffect(() => {
+    setValue(defaultValue);
+  }, [defaultValue]);
 
-	const handleChange = useCallback(
-		(event) => {
-			const newValue = event.target.value;
-			setValue(newValue);
-			onChange(newValue);
-		},
-		[onChange]
-	);
+  const handleChange = useCallback(
+    (event) => {
+      const newValue = event.target.value;
+      setValue(newValue);
+      onChange(newValue);
+    },
+    [onChange]
+  );
 
-	return react.createElement(
-		"div",
-		{ className: "color-picker-container" },
-		react.createElement("input", {
-			type: "color",
-			value,
-			onChange: handleChange,
-			className: "config-color-picker",
-		}),
-		react.createElement("input", {
-			type: "text",
-			value,
-			onChange: handleChange,
-			className: "config-color-input",
-			pattern: "^#[0-9A-Fa-f]{6}$",
-			placeholder: "#000000",
-		})
-	);
+  return react.createElement(
+    "div",
+    { className: "color-picker-container" },
+    react.createElement("input", {
+      type: "color",
+      value,
+      onChange: handleChange,
+      className: "config-color-picker",
+    }),
+    react.createElement("input", {
+      type: "text",
+      value,
+      onChange: handleChange,
+      className: "config-color-input",
+      pattern: "^#[0-9A-Fa-f]{6}$",
+      placeholder: "#000000",
+    })
+  );
 };
 
-
-
 const ColorPresetSelector = ({ name, defaultValue, onChange = () => {} }) => {
-	const [selectedColor, setSelectedColor] = useState(defaultValue);
-	const [showAll, setShowAll] = useState(false);
-	
-	useEffect(() => {
-		setSelectedColor(defaultValue);
-	}, [defaultValue]);
-	
-	// 엄선된 인기 색상 (24개)
-	const colorPresets = [
-		{ name: '블랙', color: '#000000' },
-		{ name: '차콜', color: '#1a1a1a' },
-		{ name: '다크 슬레이트', color: '#334155' },
-		{ name: '그레이', color: '#64748b' },
-		
-		{ name: '다크 네이비', color: '#0f172a' },
-		{ name: '네이비', color: '#1e3a8a' },
-		{ name: '로얄 블루', color: '#2563eb' },
-		{ name: '스카이', color: '#0ea5e9' },
-		
-		{ name: '인디고', color: '#4f46e5' },
-		{ name: '퍼플', color: '#8b5cf6' },
-		{ name: '푸시아', color: '#d946ef' },
-		{ name: '핑크', color: '#ec4899' },
-		
-		{ name: '와인', color: '#7f1d1d' },
-		{ name: '레드', color: '#dc2626' },
-		{ name: '오렌지', color: '#f97316' },
-		{ name: '앰버', color: '#f59e0b' },
-		
-		{ name: '골드', color: '#ca8a04' },
-		{ name: '라임', color: '#84cc16' },
-		{ name: '그린', color: '#22c55e' },
-		{ name: '에메랄드', color: '#10b981' },
-		
-		{ name: '틸', color: '#14b8a6' },
-		{ name: '청록', color: '#06b6d4' },
-		{ name: '브라운', color: '#92400e' },
-		{ name: '초콜릿', color: '#78350f' }
-	];
-	
-	const handleColorClick = (color) => {
-		setSelectedColor(color);
-		onChange(color);
-	};
-	
-	// 현재 선택된 색상 찾기
-	const selectedPreset = colorPresets.find(p => p.color === selectedColor);
-	
-	return react.createElement(
-		'div',
-		{ style: { display: 'flex', flexDirection: 'column', gap: '10px', width: '300px' } },
-		// 현재 선택된 색상 표시
-		react.createElement(
-			'div',
-			{
-				style: {
-					display: 'flex',
-					alignItems: 'center',
-					gap: '12px',
-					padding: '8px 12px',
-					backgroundColor: 'var(--spice-button)',
-					borderRadius: '8px',
-					border: '1px solid var(--spice-button)',
-					width: '100%'
-				}
-			},
-			react.createElement('div', {
-				style: {
-					width: '32px',
-					height: '32px',
-					borderRadius: '6px',
-					backgroundColor: selectedColor,
-					border: '2px solid var(--spice-text)',
-					boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-					flexShrink: '0'
-				}
-			}),
-			react.createElement('div', {
-				style: {
-					display: 'flex',
-					flexDirection: 'column',
-					flex: '1',
-					minWidth: '0',
-					overflow: 'hidden'
-				}
-			},
-				react.createElement('span', {
-					style: {
-						color: 'var(--spice-text)',
-						fontSize: '13px',
-						fontWeight: '500',
-						whiteSpace: 'nowrap',
-						overflow: 'hidden',
-						textOverflow: 'ellipsis'
-					}
-				}, selectedPreset ? selectedPreset.name : '사용자 지정'),
-				react.createElement('span', {
-					style: {
-						color: 'var(--spice-subtext)',
-						fontSize: '11px',
-						fontFamily: 'monospace',
-						whiteSpace: 'nowrap'
-					}
-				}, selectedColor.toUpperCase())
-			),
-			react.createElement('button', {
-				onClick: () => setShowAll(!showAll),
-				style: {
-					padding: '6px 12px',
-					backgroundColor: 'transparent',
-					color: 'var(--spice-text)',
-					border: '1px solid var(--spice-text)',
-					borderRadius: '6px',
-					fontSize: '12px',
-					cursor: 'pointer',
-					transition: 'all 0.2s ease',
-					flexShrink: '0',
-					whiteSpace: 'nowrap'
-				},
-				onMouseEnter: (e) => {
-					e.target.style.backgroundColor = 'var(--spice-text)';
-					e.target.style.color = 'var(--spice-card)';
-				},
-				onMouseLeave: (e) => {
-					e.target.style.backgroundColor = 'transparent';
-					e.target.style.color = 'var(--spice-text)';
-				}
-			}, showAll ? '접기 ▲' : '더보기 ▼')
-		),
-		// 색상 팔레트
-		showAll && react.createElement(
-			'div',
-			{
-				style: {
-					display: 'grid',
-					gridTemplateColumns: 'repeat(6, 1fr)',
-					gap: '6px',
-					padding: '12px',
-					backgroundColor: 'rgba(var(--spice-rgb-button), 0.3)',
-					borderRadius: '8px',
-					border: '1px solid var(--spice-button)'
-				}
-			},
-			...colorPresets.map((preset, index) =>
-				react.createElement(
-					'button',
-					{
-						key: index,
-						onClick: () => handleColorClick(preset.color),
-						title: preset.name,
-						'aria-label': preset.name,
-						style: {
-							width: '100%',
-							aspectRatio: '1',
-							borderRadius: '6px',
-							backgroundColor: preset.color,
-							border: selectedColor === preset.color 
-								? '2.5px solid var(--spice-text)' 
-								: '1.5px solid rgba(0,0,0,0.2)',
-							cursor: 'pointer',
-							transition: 'all 0.15s ease',
-							outline: 'none',
-							boxShadow: selectedColor === preset.color 
-								? '0 0 0 3px rgba(var(--spice-rgb-text), 0.2), 0 2px 4px rgba(0,0,0,0.2)' 
-								: '0 1px 2px rgba(0,0,0,0.1)'
-						},
-						onMouseEnter: (e) => {
-							e.target.style.transform = 'scale(1.1)';
-							e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-						},
-						onMouseLeave: (e) => {
-							e.target.style.transform = 'scale(1)';
-							e.target.style.boxShadow = selectedColor === preset.color 
-								? '0 0 0 3px rgba(var(--spice-rgb-text), 0.2), 0 2px 4px rgba(0,0,0,0.2)' 
-								: '0 1px 2px rgba(0,0,0,0.1)';
-						}
-					}
-				)
-			)
-		)
-	);
+  const [selectedColor, setSelectedColor] = useState(defaultValue);
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    setSelectedColor(defaultValue);
+  }, [defaultValue]);
+
+  // 엄선된 인기 색상 (24개)
+  const colorPresets = [
+    { name: "블랙", color: "#000000" },
+    { name: "차콜", color: "#1a1a1a" },
+    { name: "다크 슬레이트", color: "#334155" },
+    { name: "그레이", color: "#64748b" },
+
+    { name: "다크 네이비", color: "#0f172a" },
+    { name: "네이비", color: "#1e3a8a" },
+    { name: "로얄 블루", color: "#2563eb" },
+    { name: "스카이", color: "#0ea5e9" },
+
+    { name: "인디고", color: "#4f46e5" },
+    { name: "퍼플", color: "#8b5cf6" },
+    { name: "푸시아", color: "#d946ef" },
+    { name: "핑크", color: "#ec4899" },
+
+    { name: "와인", color: "#7f1d1d" },
+    { name: "레드", color: "#dc2626" },
+    { name: "오렌지", color: "#f97316" },
+    { name: "앰버", color: "#f59e0b" },
+
+    { name: "골드", color: "#ca8a04" },
+    { name: "라임", color: "#84cc16" },
+    { name: "그린", color: "#22c55e" },
+    { name: "에메랄드", color: "#10b981" },
+
+    { name: "틸", color: "#14b8a6" },
+    { name: "청록", color: "#06b6d4" },
+    { name: "브라운", color: "#92400e" },
+    { name: "초콜릿", color: "#78350f" },
+  ];
+
+  const handleColorClick = (color) => {
+    setSelectedColor(color);
+    onChange(color);
+  };
+
+  // 현재 선택된 색상 찾기
+  const selectedPreset = colorPresets.find((p) => p.color === selectedColor);
+
+  return react.createElement(
+    "div",
+    {
+      style: {
+        display: "flex",
+        flexDirection: "column",
+        gap: "10px",
+        width: "300px",
+      },
+    },
+    // 현재 선택된 색상 표시
+    react.createElement(
+      "div",
+      {
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          padding: "8px 12px",
+          backgroundColor: "var(--spice-button)",
+          borderRadius: "8px",
+          border: "1px solid var(--spice-button)",
+          width: "100%",
+        },
+      },
+      react.createElement("div", {
+        style: {
+          width: "32px",
+          height: "32px",
+          borderRadius: "6px",
+          backgroundColor: selectedColor,
+          border: "2px solid var(--spice-text)",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+          flexShrink: "0",
+        },
+      }),
+      react.createElement(
+        "div",
+        {
+          style: {
+            display: "flex",
+            flexDirection: "column",
+            flex: "1",
+            minWidth: "0",
+            overflow: "hidden",
+          },
+        },
+        react.createElement(
+          "span",
+          {
+            style: {
+              color: "var(--spice-text)",
+              fontSize: "13px",
+              fontWeight: "500",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            },
+          },
+          selectedPreset ? selectedPreset.name : "사용자 지정"
+        ),
+        react.createElement(
+          "span",
+          {
+            style: {
+              color: "var(--spice-subtext)",
+              fontSize: "11px",
+              fontFamily: "monospace",
+              whiteSpace: "nowrap",
+            },
+          },
+          selectedColor.toUpperCase()
+        )
+      ),
+      react.createElement(
+        "button",
+        {
+          onClick: () => setShowAll(!showAll),
+          style: {
+            padding: "6px 12px",
+            backgroundColor: "transparent",
+            color: "var(--spice-text)",
+            border: "1px solid var(--spice-text)",
+            borderRadius: "6px",
+            fontSize: "12px",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            flexShrink: "0",
+            whiteSpace: "nowrap",
+          },
+          onMouseEnter: (e) => {
+            e.target.style.backgroundColor = "var(--spice-text)";
+            e.target.style.color = "var(--spice-card)";
+          },
+          onMouseLeave: (e) => {
+            e.target.style.backgroundColor = "transparent";
+            e.target.style.color = "var(--spice-text)";
+          },
+        },
+        showAll ? "접기 ▲" : "더보기 ▼"
+      )
+    ),
+    // 색상 팔레트
+    showAll &&
+      react.createElement(
+        "div",
+        {
+          style: {
+            display: "grid",
+            gridTemplateColumns: "repeat(6, 1fr)",
+            gap: "6px",
+            padding: "12px",
+            backgroundColor: "rgba(var(--spice-rgb-button), 0.3)",
+            borderRadius: "8px",
+            border: "1px solid var(--spice-button)",
+          },
+        },
+        ...colorPresets.map((preset, index) =>
+          react.createElement("button", {
+            key: index,
+            onClick: () => handleColorClick(preset.color),
+            title: preset.name,
+            "aria-label": preset.name,
+            style: {
+              width: "100%",
+              aspectRatio: "1",
+              borderRadius: "6px",
+              backgroundColor: preset.color,
+              border:
+                selectedColor === preset.color
+                  ? "2.5px solid var(--spice-text)"
+                  : "1.5px solid rgba(0,0,0,0.2)",
+              cursor: "pointer",
+              transition: "all 0.15s ease",
+              outline: "none",
+              boxShadow:
+                selectedColor === preset.color
+                  ? "0 0 0 3px rgba(var(--spice-rgb-text), 0.2), 0 2px 4px rgba(0,0,0,0.2)"
+                  : "0 1px 2px rgba(0,0,0,0.1)",
+            },
+            onMouseEnter: (e) => {
+              e.target.style.transform = "scale(1.1)";
+              e.target.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
+            },
+            onMouseLeave: (e) => {
+              e.target.style.transform = "scale(1)";
+              e.target.style.boxShadow =
+                selectedColor === preset.color
+                  ? "0 0 0 3px rgba(var(--spice-rgb-text), 0.2), 0 2px 4px rgba(0,0,0,0.2)"
+                  : "0 1px 2px rgba(0,0,0,0.1)";
+            },
+          })
+        )
+      )
+  );
 };
 
 const ConfigWarning = ({ message }) => {
-	return react.createElement(
-		"div",
-		{
-			className: "setting-row",
-			style: {
-				backgroundColor: "rgba(var(--spice-rgb-warning), 0.25)"
-			}
-		},
-		react.createElement(
-			"div",
-			{ className: "setting-row-content" },
-			react.createElement(
-				"div",
-				{ className: "setting-row-left" },
-				react.createElement(
-					"div",
-					{ 
-						className: "setting-name",
-						style: { color: "var(--spice-text)", fontWeight: "600" }
-					},
-					"ℹ️ 단색 배경 사용 중"
-				),
-				react.createElement(
-					"div",
-					{
-						className: "setting-description",
-						style: { color: "var(--spice-subtext)" }
-					},
-					message
-				)
-			)
-		)
-	);
+  return react.createElement(
+    "div",
+    {
+      className: "setting-row",
+      style: {
+        backgroundColor: "rgba(var(--spice-rgb-warning), 0.25)",
+      },
+    },
+    react.createElement(
+      "div",
+      { className: "setting-row-content" },
+      react.createElement(
+        "div",
+        { className: "setting-row-left" },
+        react.createElement(
+          "div",
+          {
+            className: "setting-name",
+            style: { color: "var(--spice-text)", fontWeight: "600" },
+          },
+          "ℹ️ 단색 배경 사용 중"
+        ),
+        react.createElement(
+          "div",
+          {
+            className: "setting-description",
+            style: { color: "var(--spice-subtext)" },
+          },
+          message
+        )
+      )
+    )
+  );
 };
 
-const ConfigSelection = ({ name, defaultValue, options, disabled, onChange = () => {} }) => {
-	const [value, setValue] = useState(defaultValue);
+const ConfigSelection = ({
+  name,
+  defaultValue,
+  options,
+  disabled,
+  onChange = () => {},
+}) => {
+  const [value, setValue] = useState(defaultValue);
 
-	const setValueCallback = useCallback(
-		(event) => {
-			if (disabled) return;
-			let value = event.target.value;
-			if (!Number.isNaN(Number(value))) {
-				value = Number.parseInt(value);
-			}
-			setValue(value);
-			onChange(value);
-		},
-		[value, options, disabled]
-	);
+  const setValueCallback = useCallback(
+    (event) => {
+      if (disabled) return;
+      let value = event.target.value;
+      if (!Number.isNaN(Number(value))) {
+        value = Number.parseInt(value);
+      }
+      setValue(value);
+      onChange(value);
+    },
+    [value, options, disabled]
+  );
 
-	useEffect(() => {
-		setValue(defaultValue);
-	}, [defaultValue]);
+  useEffect(() => {
+    setValue(defaultValue);
+  }, [defaultValue]);
 
-	if (!Object.keys(options).length) return null;
+  if (!Object.keys(options).length) return null;
 
-	return react.createElement(
-		"select",
-		{
-			value,
-			disabled,
-			onChange: setValueCallback,
-		},
-		...Object.keys(options).map((item) =>
-			react.createElement(
-				"option",
-				{
-					key: item,
-					value: item,
-				},
-				options[item]
-			)
-		)
-	);
+  return react.createElement(
+    "select",
+    {
+      value,
+      disabled,
+      onChange: setValueCallback,
+    },
+    ...Object.keys(options).map((item) =>
+      react.createElement(
+        "option",
+        {
+          key: item,
+          value: item,
+        },
+        options[item]
+      )
+    )
+  );
 };
 
 const ConfigInput = ({ name, defaultValue, onChange = () => {} }) => {
-	const [value, setValue] = useState(defaultValue);
+  const [value, setValue] = useState(defaultValue);
 
-	const setValueCallback = useCallback(
-		(event) => {
-			const value = event.target.value;
-			setValue(value);
-			onChange(value);
-		},
-		[value]
-	);
+  const setValueCallback = useCallback(
+    (event) => {
+      const value = event.target.value;
+      setValue(value);
+      onChange(value);
+    },
+    [value]
+  );
 
-	return react.createElement(
-		"div",
-		{
-			className: "setting-row",
-		},
-		react.createElement(
-			"div",
-			{ className: "setting-row-content" },
-			react.createElement(
-				"div",
-				{ className: "setting-row-left" },
-				react.createElement("div", { className: "setting-name" }, name)
-			),
-			react.createElement(
-				"div",
-				{ className: "setting-row-right" },
-				react.createElement("input", {
-					type: "text",
-					value,
-					onChange: setValueCallback,
-				})
-			)
-		)
-	);
+  return react.createElement(
+    "div",
+    {
+      className: "setting-row",
+    },
+    react.createElement(
+      "div",
+      { className: "setting-row-content" },
+      react.createElement(
+        "div",
+        { className: "setting-row-left" },
+        react.createElement("div", { className: "setting-name" }, name)
+      ),
+      react.createElement(
+        "div",
+        { className: "setting-row-right" },
+        react.createElement("input", {
+          type: "text",
+          value,
+          onChange: setValueCallback,
+        })
+      )
+    )
+  );
 };
 
 // Google Fonts 목록 (한글 + 인기 라틴 폰트)
 const GOOGLE_FONTS = [
-	"Pretendard Variable",
-	"Noto Sans KR",
-	"Nanum Gothic",
-	"Nanum Myeongjo",
-	"Black Han Sans",
-	"Do Hyeon",
-	"Jua",
-	"Nanum Gothic Coding",
-	"Gowun Batang",
-	"Gowun Dodum",
-	"IBM Plex Sans KR",
-	"Roboto",
-	"Open Sans",
-	"Lato",
-	"Montserrat",
-	"Poppins",
-	"Inter",
-	"Raleway",
-	"Oswald",
-	"Merriweather",
-	"Playfair Display"
+  "Pretendard Variable",
+  "Noto Sans KR",
+  "Nanum Gothic",
+  "Nanum Myeongjo",
+  "Black Han Sans",
+  "Do Hyeon",
+  "Jua",
+  "Nanum Gothic Coding",
+  "Gowun Batang",
+  "Gowun Dodum",
+  "IBM Plex Sans KR",
+  "Roboto",
+  "Open Sans",
+  "Lato",
+  "Montserrat",
+  "Poppins",
+  "Inter",
+  "Raleway",
+  "Oswald",
+  "Merriweather",
+  "Playfair Display",
 ];
 
-const ConfigFontSelector = ({ name, info, defaultValue, onChange = () => {} }) => {
-	const [useCustomFont, setUseCustomFont] = useState(() => {
-		// 기본값이 Google Fonts 목록에 없으면 커스텀 폰트 사용 중
-		return defaultValue && !GOOGLE_FONTS.includes(defaultValue);
-	});
-	const [selectedFont, setSelectedFont] = useState(() => {
-		if (defaultValue && GOOGLE_FONTS.includes(defaultValue)) {
-			return defaultValue;
-		}
-		return "Pretendard Variable";
-	});
-	const [customFont, setCustomFont] = useState(() => {
-		if (defaultValue && !GOOGLE_FONTS.includes(defaultValue)) {
-			return defaultValue;
-		}
-		return "";
-	});
+const ConfigFontSelector = ({
+  name,
+  info,
+  defaultValue,
+  onChange = () => {},
+}) => {
+  const [useCustomFont, setUseCustomFont] = useState(() => {
+    // 기본값이 Google Fonts 목록에 없으면 커스텀 폰트 사용 중
+    return defaultValue && !GOOGLE_FONTS.includes(defaultValue);
+  });
+  const [selectedFont, setSelectedFont] = useState(() => {
+    if (defaultValue && GOOGLE_FONTS.includes(defaultValue)) {
+      return defaultValue;
+    }
+    return "Pretendard Variable";
+  });
+  const [customFont, setCustomFont] = useState(() => {
+    if (defaultValue && !GOOGLE_FONTS.includes(defaultValue)) {
+      return defaultValue;
+    }
+    return "";
+  });
 
-	useEffect(() => {
-		const isCustom = defaultValue && !GOOGLE_FONTS.includes(defaultValue);
-		setUseCustomFont(isCustom);
-		if (isCustom) {
-			setCustomFont(defaultValue);
-		} else if (defaultValue) {
-			setSelectedFont(defaultValue);
-		}
-	}, [defaultValue]);
+  useEffect(() => {
+    const isCustom = defaultValue && !GOOGLE_FONTS.includes(defaultValue);
+    setUseCustomFont(isCustom);
+    if (isCustom) {
+      setCustomFont(defaultValue);
+    } else if (defaultValue) {
+      setSelectedFont(defaultValue);
+    }
+  }, [defaultValue]);
 
-	const handleFontChange = (event) => {
-		const font = event.target.value;
-		setSelectedFont(font);
-		if (!useCustomFont) {
-			onChange(font);
-		}
-	};
+  const handleFontChange = (event) => {
+    const font = event.target.value;
+    setSelectedFont(font);
+    if (!useCustomFont) {
+      onChange(font);
+    }
+  };
 
-	const handleCustomFontChange = (event) => {
-		const font = event.target.value;
-		setCustomFont(font);
-		if (useCustomFont) {
-			onChange(font);
-		}
-	};
+  const handleCustomFontChange = (event) => {
+    const font = event.target.value;
+    setCustomFont(font);
+    if (useCustomFont) {
+      onChange(font);
+    }
+  };
 
-	const handleCheckboxChange = () => {
-		const newUseCustom = !useCustomFont;
-		setUseCustomFont(newUseCustom);
-		if (newUseCustom) {
-			onChange(customFont || "");
-		} else {
-			onChange(selectedFont);
-		}
-	};
+  const handleCheckboxChange = () => {
+    const newUseCustom = !useCustomFont;
+    setUseCustomFont(newUseCustom);
+    if (newUseCustom) {
+      onChange(customFont || "");
+    } else {
+      onChange(selectedFont);
+    }
+  };
 
-	const commonStyle = {
-		width: "200px",
-		height: "32px",
-		padding: "4px 8px",
-		fontSize: "14px",
-		border: "1px solid var(--spice-button-disabled)",
-		borderRadius: "4px",
-		backgroundColor: "var(--spice-button)",
-		color: "var(--spice-text)",
-		boxSizing: "border-box"
-	};
+  const commonStyle = {
+    width: "200px",
+    height: "32px",
+    padding: "4px 8px",
+    fontSize: "14px",
+    border: "1px solid var(--spice-button-disabled)",
+    borderRadius: "4px",
+    backgroundColor: "var(--spice-button)",
+    color: "var(--spice-text)",
+    boxSizing: "border-box",
+  };
 
-	const fontSelector = react.createElement(
-		"div",
-		{ style: { display: "flex", gap: "10px", alignItems: "center" } },
-		useCustomFont
-			? react.createElement("input", {
-					type: "text",
-					value: customFont,
-					onChange: handleCustomFontChange,
-					placeholder: "폰트명 입력 (예: Arial, 맑은 고딕)",
-					style: commonStyle
-				})
-			: react.createElement("select", {
-					value: selectedFont,
-					onChange: handleFontChange,
-					style: commonStyle
-				},
-				GOOGLE_FONTS.map(font =>
-					react.createElement("option", { key: font, value: font }, font)
-				)
-			),
-		react.createElement(ButtonSVG, {
-			icon: Spicetify.SVGIcons.edit,
-			active: useCustomFont,
-			onClick: handleCheckboxChange
-		})
-	);
+  const fontSelector = react.createElement(
+    "div",
+    { style: { display: "flex", gap: "10px", alignItems: "center" } },
+    useCustomFont
+      ? react.createElement("input", {
+          type: "text",
+          value: customFont,
+          onChange: handleCustomFontChange,
+          placeholder: "폰트명 입력 (예: Arial, 맑은 고딕)",
+          style: commonStyle,
+        })
+      : react.createElement(
+          "select",
+          {
+            value: selectedFont,
+            onChange: handleFontChange,
+            style: commonStyle,
+          },
+          GOOGLE_FONTS.map((font) =>
+            react.createElement("option", { key: font, value: font }, font)
+          )
+        ),
+    react.createElement(ButtonSVG, {
+      icon: Spicetify.SVGIcons.edit,
+      active: useCustomFont,
+      onClick: handleCheckboxChange,
+    })
+  );
 
-	// name이 있으면 전체 setting-row로 래핑, 없으면 컨트롤만 반환
-	if (name) {
-		return react.createElement(
-			"div",
-			{ className: "setting-row" },
-			react.createElement(
-				"div",
-				{ className: "setting-row-content" },
-				react.createElement(
-					"div",
-					{ className: "setting-row-left" },
-					react.createElement("div", { className: "setting-name" }, name),
-					info && react.createElement("div", {
-						className: "setting-description",
-						dangerouslySetInnerHTML: {
-							__html: info,
-						},
-					})
-				),
-				react.createElement(
-					"div",
-					{ className: "setting-row-right" },
-					fontSelector
-				)
-			)
-		);
-	}
+  // name이 있으면 전체 setting-row로 래핑, 없으면 컨트롤만 반환
+  if (name) {
+    return react.createElement(
+      "div",
+      { className: "setting-row" },
+      react.createElement(
+        "div",
+        { className: "setting-row-content" },
+        react.createElement(
+          "div",
+          { className: "setting-row-left" },
+          react.createElement("div", { className: "setting-name" }, name),
+          info &&
+            react.createElement("div", {
+              className: "setting-description",
+              dangerouslySetInnerHTML: {
+                __html: info,
+              },
+            })
+        ),
+        react.createElement(
+          "div",
+          { className: "setting-row-right" },
+          fontSelector
+        )
+      )
+    );
+  }
 
-	return fontSelector;
+  return fontSelector;
 };
 
-const ConfigAdjust = ({ name, defaultValue, step, min, max, onChange = () => {} }) => {
-	const [value, setValue] = useState(defaultValue);
+const ConfigAdjust = ({
+  name,
+  defaultValue,
+  step,
+  min,
+  max,
+  onChange = () => {},
+}) => {
+  const [value, setValue] = useState(defaultValue);
 
-	useEffect(() => {
-		setValue(defaultValue);
-	}, [defaultValue]);
+  useEffect(() => {
+    setValue(defaultValue);
+  }, [defaultValue]);
 
-	function adjust(dir) {
-		let temp = value + dir * step;
-		if (temp < min) {
-			temp = min;
-		} else if (temp > max) {
-			temp = max;
-		}
-		setValue(temp);
-		onChange(temp);
-	}
-	return react.createElement(
-		"div",
-		{ className: "adjust-container" },
-		react.createElement("button", {
-			className: "adjust-button",
-			onClick: () => adjust(-1),
-			disabled: value === min,
-			"aria-label": "Decrease"
-		}, "-"),
-		react.createElement(
-			"span",
-			{ className: "adjust-value" },
-			value
-		),
-		react.createElement("button", {
-			className: "adjust-button",
-			onClick: () => adjust(1),
-			disabled: value === max,
-			"aria-label": "Increase"
-		}, "+")
-	);
+  function adjust(dir) {
+    let temp = value + dir * step;
+    if (temp < min) {
+      temp = min;
+    } else if (temp > max) {
+      temp = max;
+    }
+    setValue(temp);
+    onChange(temp);
+  }
+  return react.createElement(
+    "div",
+    { className: "adjust-container" },
+    react.createElement(
+      "button",
+      {
+        className: "adjust-button",
+        onClick: () => adjust(-1),
+        disabled: value === min,
+        "aria-label": "Decrease",
+      },
+      "-"
+    ),
+    react.createElement("span", { className: "adjust-value" }, value),
+    react.createElement(
+      "button",
+      {
+        className: "adjust-button",
+        onClick: () => adjust(1),
+        disabled: value === max,
+        "aria-label": "Increase",
+      },
+      "+"
+    )
+  );
 };
 
 const ConfigHotkey = ({ name, defaultValue, onChange = () => {} }) => {
-	const [value, setValue] = useState(defaultValue);
-	const [trap] = useState(new Spicetify.Mousetrap());
+  const [value, setValue] = useState(defaultValue);
+  const [trap] = useState(new Spicetify.Mousetrap());
 
-	function record() {
-		trap.handleKey = (character, modifiers, e) => {
-			if (e.type === "keydown") {
-				const sequence = [...new Set([...modifiers, character])];
-				if (sequence.length === 1 && sequence[0] === "esc") {
-					onChange("");
-					setValue("");
-					return;
-				}
-				setValue(sequence.join("+"));
-			}
-		};
-	}
+  function record() {
+    trap.handleKey = (character, modifiers, e) => {
+      if (e.type === "keydown") {
+        const sequence = [...new Set([...modifiers, character])];
+        if (sequence.length === 1 && sequence[0] === "esc") {
+          onChange("");
+          setValue("");
+          return;
+        }
+        setValue(sequence.join("+"));
+      }
+    };
+  }
 
-	function finishRecord() {
-		trap.handleKey = () => {};
-		onChange(value);
-	}
+  function finishRecord() {
+    trap.handleKey = () => {};
+    onChange(value);
+  }
 
-	return react.createElement(
-		"div",
-		{
-			className: "setting-row",
-		},
-		react.createElement(
-			"div",
-			{ className: "setting-row-content" },
-			react.createElement(
-				"div",
-				{ className: "setting-row-left" },
-				react.createElement("div", { className: "setting-name" }, name)
-			),
-			react.createElement(
-				"div",
-				{ className: "setting-row-right" },
-				react.createElement("input", {
-					type: "text",
-					value,
-					onFocus: record,
-					onBlur: finishRecord,
-				})
-			)
-		)
-	);
+  return react.createElement(
+    "div",
+    {
+      className: "setting-row",
+    },
+    react.createElement(
+      "div",
+      { className: "setting-row-content" },
+      react.createElement(
+        "div",
+        { className: "setting-row-left" },
+        react.createElement("div", { className: "setting-name" }, name)
+      ),
+      react.createElement(
+        "div",
+        { className: "setting-row-right" },
+        react.createElement("input", {
+          type: "text",
+          value,
+          onFocus: record,
+          onBlur: finishRecord,
+        })
+      )
+    )
+  );
 };
 
 const ServiceAction = ({ item, setTokenCallback }) => {
-	switch (item.name) {
-		case "local":
-			return react.createElement(CacheButton);
-		default:
-			return null;
-	}
+  switch (item.name) {
+    case "local":
+      return react.createElement(CacheButton);
+    default:
+      return null;
+  }
 };
 
-const ServiceOption = react.memo(({ item, onToggle, onSwap, isFirst = false, isLast = false, onTokenChange = null }) => {
-	const [token, setToken] = useState(item.token);
-	const [active, setActive] = useState(item.on);
+const ServiceOption = react.memo(
+  ({
+    item,
+    onToggle,
+    onSwap,
+    isFirst = false,
+    isLast = false,
+    onTokenChange = null,
+  }) => {
+    const [token, setToken] = useState(item.token);
+    const [active, setActive] = useState(item.on);
 
-	const setTokenCallback = useCallback(
-		(token) => {
-			setToken(token);
-			onTokenChange(item.name, token);
-		},
-		[item.name, onTokenChange]
-	);
+    const setTokenCallback = useCallback(
+      (token) => {
+        setToken(token);
+        onTokenChange(item.name, token);
+      },
+      [item.name, onTokenChange]
+    );
 
-	const toggleActive = useCallback(() => {
-		setActive(prevActive => {
-			const newState = !prevActive;
-			onToggle(item.name, newState);
-			return newState;
-		});
-	}, [item.name, onToggle]);
+    const toggleActive = useCallback(() => {
+      setActive((prevActive) => {
+        const newState = !prevActive;
+        onToggle(item.name, newState);
+        return newState;
+      });
+    }, [item.name, onToggle]);
 
-	return react.createElement(
-		react.Fragment,
-		null,
-		react.createElement(
-			"div",
-			{
-				className: "setting-row"
-			},
-			react.createElement(
-				"div",
-				{ className: "setting-row-content" },
-				react.createElement(
-					"div",
-					{ className: "setting-row-left" },
-					react.createElement("div", { className: "setting-name" }, item.name),
-					react.createElement("div", {
-						className: "setting-description",
-						dangerouslySetInnerHTML: {
-							__html: item.desc,
-						},
-					})
-				),
-				react.createElement(
-					"div",
-					{
-						className: "setting-row-right",
-						style: { display: "flex", gap: "8px", alignItems: "center" }
-					},
-					react.createElement(ServiceAction, {
-						item,
-						setTokenCallback,
-					}),
-					react.createElement(SwapButton, {
-						icon: Spicetify.SVGIcons["chart-up"],
-						onClick: () => onSwap(item.name, -1),
-						disabled: isFirst,
-					}),
-					react.createElement(SwapButton, {
-						icon: Spicetify.SVGIcons["chart-down"],
-						onClick: () => onSwap(item.name, 1),
-						disabled: isLast,
-					}),
-					react.createElement(ButtonSVG, {
-						icon: Spicetify.SVGIcons.check,
-						active,
-						onClick: toggleActive,
-					})
-				)
-			)
-		),
-		item.token !== undefined &&
-			react.createElement("div", {
-				className: "service-token-input-wrapper",
-				style: {
-					padding: "0 16px 12px 16px",
-					background: "rgba(28, 28, 30, 0.5)",
-					backdropFilter: "blur(30px) saturate(150%)",
-					WebkitBackdropFilter: "blur(30px) saturate(150%)",
-					borderLeft: "1px solid rgba(255, 255, 255, 0.08)",
-					borderRight: "1px solid rgba(255, 255, 255, 0.08)",
-					borderBottom: "0.5px solid rgba(255, 255, 255, 0.08)",
-					marginTop: "-1px"
-				}
-			},
-				react.createElement("input", {
-					type: "text",
-					placeholder: `Place your ${item.name} token here`,
-					value: token,
-					onChange: (event) => setTokenCallback(event.target.value),
-					style: {
-						backgroundColor: "rgba(0, 0, 0, 0.3)",
-						border: "1px solid rgba(255, 255, 255, 0.1)",
-						borderRadius: "8px",
-						padding: "8px 12px",
-						color: "#ffffff",
-						fontSize: "13px",
-						width: "100%",
-						boxSizing: "border-box",
-						fontFamily: "Pretendard Variable, -apple-system, BlinkMacSystemFont, sans-serif"
-					}
-				})
-			)
-	);
-});
+    return react.createElement(
+      react.Fragment,
+      null,
+      react.createElement(
+        "div",
+        {
+          className: "setting-row",
+        },
+        react.createElement(
+          "div",
+          { className: "setting-row-content" },
+          react.createElement(
+            "div",
+            { className: "setting-row-left" },
+            react.createElement(
+              "div",
+              { className: "setting-name" },
+              item.name
+            ),
+            react.createElement("div", {
+              className: "setting-description",
+              dangerouslySetInnerHTML: {
+                __html: item.desc,
+              },
+            })
+          ),
+          react.createElement(
+            "div",
+            {
+              className: "setting-row-right",
+              style: { display: "flex", gap: "8px", alignItems: "center" },
+            },
+            react.createElement(ServiceAction, {
+              item,
+              setTokenCallback,
+            }),
+            react.createElement(SwapButton, {
+              icon: Spicetify.SVGIcons["chart-up"],
+              onClick: () => onSwap(item.name, -1),
+              disabled: isFirst,
+            }),
+            react.createElement(SwapButton, {
+              icon: Spicetify.SVGIcons["chart-down"],
+              onClick: () => onSwap(item.name, 1),
+              disabled: isLast,
+            }),
+            react.createElement(ButtonSVG, {
+              icon: Spicetify.SVGIcons.check,
+              active,
+              onClick: toggleActive,
+            })
+          )
+        )
+      ),
+      item.token !== undefined &&
+        react.createElement(
+          "div",
+          {
+            className: "service-token-input-wrapper",
+            style: {
+              padding: "0 16px 12px 16px",
+              background: "rgba(28, 28, 30, 0.5)",
+              backdropFilter: "blur(30px) saturate(150%)",
+              WebkitBackdropFilter: "blur(30px) saturate(150%)",
+              borderLeft: "1px solid rgba(255, 255, 255, 0.08)",
+              borderRight: "1px solid rgba(255, 255, 255, 0.08)",
+              borderBottom: "0.5px solid rgba(255, 255, 255, 0.08)",
+              marginTop: "-1px",
+            },
+          },
+          react.createElement("input", {
+            type: "text",
+            placeholder: `Place your ${item.name} token here`,
+            value: token,
+            onChange: (event) => setTokenCallback(event.target.value),
+            style: {
+              backgroundColor: "rgba(0, 0, 0, 0.3)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: "8px",
+              padding: "8px 12px",
+              color: "#ffffff",
+              fontSize: "13px",
+              width: "100%",
+              boxSizing: "border-box",
+              fontFamily:
+                "Pretendard Variable, -apple-system, BlinkMacSystemFont, sans-serif",
+            },
+          })
+        )
+    );
+  }
+);
 
-const ServiceList = ({ itemsList, onListChange = () => {}, onToggle = () => {}, onTokenChange = () => {} }) => {
-	const [items, setItems] = useState(itemsList);
-	const maxIndex = items.length - 1;
+const ServiceList = ({
+  itemsList,
+  onListChange = () => {},
+  onToggle = () => {},
+  onTokenChange = () => {},
+}) => {
+  const [items, setItems] = useState(itemsList);
+  const maxIndex = items.length - 1;
 
-	const onSwap = useCallback(
-		(name, direction) => {
-			const curPos = items.findIndex((val) => val === name);
-			const newPos = curPos + direction;
-			[items[curPos], items[newPos]] = [items[newPos], items[curPos]];
-			onListChange(items);
-			setItems([...items]);
-		},
-		[items]
-	);
+  const onSwap = useCallback(
+    (name, direction) => {
+      const curPos = items.findIndex((val) => val === name);
+      const newPos = curPos + direction;
+      [items[curPos], items[newPos]] = [items[newPos], items[curPos]];
+      onListChange(items);
+      setItems([...items]);
+    },
+    [items]
+  );
 
-	const renderedItems = items.map((key, index) => {
-		const item = CONFIG.providers[key];
-		item.name = key;
-		return react.createElement(ServiceOption, {
-			item,
-			key,
-			isFirst: index === 0,
-			isLast: index === maxIndex,
-			onSwap,
-			onTokenChange,
-			onToggle,
-		});
-	});
+  const renderedItems = items.map((key, index) => {
+    const item = CONFIG.providers[key];
+    item.name = key;
+    return react.createElement(ServiceOption, {
+      item,
+      key,
+      isFirst: index === 0,
+      isLast: index === maxIndex,
+      onSwap,
+      onTokenChange,
+      onToggle,
+    });
+  });
 
-	// ServiceList도 wrapper로 감싸기
-	return react.createElement(
-		"div",
-		{ className: "service-list-wrapper" },
-		...renderedItems
-	);
+  // ServiceList도 wrapper로 감싸기
+  return react.createElement(
+    "div",
+    { className: "service-list-wrapper" },
+    ...renderedItems
+  );
 };
-
 
 const OptionList = ({ type, items, onChange }) => {
-	const [itemList, setItemList] = useState(items);
-	const [, forceUpdate] = useState();
+  const [itemList, setItemList] = useState(items);
+  const [, forceUpdate] = useState();
 
-	useEffect(() => {
-		if (!type) return;
+  useEffect(() => {
+    if (!type) return;
 
-		const eventListener = (event) => {
-			if (event.detail?.type !== type) return;
-			setItemList(event.detail.items);
-		};
-		document.addEventListener("lyrics-plus", eventListener);
+    const eventListener = (event) => {
+      if (event.detail?.type !== type) return;
+      setItemList(event.detail.items);
+    };
+    document.addEventListener("lyrics-plus", eventListener);
 
-		return () => document.removeEventListener("lyrics-plus", eventListener);
-	}, []);
+    return () => document.removeEventListener("lyrics-plus", eventListener);
+  }, []);
 
-	const renderedItems = (itemList || []).map((item, index) => {
-		if (!item || (item.when && !item.when())) {
-			return;
-		}
+  const renderedItems = (itemList || []).map((item, index) => {
+    if (!item || (item.when && !item.when())) {
+      return;
+    }
 
-		const onChangeItem = item.onChange || onChange;
-		const isDisabled = typeof item.disabled === "function" ? item.disabled() : (item.disabled || false);
+    const onChangeItem = item.onChange || onChange;
+    const isDisabled =
+      typeof item.disabled === "function"
+        ? item.disabled()
+        : item.disabled || false;
 
-		// ConfigButton, ConfigInput, ConfigHotkey는 자체적으로 setting-row를 만들므로 wrapper 불필요
-		if (item.type === ConfigButton || item.type === ConfigInput || item.type === ConfigHotkey || item.type === ConfigWarning) {
-			return react.createElement(item.type, {
-				...item,
-				key: index,
-				name: item.desc,
-				text: item.text,
-				disabled: isDisabled,
-				defaultValue: item.defaultValue !== undefined ? item.defaultValue : CONFIG.visual[item.key],
-				onChange: (value, event) => {
-					if (!isDisabled) {
-						onChangeItem(item.key, value, event);
-						forceUpdate({});
-					}
-				},
-			});
-		}
+    // ConfigButton, ConfigInput, ConfigHotkey는 자체적으로 setting-row를 만들므로 wrapper 불필요
+    if (
+      item.type === ConfigButton ||
+      item.type === ConfigInput ||
+      item.type === ConfigHotkey ||
+      item.type === ConfigWarning
+    ) {
+      return react.createElement(item.type, {
+        ...item,
+        key: index,
+        name: item.desc,
+        text: item.text,
+        disabled: isDisabled,
+        defaultValue:
+          item.defaultValue !== undefined
+            ? item.defaultValue
+            : CONFIG.visual[item.key],
+        onChange: (value, event) => {
+          if (!isDisabled) {
+            onChangeItem(item.key, value, event);
+            forceUpdate({});
+          }
+        },
+      });
+    }
 
-		// 나머지 타입들은 wrapper로 감싸기
-		return react.createElement(
-			"div",
-			{ 
-				key: index,
-				className: "setting-row",
-				style: isDisabled ? { opacity: 0.5, pointerEvents: 'none' } : {}
-			},
-			react.createElement(
-				"div",
-				{ className: "setting-row-content" },
-				react.createElement(
-					"div",
-					{ className: "setting-row-left" },
-					react.createElement("div", { className: "setting-name" }, item.desc),
-					item.info && react.createElement("div", {
-						className: "setting-description",
-						dangerouslySetInnerHTML: {
-							__html: item.info,
-						},
-					})
-				),
-				react.createElement(
-					"div",
-					{ className: "setting-row-right" },
-					react.createElement(item.type, {
-						...item,
-						name: item.desc,
-						disabled: isDisabled,
-						defaultValue: item.defaultValue !== undefined ? item.defaultValue : CONFIG.visual[item.key],
-						onChange: (value) => {
-							if (!isDisabled) {
-								onChangeItem(item.key, value);
-								forceUpdate({});
-							}
-						},
-					})
-				)
-			)
-		);
-	});
+    // 나머지 타입들은 wrapper로 감싸기
+    return react.createElement(
+      "div",
+      {
+        key: index,
+        className: "setting-row",
+        style: isDisabled ? { opacity: 0.5, pointerEvents: "none" } : {},
+      },
+      react.createElement(
+        "div",
+        { className: "setting-row-content" },
+        react.createElement(
+          "div",
+          { className: "setting-row-left" },
+          react.createElement("div", { className: "setting-name" }, item.desc),
+          item.info &&
+            react.createElement("div", {
+              className: "setting-description",
+              dangerouslySetInnerHTML: {
+                __html: item.info,
+              },
+            })
+        ),
+        react.createElement(
+          "div",
+          { className: "setting-row-right" },
+          react.createElement(item.type, {
+            ...item,
+            name: item.desc,
+            disabled: isDisabled,
+            defaultValue:
+              item.defaultValue !== undefined
+                ? item.defaultValue
+                : CONFIG.visual[item.key],
+            onChange: (value) => {
+              if (!isDisabled) {
+                onChangeItem(item.key, value);
+                forceUpdate({});
+              }
+            },
+          })
+        )
+      )
+    );
+  });
 
-	// Wrapper로 감싸서 반환
-	return react.createElement(
-		"div",
-		{ className: "option-list-wrapper" },
-		...renderedItems
-	);
+  // Wrapper로 감싸서 반환
+  return react.createElement(
+    "div",
+    { className: "option-list-wrapper" },
+    ...renderedItems
+  );
 };
 
 const languageCodes =
-	"none,en,af,ar,bg,bn,ca,zh,cs,da,de,el,es,et,fa,fi,fr,gu,he,hi,hr,hu,id,is,it,ja,jv,kn,ko,lt,lv,ml,mr,ms,nl,no,pl,pt,ro,ru,sk,sl,sr,su,sv,ta,te,th,tr,uk,ur,vi,zu".split(
-		","
-	);
+  "none,en,af,ar,bg,bn,ca,zh,cs,da,de,el,es,et,fa,fi,fr,gu,he,hi,hr,hu,id,is,it,ja,jv,kn,ko,lt,lv,ml,mr,ms,nl,no,pl,pt,ro,ru,sk,sl,sr,su,sv,ta,te,th,tr,uk,ur,vi,zu".split(
+    ","
+  );
 
 const displayNames = new Intl.DisplayNames(["en"], { type: "language" });
 const languageOptions = languageCodes.reduce((acc, code) => {
-	acc[code] = code === "none" ? "None" : displayNames.of(code);
-	return acc;
+  acc[code] = code === "none" ? "None" : displayNames.of(code);
+  return acc;
 }, {});
 
 // Pre-defined styles to avoid recreation on each render
 const MODAL_STYLES = {
-	header: { margin: 0, fontSize: "18px", fontWeight: "600" },
-	previewTitle: { marginTop: 0, marginBottom: "10px" }
+  header: { margin: 0, fontSize: "18px", fontWeight: "600" },
+  previewTitle: { marginTop: 0, marginBottom: "10px" },
 };
 
 const ConfigModal = () => {
-	const [activeTab, setActiveTab] = react.useState("general");
+  const [activeTab, setActiveTab] = react.useState("general");
 
-	// Initialize line-spacing if not set
-	if (CONFIG.visual["line-spacing"] === undefined) {
-		CONFIG.visual["line-spacing"] = 8;
-	}
+  // Initialize line-spacing if not set
+  if (CONFIG.visual["line-spacing"] === undefined) {
+    CONFIG.visual["line-spacing"] = 8;
+  }
 
-	// FAD (Full Screen) 확장 프로그램 감지
-	const isFadActive = react.useMemo(() => {
-		return !!document.getElementById("fad-lyrics-plus-container");
-	}, []);
+  // FAD (Full Screen) 확장 프로그램 감지
+  const isFadActive = react.useMemo(() => {
+    return !!document.getElementById("fad-lyrics-plus-container");
+  }, []);
 
-	// 컴포넌트 마운트 시 저장된 폰트 설정 로드 및 Google Font 링크 추가
-	react.useEffect(() => {
-		const loadFont = (fontFamily, linkId) => {
-			console.log(`[Lyrics Plus] Attempting to load font: ${fontFamily} (${linkId})`);
-			if (fontFamily && GOOGLE_FONTS.includes(fontFamily)) {
-				let link = document.getElementById(linkId);
-				if (!link) {
-					link = document.createElement("link");
-					link.id = linkId;
-					link.rel = "stylesheet";
-					document.head.appendChild(link);
-					console.log(`[Lyrics Plus] Created new link element for: ${fontFamily}`);
-				}
-				if (fontFamily === "Pretendard Variable") {
-					link.href = "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
-				} else {
-					link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, "+")}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
-				}
-				console.log(`[Lyrics Plus] Font link href set to: ${link.href}`);
-			} else {
-				console.log(`[Lyrics Plus] Font ${fontFamily} not in GOOGLE_FONTS list or invalid`);
-			}
-		};
+  // 컴포넌트 마운트 시 저장된 폰트 설정 로드 및 Google Font 링크 추가
+  react.useEffect(() => {
+    const loadFont = (fontFamily, linkId) => {
+      console.log(
+        `[Lyrics Plus] Attempting to load font: ${fontFamily} (${linkId})`
+      );
+      if (fontFamily && GOOGLE_FONTS.includes(fontFamily)) {
+        let link = document.getElementById(linkId);
+        if (!link) {
+          link = document.createElement("link");
+          link.id = linkId;
+          link.rel = "stylesheet";
+          document.head.appendChild(link);
+          console.log(
+            `[Lyrics Plus] Created new link element for: ${fontFamily}`
+          );
+        }
+        if (fontFamily === "Pretendard Variable") {
+          link.href =
+            "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
+        } else {
+          link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(
+            / /g,
+            "+"
+          )}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+        }
+        console.log(`[Lyrics Plus] Font link href set to: ${link.href}`);
+      } else {
+        console.log(
+          `[Lyrics Plus] Font ${fontFamily} not in GOOGLE_FONTS list or invalid`
+        );
+      }
+    };
 
-		// 기본 폰트 로드 (separate-fonts가 false일 때 사용)
-		const baseFont = CONFIG.visual["font-family"];
-		console.log(`[Lyrics Plus] Base font from CONFIG: ${baseFont}`);
-		loadFont(baseFont, "lyrics-plus-google-font-base");
-		
-		// 원문 폰트 로드
-		const originalFont = CONFIG.visual["original-font-family"];
-		console.log(`[Lyrics Plus] Original font from CONFIG: ${originalFont}`);
-		loadFont(originalFont, "lyrics-plus-google-font-original");
-		
-		// 발음 폰트 로드
-		const phoneticFont = CONFIG.visual["phonetic-font-family"];
-		console.log(`[Lyrics Plus] Phonetic font from CONFIG: ${phoneticFont}`);
-		loadFont(phoneticFont, "lyrics-plus-google-font-phonetic");
-		
-		// 번역 폰트 로드
-		const translationFont = CONFIG.visual["translation-font-family"];
-		console.log(`[Lyrics Plus] Translation font from CONFIG: ${translationFont}`);
-		loadFont(translationFont, "lyrics-plus-google-font-translation");
-	}, []);
+    // 기본 폰트 로드 (separate-fonts가 false일 때 사용)
+    const baseFont = CONFIG.visual["font-family"];
+    console.log(`[Lyrics Plus] Base font from CONFIG: ${baseFont}`);
+    loadFont(baseFont, "lyrics-plus-google-font-base");
 
-	// 외관 탭으로 전환될 때 미리보기 폰트 강제 업데이트
-	react.useEffect(() => {
-		if (activeTab === "appearance") {
-			console.log(`[Lyrics Plus] Appearance tab activated, updating preview fonts`);
-			// 약간의 지연을 주어 DOM이 렌더링된 후 실행
-			setTimeout(() => {
-				const lyricsPreview = document.getElementById("lyrics-preview");
-				const phoneticPreview = document.getElementById("phonetic-preview");
-				const translationPreview = document.getElementById("translation-preview");
-				
-				const originalFont = CONFIG.visual["original-font-family"];
-				const phoneticFont = CONFIG.visual["phonetic-font-family"];
-				const translationFont = CONFIG.visual["translation-font-family"];
-				
-				console.log(`[Lyrics Plus] Fonts - original: ${originalFont}, phonetic: ${phoneticFont}, translation: ${translationFont}`);
-				
-				if (lyricsPreview) {
-					// 기본값으로 초기화
-					lyricsPreview.style.fontFamily = "var(--font-family)";
-					// 짧은 지연 후 실제 폰트 적용
-					setTimeout(() => {
-						console.log(`[Lyrics Plus] Setting lyrics preview font to: ${originalFont}`);
-						lyricsPreview.style.fontFamily = originalFont || "Pretendard Variable";
-					}, 10);
-				}
-				
-				if (phoneticPreview) {
-					phoneticPreview.style.fontFamily = "var(--font-family)";
-					setTimeout(() => {
-						console.log(`[Lyrics Plus] Setting phonetic preview font to: ${phoneticFont}`);
-						phoneticPreview.style.fontFamily = phoneticFont || "Pretendard Variable";
-					}, 10);
-				}
-				
-				if (translationPreview) {
-					translationPreview.style.fontFamily = "var(--font-family)";
-					setTimeout(() => {
-						console.log(`[Lyrics Plus] Setting translation preview font to: ${translationFont}`);
-						translationPreview.style.fontFamily = translationFont || "Pretendard Variable";
-					}, 10);
-				}
-			}, 50);
-		}
-	}, [activeTab]);
+    // 원문 폰트 로드
+    const originalFont = CONFIG.visual["original-font-family"];
+    console.log(`[Lyrics Plus] Original font from CONFIG: ${originalFont}`);
+    loadFont(originalFont, "lyrics-plus-google-font-original");
 
-	const HeaderSection = () => {
-		return react.createElement(
-			"div",
-			{ className: "settings-header" },
-			react.createElement(
-				"div",
-				{ className: "settings-header-content" },
-				react.createElement(
-					"div",
-					{ className: "settings-title-section" },
-					react.createElement("h1", null, "Lyrics Plus"),
-					react.createElement("span", { className: "settings-version" }, `v${Utils.currentVersion}`)
-				),
-				react.createElement(
-					"button",
-					{
-						className: "settings-github-btn",
-						onClick: () => window.open("https://github.com/ivLis-Studio/lyrics-plus", "_blank"),
-						title: "GitHub 저장소 방문"
-					},
-					react.createElement("svg", {
-						width: 16,
-						height: 16,
-						viewBox: "0 0 16 16",
-						fill: "currentColor",
-						dangerouslySetInnerHTML: {
-							__html: '<path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>'
-						}
-					}),
-					react.createElement("span", null, "GitHub")
-				)
-			)
-		);
-	};
+    // 발음 폰트 로드
+    const phoneticFont = CONFIG.visual["phonetic-font-family"];
+    console.log(`[Lyrics Plus] Phonetic font from CONFIG: ${phoneticFont}`);
+    loadFont(phoneticFont, "lyrics-plus-google-font-phonetic");
 
-	const TabButton = ({ id, label, icon, isActive, onClick }) => {
-		return react.createElement(
-			"button",
-			{
-				className: `settings-tab-btn ${isActive ? "active" : ""}`,
-				"data-tab-id": id,
-				onClick: (e) => {
-					e.preventDefault();
-					e.stopPropagation();
-					onClick(id);
-				}
-			},
-			label
-		);
-	};
+    // 번역 폰트 로드
+    const translationFont = CONFIG.visual["translation-font-family"];
+    console.log(
+      `[Lyrics Plus] Translation font from CONFIG: ${translationFont}`
+    );
+    loadFont(translationFont, "lyrics-plus-google-font-translation");
+  }, []);
 
-	const TabContainer = ({ children }) => {
-		return react.createElement(
-			"div",
-			{
-				className: "settings-content"
-			},
-			children
-		);
-	};
+  // 외관 탭으로 전환될 때 미리보기 폰트 강제 업데이트
+  react.useEffect(() => {
+    if (activeTab === "appearance") {
+      console.log(
+        `[Lyrics Plus] Appearance tab activated, updating preview fonts`
+      );
+      // 약간의 지연을 주어 DOM이 렌더링된 후 실행
+      setTimeout(() => {
+        const lyricsPreview = document.getElementById("lyrics-preview");
+        const phoneticPreview = document.getElementById("phonetic-preview");
+        const translationPreview = document.getElementById(
+          "translation-preview"
+        );
 
-	const SectionTitle = ({ title, subtitle }) => {
-		return react.createElement(
-			"div",
-			{ className: "section-title" },
-			react.createElement("div", { className: "section-title-content" },
-				react.createElement("div", { className: "section-text" },
-					react.createElement("h3", null, title),
-					subtitle && react.createElement("p", null, subtitle)
-				)
-			)
-		);
-	};
+        const originalFont = CONFIG.visual["original-font-family"];
+        const phoneticFont = CONFIG.visual["phonetic-font-family"];
+        const translationFont = CONFIG.visual["translation-font-family"];
 
-	return react.createElement(
-		"div",
-		{
-			id: `${APP_NAME}-config-container`,
-		},
-		react.createElement("style", {
-			dangerouslySetInnerHTML: {
-				__html: `
+        console.log(
+          `[Lyrics Plus] Fonts - original: ${originalFont}, phonetic: ${phoneticFont}, translation: ${translationFont}`
+        );
+
+        if (lyricsPreview) {
+          // 기본값으로 초기화
+          lyricsPreview.style.fontFamily = "var(--font-family)";
+          // 짧은 지연 후 실제 폰트 적용
+          setTimeout(() => {
+            console.log(
+              `[Lyrics Plus] Setting lyrics preview font to: ${originalFont}`
+            );
+            lyricsPreview.style.fontFamily =
+              originalFont || "Pretendard Variable";
+          }, 10);
+        }
+
+        if (phoneticPreview) {
+          phoneticPreview.style.fontFamily = "var(--font-family)";
+          setTimeout(() => {
+            console.log(
+              `[Lyrics Plus] Setting phonetic preview font to: ${phoneticFont}`
+            );
+            phoneticPreview.style.fontFamily =
+              phoneticFont || "Pretendard Variable";
+          }, 10);
+        }
+
+        if (translationPreview) {
+          translationPreview.style.fontFamily = "var(--font-family)";
+          setTimeout(() => {
+            console.log(
+              `[Lyrics Plus] Setting translation preview font to: ${translationFont}`
+            );
+            translationPreview.style.fontFamily =
+              translationFont || "Pretendard Variable";
+          }, 10);
+        }
+      }, 50);
+    }
+  }, [activeTab]);
+
+  const HeaderSection = () => {
+    return react.createElement(
+      "div",
+      { className: "settings-header" },
+      react.createElement(
+        "div",
+        { className: "settings-header-content" },
+        react.createElement(
+          "div",
+          { className: "settings-title-section" },
+          react.createElement("h1", null, "Lyrics Plus"),
+          react.createElement(
+            "span",
+            { className: "settings-version" },
+            `v${Utils.currentVersion}`
+          )
+        ),
+        react.createElement(
+          "button",
+          {
+            className: "settings-github-btn",
+            onClick: () =>
+              window.open(
+                "https://github.com/ivLis-Studio/lyrics-plus",
+                "_blank"
+              ),
+            title: "GitHub 저장소 방문",
+          },
+          react.createElement("svg", {
+            width: 16,
+            height: 16,
+            viewBox: "0 0 16 16",
+            fill: "currentColor",
+            dangerouslySetInnerHTML: {
+              __html:
+                '<path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>',
+            },
+          }),
+          react.createElement("span", null, "GitHub")
+        )
+      )
+    );
+  };
+
+  const TabButton = ({ id, label, icon, isActive, onClick }) => {
+    return react.createElement(
+      "button",
+      {
+        className: `settings-tab-btn ${isActive ? "active" : ""}`,
+        "data-tab-id": id,
+        onClick: (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick(id);
+        },
+      },
+      label
+    );
+  };
+
+  const TabContainer = ({ children }) => {
+    return react.createElement(
+      "div",
+      {
+        className: "settings-content",
+      },
+      children
+    );
+  };
+
+  const SectionTitle = ({ title, subtitle }) => {
+    return react.createElement(
+      "div",
+      { className: "section-title" },
+      react.createElement(
+        "div",
+        { className: "section-title-content" },
+        react.createElement(
+          "div",
+          { className: "section-text" },
+          react.createElement("h3", null, title),
+          subtitle && react.createElement("p", null, subtitle)
+        )
+      )
+    );
+  };
+
+  return react.createElement(
+    "div",
+    {
+      id: `${APP_NAME}-config-container`,
+    },
+    react.createElement("style", {
+      dangerouslySetInnerHTML: {
+        __html: `
 /* 전체 컨테이너 - iOS 18 스타일 */
 #${APP_NAME}-config-container {
     padding: 0;
@@ -1989,974 +2128,1207 @@ const ConfigModal = () => {
 #${APP_NAME}-config-container .info-box p:last-child {
     margin-bottom: 0;
 }
-`
-			},
-		}),
-		react.createElement(HeaderSection),
-		react.createElement(
-			"div",
-			{ className: "settings-tabs" },
-			react.createElement(TabButton, {
-				id: "general",
-				label: "일반",
-				icon: "",
-				isActive: activeTab === "general",
-				onClick: setActiveTab
-			}),
-			react.createElement(TabButton, {
-				id: "appearance",
-				label: "외관",
-				icon: "",
-				isActive: activeTab === "appearance",
-				onClick: setActiveTab
-			}),
-			react.createElement(TabButton, {
-				id: "lyrics",
-				label: "동작",
-				icon: "",
-				isActive: activeTab === "lyrics",
-				onClick: setActiveTab
-			}),
-			react.createElement(TabButton, {
-				id: "translation",
-				label: "제공자",
-				icon: "",
-				isActive: activeTab === "translation",
-				onClick: setActiveTab
-			}),
-			react.createElement(TabButton, {
-				id: "advanced",
-				label: "고급",
-				icon: "",
-				isActive: activeTab === "advanced",
-				onClick: setActiveTab
-			}),
-			react.createElement(TabButton, {
-				id: "about",
-				label: "정보",
-				icon: "",
-				isActive: activeTab === "about",
-				onClick: setActiveTab
-			})
-		),
-		react.createElement(TabContainer, null,
-			// 일반 탭 (동작 관련 설정)
-			react.createElement(
-				"div",
-				{
-					className: `tab-content ${activeTab === "general" ? "active" : ""}`
-				},
-				react.createElement(SectionTitle, { title: "시각 효과", subtitle: "가사 화면의 시각적 요소를 커스터마이징하세요" }),
-				// FAD 경고 메시지
-				isFadActive && react.createElement(
-					"div",
-					{
-						className: "setting-row",
-						style: {
-							backgroundColor: "rgba(var(--spice-rgb-warning), 0.1)"
-						}
-					},
-					react.createElement(
-						"div",
-						{ className: "setting-row-content" },
-						react.createElement(
-							"div",
-							{ className: "setting-row-left" },
-							react.createElement(
-								"div",
-								{ 
-									className: "setting-name",
-									style: { color: "var(--spice-text)", fontWeight: "600" }
-								},
-								"⚠️ Full Screen 확장 프로그램 사용 중"
-							),
-							react.createElement(
-								"div",
-								{
-									className: "setting-description",
-									style: { color: "var(--spice-subtext)" }
-								},
-								"Full Screen 확장 프로그램 사용 중에는 지원하지 않습니다.",
-								react.createElement("br"),
-								"정렬 방식은 Full Screen 자체 설정에서 변경하십시오."
-							)
-						)
-					)
-				),
-				react.createElement(OptionList, {
-				items: [
-				{
-					desc: "정렬 방식",
-					key: "alignment",
-					info: "가사 텍스트의 정렬 위치를 선택하세요",
-					type: ConfigSelection,
-					disabled: isFadActive,
-				options: {
-					left: "왼쪽",
-					center: "가운데",
-					right: "오른쪽",
-				},
-				},
-				{
-					desc: "노이즈 오버레이",
-					key: "noise",
-					info: "배경에 필름 그레인 효과를 추가합니다",
-					type: ConfigSlider,
-					disabled: isFadActive,
-				},
-				{
-					desc: "컬러풀 배경",
-					key: "colorful",
-					info: "앨범 색상 기반의 동적 배경을 활성화합니다",
-					type: ConfigSlider,
-					disabled: isFadActive,
-				},
-				{
-					desc: "앨범 커버 배경",
-					info: "현재 재생 중인 앨범 커버를 배경으로 사용합니다 (풀스크린 모드에서는 제대로 동작하지 않을 수 있습니다)",
-					key: "gradient-background",
-					type: ConfigSlider,
-					disabled: isFadActive,
-				},
-				{
-					desc: "단색 배경",
-					info: "사용자 지정 단색을 배경으로 사용합니다",
-					key: "solid-background",
-					type: ConfigSlider,
-					disabled: isFadActive,
-				},
-				{
-					desc: "단색 배경 색상",
-					key: "solid-background-color",
-					info: "단색 배경에 사용할 색상을 선택하세요",
-					type: ColorPresetSelector,
-					disabled: isFadActive,
-					when: () => CONFIG.visual["solid-background"],
-				},
-				{
-					desc: "",
-					key: "solid-background-warning",
-					type: ConfigWarning,
-					message: "단색 배경을 사용할 때는 배경 밝기 조절이 적용되지 않습니다.",
-					when: () => CONFIG.visual["solid-background"],
-				},
-				{
-					desc: "배경 밝기",
-					key: "background-brightness",
-					info: "배경의 밝기 수준을 조절합니다 (0-100%)",
-					type: ConfigSliderRange,
-					disabled: () => isFadActive || CONFIG.visual["solid-background"],
-					min: 0,
-					max: 100,
-					step: 1,
-					unit: "%",
-				},
-			],
-			onChange: (name, value) => {
-				// 컬러풀 배경, 앨범 커버 배경, 단색 배경은 상호 배타적으로 동작
-				if (name === "colorful" && value) {
-					CONFIG.visual["gradient-background"] = false;
-					CONFIG.visual["solid-background"] = false;
-					StorageManager.saveConfig("gradient-background", false);
-					StorageManager.saveConfig("solid-background", false);
-				} else if (name === "gradient-background" && value) {
-					CONFIG.visual["colorful"] = false;
-					CONFIG.visual["solid-background"] = false;
-					StorageManager.saveConfig("colorful", false);
-					StorageManager.saveConfig("solid-background", false);
-				} else if (name === "solid-background" && value) {
-					CONFIG.visual["colorful"] = false;
-					CONFIG.visual["gradient-background"] = false;
-					StorageManager.saveConfig("colorful", false);
-					StorageManager.saveConfig("gradient-background", false);
-				}
-				
-				CONFIG.visual[name] = value;
-				StorageManager.saveConfig(name, value);
-				lyricContainerUpdate?.();
-				const configChange = new CustomEvent("lyrics-plus", {
-					detail: {
-						type: "config",
-						name: name,
-						value: value,
-					},
-				});
-				window.dispatchEvent(configChange);
-			},
-		}),
-				react.createElement(SectionTitle, { title: "동기화 모드", subtitle: "컴팩트 동기화 모드의 표시 옵션" }),
-				react.createElement(OptionList, {
-				items: [
-				{
-					desc: "표시 줄 수 (이전)",
-					key: "lines-before",
-					info: "현재 재생 중인 가사 이전에 표시할 줄 수",
-					type: ConfigSelection,
-					options: [0, 1, 2, 3, 4],
-				},
-				{
-					desc: "표시 줄 수 (이후)",
-					key: "lines-after",
-					info: "현재 재생 중인 가사 이후에 표시할 줄 수",
-					type: ConfigSelection,
-					options: [0, 1, 2, 3, 4],
-				},
-				{
-					desc: "페이드아웃 블러 효과",
-					key: "fade-blur",
-					info: "비활성 가사에 블러 효과를 적용합니다",
-					type: ConfigSlider,
-				},
-			],
-			onChange: (name, value) => {
-				CONFIG.visual[name] = value;
-				StorageManager.saveConfig(name, value);
-				lyricContainerUpdate?.();
-				const configChange = new CustomEvent("lyrics-plus", {
-					detail: {
-						type: "config",
-						name: name,
-						value: value,
-					},
-				});
-				window.dispatchEvent(configChange);
-			},
-		})
-			),
-			// 외관 탭 (시각 효과 + 타이포그래피)
-			react.createElement(
-				"div",
-				{
-					className: `tab-content ${activeTab === "appearance" ? "active" : ""}`
-				},
-				react.createElement(SectionTitle, { title: "실시간 미리보기", subtitle: "설정한 스타일을 즉시 확인하세요" }),
-				react.createElement("div", {
-					className: "font-preview-container"
-				},
-					react.createElement("div", {
-						className: "font-preview"
-					},
-						react.createElement("div", {
-							id: "lyrics-preview",
-							style: {
-								fontSize: `${CONFIG.visual["original-font-size"] || 20}px`,
-								fontWeight: CONFIG.visual["original-font-weight"] || "400",
-								fontFamily: CONFIG.visual["original-font-family"] || "Pretendard Variable",
-								textAlign: CONFIG.visual["alignment"] || "left",
-								opacity: (CONFIG.visual["original-opacity"] || 100) / 100,
-								textShadow: CONFIG.visual["text-shadow-enabled"] ?
-									`0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"}${Math.round((CONFIG.visual["text-shadow-opacity"] || 50) * 2.55).toString(16).padStart(2, '0')}` :
-									"none"
-							}
-						}, "Sample lyrics text goes here"),
-						react.createElement("div", {
-							id: "phonetic-preview",
-							style: {
-								fontSize: `${CONFIG.visual["phonetic-font-size"] || 20}px`,
-								fontWeight: CONFIG.visual["phonetic-font-weight"] || "400",
-								fontFamily: CONFIG.visual["phonetic-font-family"] || "Pretendard Variable",
-								textAlign: CONFIG.visual["alignment"] || "left",
-								lineHeight: "1.3",
-								opacity: (CONFIG.visual["phonetic-opacity"] || 70) / 100,
-								color: "rgba(255,255,255,0.7)",
-								marginTop: `${(parseInt(CONFIG.visual["phonetic-spacing"]) || 4) - 10}px`,
-								textShadow: CONFIG.visual["text-shadow-enabled"] ?
-									`0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"}${Math.round((CONFIG.visual["text-shadow-opacity"] || 50) * 2.55).toString(16).padStart(2, '0')}` :
-									"none"
-							}
-						}, "Saempeul lirilseu tekseuteu gouseu hieol"),
-						react.createElement("div", {
-							id: "translation-preview",
-							style: {
-								fontSize: `${CONFIG.visual["translation-font-size"] || 16}px`,
-								fontWeight: CONFIG.visual["translation-font-weight"] || "400",
-								fontFamily: CONFIG.visual["translation-font-family"] || "Pretendard Variable",
-								textAlign: CONFIG.visual["alignment"] || "left",
-								lineHeight: "1.4",
-								opacity: (CONFIG.visual["translation-opacity"] || 100) / 100,
-								color: "rgba(255,255,255,0.7)",
-								marginTop: `${parseInt(CONFIG.visual["translation-spacing"]) || 8}px`,
-								textShadow: CONFIG.visual["text-shadow-enabled"] ?
-									`0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"}${Math.round((CONFIG.visual["text-shadow-opacity"] || 50) * 2.55).toString(16).padStart(2, '0')}` :
-									"none"
-							}
-						}, "샘플 가사가 여기 있습니다.")
-					)
-				),
-				react.createElement(SectionTitle, { title: "원문 스타일", subtitle: "가사 원문의 글꼴 설정" }),
-				react.createElement(
-					"div",
-					{ className: "setting-row" },
-					react.createElement(
-						"div",
-						{ className: "setting-row-content" },
-						react.createElement(
-							"div",
-							{ className: "setting-row-left" },
-							react.createElement("div", { className: "setting-name" }, "폰트 패밀리"),
-							react.createElement("div", { className: "setting-description" }, "원문 가사에 적용할 폰트를 선택하세요")
-						),
-						react.createElement(
-							"div",
-							{ className: "setting-row-right font-selector-container" },
-							react.createElement(ConfigFontSelector, {
-								name: "",
-								defaultValue: CONFIG.visual["original-font-family"] || "Pretendard Variable",
-								onChange: (value) => {
-									CONFIG.visual["original-font-family"] = value;
-									localStorage.setItem(`${APP_NAME}:visual:original-font-family`, value);
-									
-									if (GOOGLE_FONTS.includes(value)) {
-										const linkId = "lyrics-plus-google-font-original";
-										let link = document.getElementById(linkId);
-										if (!link) {
-											link = document.createElement("link");
-											link.id = linkId;
-											link.rel = "stylesheet";
-											document.head.appendChild(link);
-										}
-										if (value === "Pretendard Variable") {
-											link.href = "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
-										} else {
-											link.href = `https://fonts.googleapis.com/css2?family=${value.replace(/ /g, "+")}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
-										}
-									}
-									
-									const lyricsPreview = document.getElementById("lyrics-preview");
-									if (lyricsPreview) {
-										lyricsPreview.style.fontFamily = value;
-									}
-									
-									lyricContainerUpdate?.();
-									window.dispatchEvent(new CustomEvent("lyrics-plus", {
-										detail: { type: "config", name: "original-font-family", value },
-									}));
-								}
-							})
-						)
-					)
-				),
-				react.createElement(OptionList, {
-					items: [
-						{
-							desc: "글꼴 크기",
-							info: "원문 가사의 글꼴 크기 (픽셀)",
-							key: "original-font-size",
-							type: ConfigSliderRange,
-							min: 12,
-							max: 128,
-							step: 2,
-							unit: "px",
-						},
-						{
-							desc: "글꼴 두께",
-							info: "원문 가사의 글꼴 굵기",
-							key: "original-font-weight",
-							type: ConfigSelection,
-							options: {
-								"100": "Thin (100)",
-								"200": "Extra Light (200)",
-								"300": "Light (300)",
-								"400": "Regular (400)",
-								"500": "Medium (500)",
-								"600": "Semi Bold (600)",
-								"700": "Bold (700)",
-								"800": "Extra Bold (800)",
-								"900": "Black (900)",
-							},
-						},
-						{
-							desc: "투명도",
-							info: "원문 가사의 불투명도 (0-100%)",
-							key: "original-opacity",
-							type: ConfigSliderRange,
-							min: 0,
-							max: 100,
-							step: 5,
-							unit: "%",
-						},
-					],
-					onChange: (name, value) => {
-						CONFIG.visual[name] = value;
-						localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
-						const lyricsPreview = document.getElementById("lyrics-preview");
-						if (lyricsPreview) {
-							if (name === "original-font-size") lyricsPreview.style.fontSize = `${value}px`;
-							if (name === "original-font-weight") lyricsPreview.style.fontWeight = value;
-							if (name === "original-opacity") lyricsPreview.style.opacity = value / 100;
-						}
-						lyricContainerUpdate?.();
-						window.dispatchEvent(new CustomEvent("lyrics-plus", {
-							detail: { type: "config", name, value },
-						}));
-					},
-				}),
-				react.createElement(SectionTitle, { title: "발음 스타일", subtitle: "로마자 발음 표기(Romaji, Romaja, Pinyin)의 글꼴 설정" }),
-				react.createElement(
-					"div",
-					{ className: "setting-row" },
-					react.createElement(
-						"div",
-						{ className: "setting-row-content" },
-						react.createElement(
-							"div",
-							{ className: "setting-row-left" },
-							react.createElement("div", { className: "setting-name" }, "폰트 패밀리"),
-							react.createElement("div", { className: "setting-description" }, "로마자 발음 표기에 적용할 폰트를 선택하세요")
-						),
-						react.createElement(
-							"div",
-							{ className: "setting-row-right font-selector-container" },
-							react.createElement(ConfigFontSelector, {
-								name: "",
-								defaultValue: CONFIG.visual["phonetic-font-family"] || "Pretendard Variable",
-								onChange: (value) => {
-									CONFIG.visual["phonetic-font-family"] = value;
-									localStorage.setItem(`${APP_NAME}:visual:phonetic-font-family`, value);
-									
-									if (GOOGLE_FONTS.includes(value)) {
-										const linkId = "lyrics-plus-google-font-phonetic";
-										let link = document.getElementById(linkId);
-										if (!link) {
-											link = document.createElement("link");
-											link.id = linkId;
-											link.rel = "stylesheet";
-											document.head.appendChild(link);
-										}
-										if (value === "Pretendard Variable") {
-											link.href = "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
-										} else {
-											link.href = `https://fonts.googleapis.com/css2?family=${value.replace(/ /g, "+")}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
-										}
-									}
-									
-									const phoneticPreview = document.getElementById("phonetic-preview");
-									if (phoneticPreview) {
-										phoneticPreview.style.fontFamily = value;
-									}
-									
-									lyricContainerUpdate?.();
-									window.dispatchEvent(new CustomEvent("lyrics-plus", {
-										detail: { type: "config", name: "phonetic-font-family", value },
-									}));
-								}
-							})
-						)
-					)
-				),
-				react.createElement(OptionList, {
-					items: [
-						{
-							desc: "글꼴 크기",
-							info: "로마자 발음 표기의 글꼴 크기 (픽셀)",
-							key: "phonetic-font-size",
-							type: ConfigSliderRange,
-							min: 10,
-							max: 96,
-							step: 2,
-							unit: "px",
-						},
-						{
-							desc: "글꼴 두께",
-							info: "로마자 발음 표기의 글꼴 굵기",
-							key: "phonetic-font-weight",
-							type: ConfigSelection,
-							options: {
-								"100": "Thin (100)",
-								"200": "Extra Light (200)",
-								"300": "Light (300)",
-								"400": "Regular (400)",
-								"500": "Medium (500)",
-								"600": "Semi Bold (600)",
-								"700": "Bold (700)",
-								"800": "Extra Bold (800)",
-								"900": "Black (900)",
-							},
-						},
-						{
-							desc: "투명도",
-							info: "로마자 발음 표기의 불투명도 (0-100%)",
-							key: "phonetic-opacity",
-							type: ConfigSliderRange,
-							min: 0,
-							max: 100,
-							step: 5,
-							unit: "%",
-						},
-						{
-							desc: "원문과의 간격",
-							info: "원문과 발음 표기 사이의 여백",
-							key: "phonetic-spacing",
-							type: ConfigSliderRange,
-							min: -30,
-							max: 20,
-							step: 1,
-							unit: "px",
-						},
-					],
-					onChange: (name, value) => {
-						CONFIG.visual[name] = value;
-						localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
-						const phoneticPreview = document.getElementById("phonetic-preview");
-						if (phoneticPreview) {
-							if (name === "phonetic-font-size") phoneticPreview.style.fontSize = `${value}px`;
-							if (name === "phonetic-font-weight") phoneticPreview.style.fontWeight = value;
-							if (name === "phonetic-opacity") phoneticPreview.style.opacity = value / 100;
-							if (name === "phonetic-spacing") phoneticPreview.style.marginTop = `${parseInt(value) || 0}px`;
-						}
-						lyricContainerUpdate?.();
-						window.dispatchEvent(new CustomEvent("lyrics-plus", {
-							detail: { type: "config", name, value },
-						}));
-					},
-				}),
-				react.createElement(SectionTitle, { title: "번역문 스타일", subtitle: "번역된 가사의 글꼴 설정" }),
-				react.createElement(
-					"div",
-					{ className: "setting-row" },
-					react.createElement(
-						"div",
-						{ className: "setting-row-content" },
-						react.createElement(
-							"div",
-							{ className: "setting-row-left" },
-							react.createElement("div", { className: "setting-name" }, "폰트 패밀리"),
-							react.createElement("div", { className: "setting-description" }, "번역된 가사에 적용할 폰트를 선택하세요")
-						),
-						react.createElement(
-							"div",
-							{ className: "setting-row-right font-selector-container" },
-							react.createElement(ConfigFontSelector, {
-								name: "",
-								defaultValue: CONFIG.visual["translation-font-family"] || "Pretendard Variable",
-								onChange: (value) => {
-									CONFIG.visual["translation-font-family"] = value;
-									localStorage.setItem(`${APP_NAME}:visual:translation-font-family`, value);
-									
-									if (GOOGLE_FONTS.includes(value)) {
-										const linkId = "lyrics-plus-google-font-translation";
-										let link = document.getElementById(linkId);
-										if (!link) {
-											link = document.createElement("link");
-											link.id = linkId;
-											link.rel = "stylesheet";
-											document.head.appendChild(link);
-										}
-										if (value === "Pretendard Variable") {
-											link.href = "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
-										} else {
-											link.href = `https://fonts.googleapis.com/css2?family=${value.replace(/ /g, "+")}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
-										}
-									}
-									
-									const translationPreview = document.getElementById("translation-preview");
-									if (translationPreview) {
-										translationPreview.style.fontFamily = value;
-									}
-									
-									lyricContainerUpdate?.();
-									window.dispatchEvent(new CustomEvent("lyrics-plus", {
-										detail: { type: "config", name: "translation-font-family", value },
-									}));
-								}
-							})
-						)
-					)
-				),
-				react.createElement(OptionList, {
-					items: [
-						{
-							desc: "글꼴 크기",
-							info: "번역 가사의 글꼴 크기 (픽셀)",
-							key: "translation-font-size",
-							type: ConfigSliderRange,
-							min: 12,
-							max: 128,
-							step: 2,
-							unit: "px",
-						},
-						{
-							desc: "글꼴 두께",
-							info: "번역 가사의 글꼴 굵기",
-							key: "translation-font-weight",
-							type: ConfigSelection,
-							options: {
-								"100": "Thin (100)",
-								"200": "Extra Light (200)",
-								"300": "Light (300)",
-								"400": "Regular (400)",
-								"500": "Medium (500)",
-								"600": "Semi Bold (600)",
-								"700": "Bold (700)",
-								"800": "Extra Bold (800)",
-								"900": "Black (900)",
-							},
-						},
-						{
-							desc: "투명도",
-							info: "번역 가사의 불투명도 (0-100%)",
-							key: "translation-opacity",
-							type: ConfigSliderRange,
-							min: 0,
-							max: 100,
-							step: 5,
-							unit: "%",
-						},
-						{
-							desc: "발음과의 간격",
-							info: "발음 표기와 번역문 사이의 여백 (픽셀)",
-							key: "translation-spacing",
-							type: ConfigSliderRange,
-							min: -20,
-							max: 30,
-							step: 2,
-							unit: "px",
-						},
-					],
-					onChange: (name, value) => {
-						CONFIG.visual[name] = value;
-						localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
-						const translationPreview = document.getElementById("translation-preview");
-						if (translationPreview) {
-							if (name === "translation-font-size") translationPreview.style.fontSize = `${value}px`;
-							if (name === "translation-font-weight") translationPreview.style.fontWeight = value;
-							if (name === "translation-opacity") translationPreview.style.opacity = value / 100;
-							if (name === "translation-spacing") translationPreview.style.marginTop = `${parseInt(value) || 0}px`;
-						}
-						lyricContainerUpdate?.();
-						window.dispatchEvent(new CustomEvent("lyrics-plus", {
-							detail: { type: "config", name, value },
-						}));
-					},
-				}),
-				react.createElement(SectionTitle, { title: "텍스트 그림자", subtitle: "가독성을 높이는 그림자 효과" }),
-				react.createElement(OptionList, {
-					items: [
-						{
-							desc: "그림자 효과",
-							info: "가사 텍스트에 그림자 효과를 적용합니다",
-							key: "text-shadow-enabled",
-							type: ConfigSlider,
-						},
-						{
-							desc: "그림자 색상",
-							info: "그림자의 색상 (HEX 코드)",
-							key: "text-shadow-color",
-							type: ConfigColorPicker,
-						},
-						{
-							desc: "그림자 투명도",
-							info: "그림자의 불투명도 (0-100%)",
-							key: "text-shadow-opacity",
-							type: ConfigSliderRange,
-							min: 0,
-							max: 100,
-							step: 5,
-							unit: "%",
-						},
-						{
-							desc: "블러 강도",
-							info: "그림자의 흐림 정도",
-							key: "text-shadow-blur",
-							type: ConfigSliderRange,
-							min: 0,
-							max: 10,
-							step: 1,
-							unit: "px",
-						},
-					],
-					onChange: (name, value) => {
-						CONFIG.visual[name] = value;
-						localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
-						const lyricsPreview = document.getElementById("lyrics-preview");
-						const phoneticPreview = document.getElementById("phonetic-preview");
-						const translationPreview = document.getElementById("translation-preview");
-						
-						if (lyricsPreview || phoneticPreview || translationPreview) {
-							const shadowEnabled = CONFIG.visual["text-shadow-enabled"];
-							const shadowColor = CONFIG.visual["text-shadow-color"] || "#000000";
-							const shadowOpacity = CONFIG.visual["text-shadow-opacity"] || 50;
-							const shadowBlur = CONFIG.visual["text-shadow-blur"] || 2;
-							const shadowAlpha = Math.round(shadowOpacity * 2.55).toString(16).padStart(2, '0');
-							const shadow = shadowEnabled ? `0 0 ${shadowBlur}px ${shadowColor}${shadowAlpha}` : "none";
-							if (lyricsPreview) lyricsPreview.style.textShadow = shadow;
-							if (phoneticPreview) phoneticPreview.style.textShadow = shadow;
-							if (translationPreview) translationPreview.style.textShadow = shadow;
-						}
-						lyricContainerUpdate?.();
-						window.dispatchEvent(new CustomEvent("lyrics-plus", {
-							detail: { type: "config", name, value },
-						}));
-					},
-				})
-			),
-			// 가사 탭 (가사 동기화 및 동작)
-			react.createElement(
-				"div",
-				{
-					className: `tab-content ${activeTab === "lyrics" ? "active" : ""}`
-				},
-				react.createElement(SectionTitle, { title: "재생 동작", subtitle: "재생 관련 기능 설정" }),
-				react.createElement(OptionList, {
-					items: [
-						{
-							desc: "재생바 버튼 대체",
-							key: "playbar-button",
-							info: "Spotify의 기본 가사 버튼을 Lyrics Plus로 교체합니다",
-							type: ConfigSlider,
-						},
-						{
-							desc: "전역 지연 시간",
-							info: "모든 곡에 적용되는 가사 동기화 오프셋 (밀리초)",
-							key: "global-delay",
-							type: ConfigAdjust,
-							min: -10000,
-							max: 10000,
-							step: 250,
-						},
-						{
-							desc: "전체화면 단축키",
-							key: "fullscreen-key",
-							info: "가사 전체화면 모드를 위한 키보드 단축키",
-							type: ConfigHotkey,
-						},
-					],
-					onChange: (name, value) => {
-						CONFIG.visual[name] = value;
-						StorageManager.saveConfig(name, value);
-						lyricContainerUpdate?.();
-						window.dispatchEvent(new CustomEvent("lyrics-plus", {
-							detail: { type: "config", name, value },
-						}));
-					},
-				}),
-				react.createElement(SectionTitle, { title: "노래방 모드", subtitle: "노래방 스타일 가사 표시" }),
-				react.createElement(OptionList, {
-					items: [
-						{
-							desc: "노래방 모드 사용",
-							info: "노래방 가사를 지원하는 곡에서 노래방 탭을 사용합니다. 비활성화 시 동기화 탭으로 고정됩니다",
-							key: "karaoke-mode-enabled",
-							type: ConfigSlider,
-						},
-						{
-							desc: "글자 바운스 효과",
-							info: "노래방 모드에서 현재 부르는 글자에 통통 튀는 애니메이션을 적용합니다",
-							key: "karaoke-bounce",
-							type: ConfigSlider,
-						},
-					],
-					onChange: (name, value) => {
-						CONFIG.visual[name] = value;
-						StorageManager.saveConfig(name, value);
-						lyricContainerUpdate?.();
-						window.dispatchEvent(new CustomEvent("lyrics-plus", {
-							detail: { type: "config", name, value },
-						}));
-					},
-				}),
-				react.createElement(SectionTitle, { title: "캐시 관리", subtitle: "저장된 데이터 관리" }),
-				react.createElement(OptionList, {
-					items: [
-						{
-							desc: "메모리 캐시 초기화",
-							info: "로드된 가사는 빠른 재로드를 위해 메모리에 임시 저장됩니다. Spotify를 재시작하지 않고 메모리 캐시를 비웁니다",
-							key: "clear-memory-cache",
-							text: "캐시 비우기",
-							type: ConfigButton,
-							onChange: () => {
-								reloadLyrics?.();
-								Spicetify.showNotification("✓ 메모리 캐시가 초기화되었습니다", false, 2000);
-							},
-						},
-					],
-					onChange: () => {},
-				})
-			),
-			// 번역 탭 (가사 제공자 포함)
-			react.createElement(
-				"div",
-				{
-					className: `tab-content ${activeTab === "translation" ? "active" : ""}`
-				},
-				react.createElement(SectionTitle, { title: "가사 제공자", subtitle: "가사 소스의 우선순위와 설정을 관리하세요" }),
-				react.createElement(ServiceList, {
-					itemsList: CONFIG.providersOrder,
-					onListChange: (list) => {
-						CONFIG.providersOrder = list;
-						localStorage.setItem(`${APP_NAME}:services-order`, JSON.stringify(list));
-						reloadLyrics?.();
-					},
-					onToggle: (name, value) => {
-						CONFIG.providers[name].on = value;
-						localStorage.setItem(`${APP_NAME}:provider:${name}:on`, value);
-						reloadLyrics?.();
-					},
-					onTokenChange: (name, value) => {
-						CONFIG.providers[name].token = value;
-						localStorage.setItem(`${APP_NAME}:provider:${name}:token`, value);
-						reloadLyrics?.();
-					},
-				})
-			),
-			// 고급 탭
-			react.createElement(
-				"div",
-				{
-					className: `tab-content ${activeTab === "advanced" ? "active" : ""}`
-				},
-				react.createElement(SectionTitle, { title: "언어 감지", subtitle: "텍스트 변환을 위한 언어 감지 설정" }),
-				react.createElement(OptionList, {
-					items: [
-						{
-							desc: "일본어 한자에 후리가나 표시",
-							info: "일본어 가사의 한자(칸지) 위에 히라가나 읽기를 표시합니다",
-							key: "furigana-enabled",
-							type: ConfigSlider,
-						},
-						{
-							desc: "일본어 감지 임계값",
-							info: "가사에서 가나 문자의 비율로 일본어를 감지합니다. 값이 높을수록 더 엄격하게 감지합니다 (백분율)",
-							key: "ja-detect-threshold",
-							type: ConfigSliderRange,
-							min: thresholdSizeLimit.min,
-							max: thresholdSizeLimit.max,
-							step: thresholdSizeLimit.step,
-							unit: "%",
-						},
-						{
-							desc: "중국어 감지 임계값",
-							info: "번체자와 간체자의 비율로 중국어 종류를 감지합니다. 값이 높을수록 더 엄격하게 감지합니다 (백분율)",
-							key: "hans-detect-threshold",
-							type: ConfigSliderRange,
-							min: thresholdSizeLimit.min,
-							max: thresholdSizeLimit.max,
-							step: thresholdSizeLimit.step,
-							unit: "%",
-						},
-					],
-					onChange: (name, value) => {
-						CONFIG.visual[name] = value;
-						StorageManager.saveConfig(name, value);
-						lyricContainerUpdate?.();
-						window.dispatchEvent(new CustomEvent("lyrics-plus", {
-							detail: { type: "config", name, value },
-						}));
-					},
-				}),
-				react.createElement(SectionTitle, { title: "API 설정", subtitle: "외부 서비스 연동을 위한 API 키" }),
-				react.createElement(OptionList, {
-					items: [
-						{
-							desc: "Gemini API 키",
-							info: "Google Gemini AI를 활용한 가사 번역 기능을 사용하려면 API 키가 필요합니다",
-							key: "gemini-api-key",
-							type: ConfigInput,
-						},
-					],
-					onChange: (name, value) => {
-						CONFIG.visual[name] = value;
-						StorageManager.saveConfig(name, value);
-						lyricContainerUpdate?.();
-						window.dispatchEvent(new CustomEvent("lyrics-plus", {
-							detail: { type: "config", name, value },
-						}));
-					},
-				})
-			),
-			// 정보 탭
-			react.createElement(
-				"div",
-				{
-					className: `tab-content ${activeTab === "about" ? "active" : ""}`
-				},
-				react.createElement(SectionTitle, { title: "앱 정보", subtitle: "Lyrics Plus에 대해" }),
-				react.createElement("div", {
-					className: "info-card",
-					style: {
-						padding: "20px",
-						background: "rgba(255, 255, 255, 0.03)",
-						border: "1px solid rgba(255, 255, 255, 0.08)",
-						borderRadius: "0 0 12px 12px",
-						backdropFilter: "blur(30px) saturate(150%)",
-						WebkitBackdropFilter: "blur(30px) saturate(150%)",
-						marginBottom: "24px"
-					}
-				},
-					react.createElement("h3", { 
-						style: { 
-							margin: "0 0 12px", 
-							fontSize: "18px", 
-							color: "#ffffff",
-							display: "flex",
-							alignItems: "center",
-							gap: "8px"
-						} 
-					}, 
-						react.createElement("span", null, "🎵"),
-						"Lyrics Plus"
-					),
-					react.createElement("p", { 
-						style: { 
-							margin: "0 0 8px", 
-							color: "rgba(255,255,255,0.7)", 
-							lineHeight: "1.6" 
-						} 
-					}, 
-						"Spicetify를 위한 한국어 대응 가사 확장 프로그램."
-					),
-					react.createElement("p", { 
-						style: { 
-							margin: "0", 
-							color: "rgba(255,255,255,0.5)", 
-							fontSize: "14px" 
-						} 
-					}, 
-						`버전: ${Utils.currentVersion}`
-					)
-				),
-				react.createElement(SectionTitle, { title: "업데이트", subtitle: "최신 버전 확인" }),
-				react.createElement(OptionList, {
-					items: [
-						{
-							desc: "최신 버전 확인",
-							info: `현재 버전: v${Utils.currentVersion}. GitHub에서 새로운 업데이트가 있는지 확인합니다`,
-							key: "check-update",
-							text: "업데이트 확인",
-							type: ConfigButton,
-							onChange: async (_, event) => {
-								const button = event?.target;
-								if (!button) return;
-								const originalText = button.textContent;
-								button.textContent = "확인 중...";
-								button.disabled = true;
+`,
+      },
+    }),
+    react.createElement(HeaderSection),
+    react.createElement(
+      "div",
+      { className: "settings-tabs" },
+      react.createElement(TabButton, {
+        id: "general",
+        label: "일반",
+        icon: "",
+        isActive: activeTab === "general",
+        onClick: setActiveTab,
+      }),
+      react.createElement(TabButton, {
+        id: "appearance",
+        label: "외관",
+        icon: "",
+        isActive: activeTab === "appearance",
+        onClick: setActiveTab,
+      }),
+      react.createElement(TabButton, {
+        id: "lyrics",
+        label: "동작",
+        icon: "",
+        isActive: activeTab === "lyrics",
+        onClick: setActiveTab,
+      }),
+      react.createElement(TabButton, {
+        id: "translation",
+        label: "제공자",
+        icon: "",
+        isActive: activeTab === "translation",
+        onClick: setActiveTab,
+      }),
+      react.createElement(TabButton, {
+        id: "advanced",
+        label: "고급",
+        icon: "",
+        isActive: activeTab === "advanced",
+        onClick: setActiveTab,
+      }),
+      react.createElement(TabButton, {
+        id: "about",
+        label: "정보",
+        icon: "",
+        isActive: activeTab === "about",
+        onClick: setActiveTab,
+      })
+    ),
+    react.createElement(
+      TabContainer,
+      null,
+      // 일반 탭 (동작 관련 설정)
+      react.createElement(
+        "div",
+        {
+          className: `tab-content ${activeTab === "general" ? "active" : ""}`,
+        },
+        react.createElement(SectionTitle, {
+          title: "시각 효과",
+          subtitle: "가사 화면의 시각적 요소를 커스터마이징하세요",
+        }),
+        // FAD 경고 메시지
+        isFadActive &&
+          react.createElement(
+            "div",
+            {
+              className: "setting-row",
+              style: {
+                backgroundColor: "rgba(var(--spice-rgb-warning), 0.1)",
+              },
+            },
+            react.createElement(
+              "div",
+              { className: "setting-row-content" },
+              react.createElement(
+                "div",
+                { className: "setting-row-left" },
+                react.createElement(
+                  "div",
+                  {
+                    className: "setting-name",
+                    style: { color: "var(--spice-text)", fontWeight: "600" },
+                  },
+                  "⚠️ Full Screen 확장 프로그램 사용 중"
+                ),
+                react.createElement(
+                  "div",
+                  {
+                    className: "setting-description",
+                    style: { color: "var(--spice-subtext)" },
+                  },
+                  "Full Screen 확장 프로그램 사용 중에는 지원하지 않습니다.",
+                  react.createElement("br"),
+                  "정렬 방식은 Full Screen 자체 설정에서 변경하십시오."
+                )
+              )
+            )
+          ),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "정렬 방식",
+              key: "alignment",
+              info: "가사 텍스트의 정렬 위치를 선택하세요",
+              type: ConfigSelection,
+              disabled: isFadActive,
+              options: {
+                left: "왼쪽",
+                center: "가운데",
+                right: "오른쪽",
+              },
+            },
+            {
+              desc: "노이즈 오버레이",
+              key: "noise",
+              info: "배경에 필름 그레인 효과를 추가합니다",
+              type: ConfigSlider,
+              disabled: isFadActive,
+            },
+            {
+              desc: "컬러풀 배경",
+              key: "colorful",
+              info: "앨범 색상 기반의 동적 배경을 활성화합니다",
+              type: ConfigSlider,
+              disabled: isFadActive,
+            },
+            {
+              desc: "앨범 커버 배경",
+              info: "현재 재생 중인 앨범 커버를 배경으로 사용합니다 (풀스크린 모드에서는 제대로 동작하지 않을 수 있습니다)",
+              key: "gradient-background",
+              type: ConfigSlider,
+              disabled: isFadActive,
+            },
+            {
+              desc: "단색 배경",
+              info: "사용자 지정 단색을 배경으로 사용합니다",
+              key: "solid-background",
+              type: ConfigSlider,
+              disabled: isFadActive,
+            },
+            {
+              desc: "단색 배경 색상",
+              key: "solid-background-color",
+              info: "단색 배경에 사용할 색상을 선택하세요",
+              type: ColorPresetSelector,
+              disabled: isFadActive,
+              when: () => CONFIG.visual["solid-background"],
+            },
+            {
+              desc: "",
+              key: "solid-background-warning",
+              type: ConfigWarning,
+              message:
+                "단색 배경을 사용할 때는 배경 밝기 조절이 적용되지 않습니다.",
+              when: () => CONFIG.visual["solid-background"],
+            },
+            {
+              desc: "배경 밝기",
+              key: "background-brightness",
+              info: "배경의 밝기 수준을 조절합니다 (0-100%)",
+              type: ConfigSliderRange,
+              disabled: () => isFadActive || CONFIG.visual["solid-background"],
+              min: 0,
+              max: 100,
+              step: 1,
+              unit: "%",
+            },
+          ],
+          onChange: (name, value) => {
+            // 컬러풀 배경, 앨범 커버 배경, 단색 배경은 상호 배타적으로 동작
+            if (name === "colorful" && value) {
+              CONFIG.visual["gradient-background"] = false;
+              CONFIG.visual["solid-background"] = false;
+              StorageManager.saveConfig("gradient-background", false);
+              StorageManager.saveConfig("solid-background", false);
+            } else if (name === "gradient-background" && value) {
+              CONFIG.visual["colorful"] = false;
+              CONFIG.visual["solid-background"] = false;
+              StorageManager.saveConfig("colorful", false);
+              StorageManager.saveConfig("solid-background", false);
+            } else if (name === "solid-background" && value) {
+              CONFIG.visual["colorful"] = false;
+              CONFIG.visual["gradient-background"] = false;
+              StorageManager.saveConfig("colorful", false);
+              StorageManager.saveConfig("gradient-background", false);
+            }
 
-								// setting-row 다음에 결과 컨테이너 찾기/생성
-								const settingRow = button.closest('.setting-row');
-								let resultContainer = settingRow?.nextElementSibling;
-								
-								if (!resultContainer || !resultContainer.id || resultContainer.id !== 'update-result-container') {
-									// 결과 컨테이너가 없으면 생성
-									resultContainer = document.createElement('div');
-									resultContainer.id = 'update-result-container';
-									resultContainer.style.cssText = 'margin-top: -1px;';
-									settingRow?.parentNode?.insertBefore(resultContainer, settingRow.nextSibling);
-								}
-								
-								if (resultContainer) resultContainer.innerHTML = '';
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            const configChange = new CustomEvent("lyrics-plus", {
+              detail: {
+                type: "config",
+                name: name,
+                value: value,
+              },
+            });
+            window.dispatchEvent(configChange);
+          },
+        }),
+        react.createElement(SectionTitle, {
+          title: "동기화 모드",
+          subtitle: "컴팩트 동기화 모드의 표시 옵션",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "표시 줄 수 (이전)",
+              key: "lines-before",
+              info: "현재 재생 중인 가사 이전에 표시할 줄 수",
+              type: ConfigSelection,
+              options: [0, 1, 2, 3, 4],
+            },
+            {
+              desc: "표시 줄 수 (이후)",
+              key: "lines-after",
+              info: "현재 재생 중인 가사 이후에 표시할 줄 수",
+              type: ConfigSelection,
+              options: [0, 1, 2, 3, 4],
+            },
+            {
+              desc: "페이드아웃 블러 효과",
+              key: "fade-blur",
+              info: "비활성 가사에 블러 효과를 적용합니다",
+              type: ConfigSlider,
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            const configChange = new CustomEvent("lyrics-plus", {
+              detail: {
+                type: "config",
+                name: name,
+                value: value,
+              },
+            });
+            window.dispatchEvent(configChange);
+          },
+        })
+      ),
+      // 외관 탭 (시각 효과 + 타이포그래피)
+      react.createElement(
+        "div",
+        {
+          className: `tab-content ${
+            activeTab === "appearance" ? "active" : ""
+          }`,
+        },
+        react.createElement(SectionTitle, {
+          title: "실시간 미리보기",
+          subtitle: "설정한 스타일을 즉시 확인하세요",
+        }),
+        react.createElement(
+          "div",
+          {
+            className: "font-preview-container",
+          },
+          react.createElement(
+            "div",
+            {
+              className: "font-preview",
+            },
+            react.createElement(
+              "div",
+              {
+                id: "lyrics-preview",
+                style: {
+                  fontSize: `${CONFIG.visual["original-font-size"] || 20}px`,
+                  fontWeight: CONFIG.visual["original-font-weight"] || "400",
+                  fontFamily:
+                    CONFIG.visual["original-font-family"] ||
+                    "Pretendard Variable",
+                  textAlign: CONFIG.visual["alignment"] || "left",
+                  opacity: (CONFIG.visual["original-opacity"] || 100) / 100,
+                  textShadow: CONFIG.visual["text-shadow-enabled"]
+                    ? `0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${
+                        CONFIG.visual["text-shadow-color"] || "#000000"
+                      }${Math.round(
+                        (CONFIG.visual["text-shadow-opacity"] || 50) * 2.55
+                      )
+                        .toString(16)
+                        .padStart(2, "0")}`
+                    : "none",
+                },
+              },
+              "Sample lyrics text goes here"
+            ),
+            react.createElement(
+              "div",
+              {
+                id: "phonetic-preview",
+                style: {
+                  fontSize: `${CONFIG.visual["phonetic-font-size"] || 20}px`,
+                  fontWeight: CONFIG.visual["phonetic-font-weight"] || "400",
+                  fontFamily:
+                    CONFIG.visual["phonetic-font-family"] ||
+                    "Pretendard Variable",
+                  textAlign: CONFIG.visual["alignment"] || "left",
+                  lineHeight: "1.3",
+                  opacity: (CONFIG.visual["phonetic-opacity"] || 70) / 100,
+                  color: "rgba(255,255,255,0.7)",
+                  marginTop: `${
+                    (parseInt(CONFIG.visual["phonetic-spacing"]) || 4) - 10
+                  }px`,
+                  textShadow: CONFIG.visual["text-shadow-enabled"]
+                    ? `0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${
+                        CONFIG.visual["text-shadow-color"] || "#000000"
+                      }${Math.round(
+                        (CONFIG.visual["text-shadow-opacity"] || 50) * 2.55
+                      )
+                        .toString(16)
+                        .padStart(2, "0")}`
+                    : "none",
+                },
+              },
+              "Saempeul lirilseu tekseuteu gouseu hieol"
+            ),
+            react.createElement(
+              "div",
+              {
+                id: "translation-preview",
+                style: {
+                  fontSize: `${CONFIG.visual["translation-font-size"] || 16}px`,
+                  fontWeight: CONFIG.visual["translation-font-weight"] || "400",
+                  fontFamily:
+                    CONFIG.visual["translation-font-family"] ||
+                    "Pretendard Variable",
+                  textAlign: CONFIG.visual["alignment"] || "left",
+                  lineHeight: "1.4",
+                  opacity: (CONFIG.visual["translation-opacity"] || 100) / 100,
+                  color: "rgba(255,255,255,0.7)",
+                  marginTop: `${
+                    parseInt(CONFIG.visual["translation-spacing"]) || 8
+                  }px`,
+                  textShadow: CONFIG.visual["text-shadow-enabled"]
+                    ? `0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${
+                        CONFIG.visual["text-shadow-color"] || "#000000"
+                      }${Math.round(
+                        (CONFIG.visual["text-shadow-opacity"] || 50) * 2.55
+                      )
+                        .toString(16)
+                        .padStart(2, "0")}`
+                    : "none",
+                },
+              },
+              "샘플 가사가 여기 있습니다."
+            )
+          )
+        ),
+        react.createElement(SectionTitle, {
+          title: "원문 스타일",
+          subtitle: "가사 원문의 글꼴 설정",
+        }),
+        react.createElement(
+          "div",
+          { className: "setting-row" },
+          react.createElement(
+            "div",
+            { className: "setting-row-content" },
+            react.createElement(
+              "div",
+              { className: "setting-row-left" },
+              react.createElement(
+                "div",
+                { className: "setting-name" },
+                "폰트 패밀리"
+              ),
+              react.createElement(
+                "div",
+                { className: "setting-description" },
+                "원문 가사에 적용할 폰트를 선택하세요"
+              )
+            ),
+            react.createElement(
+              "div",
+              { className: "setting-row-right font-selector-container" },
+              react.createElement(ConfigFontSelector, {
+                name: "",
+                defaultValue:
+                  CONFIG.visual["original-font-family"] ||
+                  "Pretendard Variable",
+                onChange: (value) => {
+                  CONFIG.visual["original-font-family"] = value;
+                  localStorage.setItem(
+                    `${APP_NAME}:visual:original-font-family`,
+                    value
+                  );
 
-								try {
-									const updateInfo = await Utils.checkForUpdates();
-									
-									if (resultContainer) {
-										let message, showUpdateSection = false, showCopyButton = false;
-										const platform = Utils.detectPlatform();
-										const platformName = Utils.getPlatformName();
-										const installCommand = Utils.getInstallCommand();
-										
-										if (updateInfo.error) {
-											message = `업데이트 확인 실패: ${updateInfo.error}`;
-											resultContainer.innerHTML = `
+                  if (GOOGLE_FONTS.includes(value)) {
+                    const linkId = "lyrics-plus-google-font-original";
+                    let link = document.getElementById(linkId);
+                    if (!link) {
+                      link = document.createElement("link");
+                      link.id = linkId;
+                      link.rel = "stylesheet";
+                      document.head.appendChild(link);
+                    }
+                    if (value === "Pretendard Variable") {
+                      link.href =
+                        "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
+                    } else {
+                      link.href = `https://fonts.googleapis.com/css2?family=${value.replace(
+                        / /g,
+                        "+"
+                      )}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+                    }
+                  }
+
+                  const lyricsPreview =
+                    document.getElementById("lyrics-preview");
+                  if (lyricsPreview) {
+                    lyricsPreview.style.fontFamily = value;
+                  }
+
+                  lyricContainerUpdate?.();
+                  window.dispatchEvent(
+                    new CustomEvent("lyrics-plus", {
+                      detail: {
+                        type: "config",
+                        name: "original-font-family",
+                        value,
+                      },
+                    })
+                  );
+                },
+              })
+            )
+          )
+        ),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "글꼴 크기",
+              info: "원문 가사의 글꼴 크기 (픽셀)",
+              key: "original-font-size",
+              type: ConfigSliderRange,
+              min: 12,
+              max: 128,
+              step: 2,
+              unit: "px",
+            },
+            {
+              desc: "글꼴 두께",
+              info: "원문 가사의 글꼴 굵기",
+              key: "original-font-weight",
+              type: ConfigSelection,
+              options: {
+                100: "Thin (100)",
+                200: "Extra Light (200)",
+                300: "Light (300)",
+                400: "Regular (400)",
+                500: "Medium (500)",
+                600: "Semi Bold (600)",
+                700: "Bold (700)",
+                800: "Extra Bold (800)",
+                900: "Black (900)",
+              },
+            },
+            {
+              desc: "투명도",
+              info: "원문 가사의 불투명도 (0-100%)",
+              key: "original-opacity",
+              type: ConfigSliderRange,
+              min: 0,
+              max: 100,
+              step: 5,
+              unit: "%",
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
+            const lyricsPreview = document.getElementById("lyrics-preview");
+            if (lyricsPreview) {
+              if (name === "original-font-size")
+                lyricsPreview.style.fontSize = `${value}px`;
+              if (name === "original-font-weight")
+                lyricsPreview.style.fontWeight = value;
+              if (name === "original-opacity")
+                lyricsPreview.style.opacity = value / 100;
+            }
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("lyrics-plus", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+        react.createElement(SectionTitle, {
+          title: "발음 스타일",
+          subtitle: "로마자 발음 표기(Romaji, Romaja, Pinyin)의 글꼴 설정",
+        }),
+        react.createElement(
+          "div",
+          { className: "setting-row" },
+          react.createElement(
+            "div",
+            { className: "setting-row-content" },
+            react.createElement(
+              "div",
+              { className: "setting-row-left" },
+              react.createElement(
+                "div",
+                { className: "setting-name" },
+                "폰트 패밀리"
+              ),
+              react.createElement(
+                "div",
+                { className: "setting-description" },
+                "로마자 발음 표기에 적용할 폰트를 선택하세요"
+              )
+            ),
+            react.createElement(
+              "div",
+              { className: "setting-row-right font-selector-container" },
+              react.createElement(ConfigFontSelector, {
+                name: "",
+                defaultValue:
+                  CONFIG.visual["phonetic-font-family"] ||
+                  "Pretendard Variable",
+                onChange: (value) => {
+                  CONFIG.visual["phonetic-font-family"] = value;
+                  localStorage.setItem(
+                    `${APP_NAME}:visual:phonetic-font-family`,
+                    value
+                  );
+
+                  if (GOOGLE_FONTS.includes(value)) {
+                    const linkId = "lyrics-plus-google-font-phonetic";
+                    let link = document.getElementById(linkId);
+                    if (!link) {
+                      link = document.createElement("link");
+                      link.id = linkId;
+                      link.rel = "stylesheet";
+                      document.head.appendChild(link);
+                    }
+                    if (value === "Pretendard Variable") {
+                      link.href =
+                        "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
+                    } else {
+                      link.href = `https://fonts.googleapis.com/css2?family=${value.replace(
+                        / /g,
+                        "+"
+                      )}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+                    }
+                  }
+
+                  const phoneticPreview =
+                    document.getElementById("phonetic-preview");
+                  if (phoneticPreview) {
+                    phoneticPreview.style.fontFamily = value;
+                  }
+
+                  lyricContainerUpdate?.();
+                  window.dispatchEvent(
+                    new CustomEvent("lyrics-plus", {
+                      detail: {
+                        type: "config",
+                        name: "phonetic-font-family",
+                        value,
+                      },
+                    })
+                  );
+                },
+              })
+            )
+          )
+        ),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "글꼴 크기",
+              info: "로마자 발음 표기의 글꼴 크기 (픽셀)",
+              key: "phonetic-font-size",
+              type: ConfigSliderRange,
+              min: 10,
+              max: 96,
+              step: 2,
+              unit: "px",
+            },
+            {
+              desc: "글꼴 두께",
+              info: "로마자 발음 표기의 글꼴 굵기",
+              key: "phonetic-font-weight",
+              type: ConfigSelection,
+              options: {
+                100: "Thin (100)",
+                200: "Extra Light (200)",
+                300: "Light (300)",
+                400: "Regular (400)",
+                500: "Medium (500)",
+                600: "Semi Bold (600)",
+                700: "Bold (700)",
+                800: "Extra Bold (800)",
+                900: "Black (900)",
+              },
+            },
+            {
+              desc: "투명도",
+              info: "로마자 발음 표기의 불투명도 (0-100%)",
+              key: "phonetic-opacity",
+              type: ConfigSliderRange,
+              min: 0,
+              max: 100,
+              step: 5,
+              unit: "%",
+            },
+            {
+              desc: "원문과의 간격",
+              info: "원문과 발음 표기 사이의 여백",
+              key: "phonetic-spacing",
+              type: ConfigSliderRange,
+              min: -30,
+              max: 20,
+              step: 1,
+              unit: "px",
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
+            const phoneticPreview = document.getElementById("phonetic-preview");
+            if (phoneticPreview) {
+              if (name === "phonetic-font-size")
+                phoneticPreview.style.fontSize = `${value}px`;
+              if (name === "phonetic-font-weight")
+                phoneticPreview.style.fontWeight = value;
+              if (name === "phonetic-opacity")
+                phoneticPreview.style.opacity = value / 100;
+              if (name === "phonetic-spacing")
+                phoneticPreview.style.marginTop = `${parseInt(value) || 0}px`;
+            }
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("lyrics-plus", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+        react.createElement(SectionTitle, {
+          title: "번역문 스타일",
+          subtitle: "번역된 가사의 글꼴 설정",
+        }),
+        react.createElement(
+          "div",
+          { className: "setting-row" },
+          react.createElement(
+            "div",
+            { className: "setting-row-content" },
+            react.createElement(
+              "div",
+              { className: "setting-row-left" },
+              react.createElement(
+                "div",
+                { className: "setting-name" },
+                "폰트 패밀리"
+              ),
+              react.createElement(
+                "div",
+                { className: "setting-description" },
+                "번역된 가사에 적용할 폰트를 선택하세요"
+              )
+            ),
+            react.createElement(
+              "div",
+              { className: "setting-row-right font-selector-container" },
+              react.createElement(ConfigFontSelector, {
+                name: "",
+                defaultValue:
+                  CONFIG.visual["translation-font-family"] ||
+                  "Pretendard Variable",
+                onChange: (value) => {
+                  CONFIG.visual["translation-font-family"] = value;
+                  localStorage.setItem(
+                    `${APP_NAME}:visual:translation-font-family`,
+                    value
+                  );
+
+                  if (GOOGLE_FONTS.includes(value)) {
+                    const linkId = "lyrics-plus-google-font-translation";
+                    let link = document.getElementById(linkId);
+                    if (!link) {
+                      link = document.createElement("link");
+                      link.id = linkId;
+                      link.rel = "stylesheet";
+                      document.head.appendChild(link);
+                    }
+                    if (value === "Pretendard Variable") {
+                      link.href =
+                        "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
+                    } else {
+                      link.href = `https://fonts.googleapis.com/css2?family=${value.replace(
+                        / /g,
+                        "+"
+                      )}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+                    }
+                  }
+
+                  const translationPreview = document.getElementById(
+                    "translation-preview"
+                  );
+                  if (translationPreview) {
+                    translationPreview.style.fontFamily = value;
+                  }
+
+                  lyricContainerUpdate?.();
+                  window.dispatchEvent(
+                    new CustomEvent("lyrics-plus", {
+                      detail: {
+                        type: "config",
+                        name: "translation-font-family",
+                        value,
+                      },
+                    })
+                  );
+                },
+              })
+            )
+          )
+        ),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "글꼴 크기",
+              info: "번역 가사의 글꼴 크기 (픽셀)",
+              key: "translation-font-size",
+              type: ConfigSliderRange,
+              min: 12,
+              max: 128,
+              step: 2,
+              unit: "px",
+            },
+            {
+              desc: "글꼴 두께",
+              info: "번역 가사의 글꼴 굵기",
+              key: "translation-font-weight",
+              type: ConfigSelection,
+              options: {
+                100: "Thin (100)",
+                200: "Extra Light (200)",
+                300: "Light (300)",
+                400: "Regular (400)",
+                500: "Medium (500)",
+                600: "Semi Bold (600)",
+                700: "Bold (700)",
+                800: "Extra Bold (800)",
+                900: "Black (900)",
+              },
+            },
+            {
+              desc: "투명도",
+              info: "번역 가사의 불투명도 (0-100%)",
+              key: "translation-opacity",
+              type: ConfigSliderRange,
+              min: 0,
+              max: 100,
+              step: 5,
+              unit: "%",
+            },
+            {
+              desc: "발음과의 간격",
+              info: "발음 표기와 번역문 사이의 여백 (픽셀)",
+              key: "translation-spacing",
+              type: ConfigSliderRange,
+              min: -20,
+              max: 30,
+              step: 2,
+              unit: "px",
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
+            const translationPreview = document.getElementById(
+              "translation-preview"
+            );
+            if (translationPreview) {
+              if (name === "translation-font-size")
+                translationPreview.style.fontSize = `${value}px`;
+              if (name === "translation-font-weight")
+                translationPreview.style.fontWeight = value;
+              if (name === "translation-opacity")
+                translationPreview.style.opacity = value / 100;
+              if (name === "translation-spacing")
+                translationPreview.style.marginTop = `${
+                  parseInt(value) || 0
+                }px`;
+            }
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("lyrics-plus", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+        react.createElement(SectionTitle, {
+          title: "텍스트 그림자",
+          subtitle: "가독성을 높이는 그림자 효과",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "그림자 효과",
+              info: "가사 텍스트에 그림자 효과를 적용합니다",
+              key: "text-shadow-enabled",
+              type: ConfigSlider,
+            },
+            {
+              desc: "그림자 색상",
+              info: "그림자의 색상 (HEX 코드)",
+              key: "text-shadow-color",
+              type: ConfigColorPicker,
+            },
+            {
+              desc: "그림자 투명도",
+              info: "그림자의 불투명도 (0-100%)",
+              key: "text-shadow-opacity",
+              type: ConfigSliderRange,
+              min: 0,
+              max: 100,
+              step: 5,
+              unit: "%",
+            },
+            {
+              desc: "블러 강도",
+              info: "그림자의 흐림 정도",
+              key: "text-shadow-blur",
+              type: ConfigSliderRange,
+              min: 0,
+              max: 10,
+              step: 1,
+              unit: "px",
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
+            const lyricsPreview = document.getElementById("lyrics-preview");
+            const phoneticPreview = document.getElementById("phonetic-preview");
+            const translationPreview = document.getElementById(
+              "translation-preview"
+            );
+
+            if (lyricsPreview || phoneticPreview || translationPreview) {
+              const shadowEnabled = CONFIG.visual["text-shadow-enabled"];
+              const shadowColor =
+                CONFIG.visual["text-shadow-color"] || "#000000";
+              const shadowOpacity = CONFIG.visual["text-shadow-opacity"] || 50;
+              const shadowBlur = CONFIG.visual["text-shadow-blur"] || 2;
+              const shadowAlpha = Math.round(shadowOpacity * 2.55)
+                .toString(16)
+                .padStart(2, "0");
+              const shadow = shadowEnabled
+                ? `0 0 ${shadowBlur}px ${shadowColor}${shadowAlpha}`
+                : "none";
+              if (lyricsPreview) lyricsPreview.style.textShadow = shadow;
+              if (phoneticPreview) phoneticPreview.style.textShadow = shadow;
+              if (translationPreview)
+                translationPreview.style.textShadow = shadow;
+            }
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("lyrics-plus", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        })
+      ),
+      // 가사 탭 (가사 동기화 및 동작)
+      react.createElement(
+        "div",
+        {
+          className: `tab-content ${activeTab === "lyrics" ? "active" : ""}`,
+        },
+        react.createElement(SectionTitle, {
+          title: "재생 동작",
+          subtitle: "재생 관련 기능 설정",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "재생바 버튼 대체",
+              key: "playbar-button",
+              info: "Spotify의 기본 가사 버튼을 Lyrics Plus로 교체합니다",
+              type: ConfigSlider,
+            },
+            {
+              desc: "전역 지연 시간",
+              info: "모든 곡에 적용되는 가사 동기화 오프셋 (밀리초)",
+              key: "global-delay",
+              type: ConfigAdjust,
+              min: -10000,
+              max: 10000,
+              step: 250,
+            },
+            {
+              desc: "전체화면 단축키",
+              key: "fullscreen-key",
+              info: "가사 전체화면 모드를 위한 키보드 단축키",
+              type: ConfigHotkey,
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("lyrics-plus", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+        react.createElement(SectionTitle, {
+          title: "노래방 모드",
+          subtitle: "노래방 스타일 가사 표시",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "노래방 모드 사용",
+              info: "노래방 가사를 지원하는 곡에서 노래방 탭을 사용합니다. 비활성화 시 동기화 탭으로 고정됩니다",
+              key: "karaoke-mode-enabled",
+              type: ConfigSlider,
+            },
+            {
+              desc: "글자 바운스 효과",
+              info: "노래방 모드에서 현재 부르는 글자에 통통 튀는 애니메이션을 적용합니다",
+              key: "karaoke-bounce",
+              type: ConfigSlider,
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("lyrics-plus", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+        react.createElement(SectionTitle, {
+          title: "캐시 관리",
+          subtitle: "저장된 데이터 관리",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "메모리 캐시 초기화",
+              info: "로드된 가사는 빠른 재로드를 위해 메모리에 임시 저장됩니다. Spotify를 재시작하지 않고 메모리 캐시를 비웁니다",
+              key: "clear-memory-cache",
+              text: "캐시 비우기",
+              type: ConfigButton,
+              onChange: () => {
+                reloadLyrics?.();
+                Spicetify.showNotification(
+                  "✓ 메모리 캐시가 초기화되었습니다",
+                  false,
+                  2000
+                );
+              },
+            },
+          ],
+          onChange: () => {},
+        })
+      ),
+      // 번역 탭 (가사 제공자 포함)
+      react.createElement(
+        "div",
+        {
+          className: `tab-content ${
+            activeTab === "translation" ? "active" : ""
+          }`,
+        },
+        react.createElement(SectionTitle, {
+          title: "가사 제공자",
+          subtitle: "가사 소스의 우선순위와 설정을 관리하세요",
+        }),
+        react.createElement(ServiceList, {
+          itemsList: CONFIG.providersOrder,
+          onListChange: (list) => {
+            CONFIG.providersOrder = list;
+            localStorage.setItem(
+              `${APP_NAME}:services-order`,
+              JSON.stringify(list)
+            );
+            reloadLyrics?.();
+          },
+          onToggle: (name, value) => {
+            CONFIG.providers[name].on = value;
+            localStorage.setItem(`${APP_NAME}:provider:${name}:on`, value);
+            reloadLyrics?.();
+          },
+          onTokenChange: (name, value) => {
+            CONFIG.providers[name].token = value;
+            localStorage.setItem(`${APP_NAME}:provider:${name}:token`, value);
+            reloadLyrics?.();
+          },
+        })
+      ),
+      // 고급 탭
+      react.createElement(
+        "div",
+        {
+          className: `tab-content ${activeTab === "advanced" ? "active" : ""}`,
+        },
+        react.createElement(SectionTitle, {
+          title: "언어 감지",
+          subtitle: "텍스트 변환을 위한 언어 감지 설정",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "일본어 한자에 후리가나 표시",
+              info: "일본어 가사의 한자(칸지) 위에 히라가나 읽기를 표시합니다",
+              key: "furigana-enabled",
+              type: ConfigSlider,
+            },
+            {
+              desc: "일본어 감지 임계값",
+              info: "가사에서 가나 문자의 비율로 일본어를 감지합니다. 값이 높을수록 더 엄격하게 감지합니다 (백분율)",
+              key: "ja-detect-threshold",
+              type: ConfigSliderRange,
+              min: thresholdSizeLimit.min,
+              max: thresholdSizeLimit.max,
+              step: thresholdSizeLimit.step,
+              unit: "%",
+            },
+            {
+              desc: "중국어 감지 임계값",
+              info: "번체자와 간체자의 비율로 중국어 종류를 감지합니다. 값이 높을수록 더 엄격하게 감지합니다 (백분율)",
+              key: "hans-detect-threshold",
+              type: ConfigSliderRange,
+              min: thresholdSizeLimit.min,
+              max: thresholdSizeLimit.max,
+              step: thresholdSizeLimit.step,
+              unit: "%",
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("lyrics-plus", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+        react.createElement(SectionTitle, {
+          title: "API 설정",
+          subtitle: "외부 서비스 연동을 위한 API 키",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "Gemini API 키",
+              info: "Google Gemini AI를 활용한 가사 번역 기능을 사용하려면 API 키가 필요합니다",
+              key: "gemini-api-key",
+              type: ConfigInput,
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("lyrics-plus", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        })
+      ),
+      // 정보 탭
+      react.createElement(
+        "div",
+        {
+          className: `tab-content ${activeTab === "about" ? "active" : ""}`,
+        },
+        react.createElement(SectionTitle, {
+          title: "앱 정보",
+          subtitle: "Lyrics Plus에 대해",
+        }),
+        react.createElement(
+          "div",
+          {
+            className: "info-card",
+            style: {
+              padding: "20px",
+              background: "rgba(255, 255, 255, 0.03)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              borderRadius: "0 0 12px 12px",
+              backdropFilter: "blur(30px) saturate(150%)",
+              WebkitBackdropFilter: "blur(30px) saturate(150%)",
+              marginBottom: "24px",
+            },
+          },
+          react.createElement(
+            "h3",
+            {
+              style: {
+                margin: "0 0 12px",
+                fontSize: "18px",
+                color: "#ffffff",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              },
+            },
+            react.createElement("span", null, "🎵"),
+            "Lyrics Plus"
+          ),
+          react.createElement(
+            "p",
+            {
+              style: {
+                margin: "0 0 8px",
+                color: "rgba(255,255,255,0.7)",
+                lineHeight: "1.6",
+              },
+            },
+            "Spicetify를 위한 한국어 대응 가사 확장 프로그램."
+          ),
+          react.createElement(
+            "p",
+            {
+              style: {
+                margin: "0",
+                color: "rgba(255,255,255,0.5)",
+                fontSize: "14px",
+              },
+            },
+            `버전: ${Utils.currentVersion}`
+          )
+        ),
+        react.createElement(SectionTitle, {
+          title: "업데이트",
+          subtitle: "최신 버전 확인",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "최신 버전 확인",
+              info: `현재 버전: v${Utils.currentVersion}. GitHub에서 새로운 업데이트가 있는지 확인합니다`,
+              key: "check-update",
+              text: "업데이트 확인",
+              type: ConfigButton,
+              onChange: async (_, event) => {
+                const button = event?.target;
+                if (!button) return;
+                const originalText = button.textContent;
+                button.textContent = "확인 중...";
+                button.disabled = true;
+
+                // setting-row 다음에 결과 컨테이너 찾기/생성
+                const settingRow = button.closest(".setting-row");
+                let resultContainer = settingRow?.nextElementSibling;
+
+                if (
+                  !resultContainer ||
+                  !resultContainer.id ||
+                  resultContainer.id !== "update-result-container"
+                ) {
+                  // 결과 컨테이너가 없으면 생성
+                  resultContainer = document.createElement("div");
+                  resultContainer.id = "update-result-container";
+                  resultContainer.style.cssText = "margin-top: -1px;";
+                  settingRow?.parentNode?.insertBefore(
+                    resultContainer,
+                    settingRow.nextSibling
+                  );
+                }
+
+                if (resultContainer) resultContainer.innerHTML = "";
+
+                try {
+                  const updateInfo = await Utils.checkForUpdates();
+
+                  if (resultContainer) {
+                    let message,
+                      showUpdateSection = false,
+                      showCopyButton = false;
+                    const platform = Utils.detectPlatform();
+                    const platformName = Utils.getPlatformName();
+                    const installCommand = Utils.getInstallCommand();
+
+                    if (updateInfo.error) {
+                      message = `업데이트 확인 실패: ${updateInfo.error}`;
+                      resultContainer.innerHTML = `
 												<div style="
 													padding: 16px 20px;
 													background: rgba(255, 255, 255, 0.03);
@@ -2987,11 +3359,11 @@ const ConfigModal = () => {
 													</div>
 												</div>
 											`;
-										} else if (updateInfo.hasUpdate) {
-											showUpdateSection = true;
-											showCopyButton = true;
-											
-											resultContainer.innerHTML = `
+                    } else if (updateInfo.hasUpdate) {
+                      showUpdateSection = true;
+                      showCopyButton = true;
+
+                      resultContainer.innerHTML = `
 												<div style="
 													padding: 20px;
 													background: rgba(255, 255, 255, 0.04);
@@ -3089,27 +3461,38 @@ const ConfigModal = () => {
 													</div>
 												</div>
 											`;
-											
-											// Add copy button handler
-											const copyBtn = resultContainer.querySelector('#copy-install-command-btn');
-											if (copyBtn) {
-												copyBtn.addEventListener('click', async () => {
-													const success = await Utils.copyToClipboard(installCommand);
-													if (success) {
-														copyBtn.textContent = '복사됨';
-														copyBtn.style.background = 'rgba(16, 185, 129, 0.15)';
-														copyBtn.style.border = '1px solid rgba(16, 185, 129, 0.3)';
-														copyBtn.style.color = 'rgba(16, 185, 129, 1)';
-														copyBtn.style.cursor = 'default';
-														copyBtn.disabled = true;
-														Spicetify.showNotification('설치 명령어가 복사되었습니다');
-													} else {
-														Spicetify.showNotification('복사에 실패했습니다', true);
-													}
-												});
-											}
-										} else {
-											resultContainer.innerHTML = `
+
+                      // Add copy button handler
+                      const copyBtn = resultContainer.querySelector(
+                        "#copy-install-command-btn"
+                      );
+                      if (copyBtn) {
+                        copyBtn.addEventListener("click", async () => {
+                          const success = await Utils.copyToClipboard(
+                            installCommand
+                          );
+                          if (success) {
+                            copyBtn.textContent = "복사됨";
+                            copyBtn.style.background =
+                              "rgba(16, 185, 129, 0.15)";
+                            copyBtn.style.border =
+                              "1px solid rgba(16, 185, 129, 0.3)";
+                            copyBtn.style.color = "rgba(16, 185, 129, 1)";
+                            copyBtn.style.cursor = "default";
+                            copyBtn.disabled = true;
+                            Spicetify.showNotification(
+                              "설치 명령어가 복사되었습니다"
+                            );
+                          } else {
+                            Spicetify.showNotification(
+                              "복사에 실패했습니다",
+                              true
+                            );
+                          }
+                        });
+                      }
+                    } else {
+                      resultContainer.innerHTML = `
 												<div style="
 													padding: 16px 20px;
 													background: rgba(255, 255, 255, 0.03);
@@ -3139,11 +3522,11 @@ const ConfigModal = () => {
 													</div>
 												</div>
 											`;
-										}
-									}
-								} catch (error) {
-									if (resultContainer) {
-										resultContainer.innerHTML = `
+                    }
+                  }
+                } catch (error) {
+                  if (resultContainer) {
+                    resultContainer.innerHTML = `
 											<div style="
 												padding: 16px 20px;
 												background: rgba(255, 255, 255, 0.03);
@@ -3174,71 +3557,82 @@ const ConfigModal = () => {
 												</div>
 											</div>
 										`;
-									}
-								} finally {
-									button.textContent = originalText;
-									button.disabled = false;
-								}
-							},
-						},
-					],
-					onChange: () => {},
-				}),
-				react.createElement(SectionTitle, { title: "크레딧", subtitle: "개발자 및 기여자" }),
-				react.createElement("div", {
-					className: "info-card",
-					style: {
-						padding: "20px",
-						background: "rgba(255, 255, 255, 0.03)",
-						border: "1px solid rgba(255, 255, 255, 0.08)",
-						borderRadius: "0 0 12px 12px",
-						backdropFilter: "blur(30px) saturate(150%)",
-						WebkitBackdropFilter: "blur(30px) saturate(150%)",
-					}
-				},
-					react.createElement("p", { 
-						style: { 
-							margin: "0 0 12px", 
-							color: "rgba(255,255,255,0.9)", 
-							lineHeight: "1.6" 
-						} 
-					}, 
-						react.createElement("strong", null, "개발:"),
-						" ivLis Studio"
-					),
-					react.createElement("p", { 
-						style: { 
-							margin: "0 0 12px", 
-							color: "rgba(255,255,255,0.9)", 
-							lineHeight: "1.6" 
-						} 
-					}, 
-						react.createElement("strong", null, "원본 프로젝트:"),
-						" lyrics-plus by khanhas"
-					),
-					react.createElement("p", { 
-						style: { 
-							margin: "0", 
-							color: "rgba(255,255,255,0.7)", 
-							fontSize: "14px",
-							lineHeight: "1.6"
-						} 
-					}, 
-						"오픈소스 프로젝트에 기여해주신 모든 분들께 감사드립니다."
-					)
-				)
-			)
-		)
-	);
+                  }
+                } finally {
+                  button.textContent = originalText;
+                  button.disabled = false;
+                }
+              },
+            },
+          ],
+          onChange: () => {},
+        }),
+        react.createElement(SectionTitle, {
+          title: "크레딧",
+          subtitle: "개발자 및 기여자",
+        }),
+        react.createElement(
+          "div",
+          {
+            className: "info-card",
+            style: {
+              padding: "20px",
+              background: "rgba(255, 255, 255, 0.03)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              borderRadius: "0 0 12px 12px",
+              backdropFilter: "blur(30px) saturate(150%)",
+              WebkitBackdropFilter: "blur(30px) saturate(150%)",
+            },
+          },
+          react.createElement(
+            "p",
+            {
+              style: {
+                margin: "0 0 12px",
+                color: "rgba(255,255,255,0.9)",
+                lineHeight: "1.6",
+              },
+            },
+            react.createElement("strong", null, "개발:"),
+            " ivLis Studio"
+          ),
+          react.createElement(
+            "p",
+            {
+              style: {
+                margin: "0 0 12px",
+                color: "rgba(255,255,255,0.9)",
+                lineHeight: "1.6",
+              },
+            },
+            react.createElement("strong", null, "원본 프로젝트:"),
+            " lyrics-plus by khanhas"
+          ),
+          react.createElement(
+            "p",
+            {
+              style: {
+                margin: "0",
+                color: "rgba(255,255,255,0.7)",
+                fontSize: "14px",
+                lineHeight: "1.6",
+              },
+            },
+            "오픈소스 프로젝트에 기여해주신 모든 분들께 감사드립니다."
+          )
+        )
+      )
+    )
+  );
 };
 
 function openConfig() {
-	const configContainer = react.createElement(ConfigModal);
+  const configContainer = react.createElement(ConfigModal);
 
-	// Create a full-screen overlay instead of nested modal
-	const overlay = document.createElement('div');
-	overlay.id = 'lyrics-plus-settings-overlay';
-	overlay.style.cssText = `
+  // Create a full-screen overlay instead of nested modal
+  const overlay = document.createElement("div");
+  overlay.id = "lyrics-plus-settings-overlay";
+  overlay.style.cssText = `
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -3253,8 +3647,8 @@ function openConfig() {
 		-webkit-backdrop-filter: blur(5px) saturate(120%);
 	`;
 
-	const modalContainer = document.createElement('div');
-	modalContainer.style.cssText = `
+  const modalContainer = document.createElement("div");
+  modalContainer.style.cssText = `
 		background: rgba(0, 0, 0, 0.6);
 		backdrop-filter: blur(60px) saturate(200%) brightness(1.1);
 		-webkit-backdrop-filter: blur(60px) saturate(200%) brightness(1.1);
@@ -3267,29 +3661,33 @@ function openConfig() {
 		border: 1px solid rgba(255, 255, 255, 0.1);
 	`;
 
-	// Close on outside click
-	overlay.addEventListener('click', (e) => {
-		if (e.target === overlay) {
-			document.body.removeChild(overlay);
-		}
-	});
+  // Close on outside click
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      document.body.removeChild(overlay);
+    }
+  });
 
-	// Close on escape key
-	const handleEscape = (e) => {
-		if (e.key === 'Escape') {
-			document.body.removeChild(overlay);
-			document.removeEventListener('keydown', handleEscape);
-		}
-	};
-	document.addEventListener('keydown', handleEscape);
+  // Close on escape key
+  const handleEscape = (e) => {
+    if (e.key === "Escape") {
+      document.body.removeChild(overlay);
+      document.removeEventListener("keydown", handleEscape);
+    }
+  };
+  document.addEventListener("keydown", handleEscape);
 
-	overlay.appendChild(modalContainer);
-	document.body.appendChild(overlay);
+  overlay.appendChild(modalContainer);
+  document.body.appendChild(overlay);
 
-	// Render React component
-	const dom = window.lyricsPlusEnsureReactDOM?.() || (typeof reactDOM !== "undefined" ? reactDOM : window.Spicetify?.ReactDOM ?? window.ReactDOM ?? null);
-	if (!dom?.render) {
-		return;
-	}
-	dom.render(configContainer, modalContainer);
+  // Render React component
+  const dom =
+    window.lyricsPlusEnsureReactDOM?.() ||
+    (typeof reactDOM !== "undefined"
+      ? reactDOM
+      : window.Spicetify?.ReactDOM ?? window.ReactDOM ?? null);
+  if (!dom?.render) {
+    return;
+  }
+  dom.render(configContainer, modalContainer);
 }
