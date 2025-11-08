@@ -220,6 +220,10 @@ class SettingsObject {
     const customKeyCount = customKeys.length;
     append2BNumber(customKeyCount);
 
+    if (customKeyCount > 65535) {
+      throw new Error("Custom key count exceeds 65535");
+    }
+
     console.log("Custom Keys:", customKeys);
     for (let i = 0; i < customKeys.length; i++) {
       const key = customKeys[i];
@@ -229,10 +233,13 @@ class SettingsObject {
     append2BNumber(CONFIG_KEYS.length);
     for (let i = 0; i < CONFIG_KEYS.length; i++) {
       const key = CONFIG_KEYS[i];
-      if (key in customKeys) {
+      console.log("Key:", key);
+      if (customKeys.includes(key)) {
+        console.log("CKey:", key);
         // 커스텀 키인 경우
         cbytes.push(...CUSTOM_INDEX_PREFIX);
-        appendString(key);
+        const keyIndex = customKeys.indexOf(key);
+        append2BNumber(keyIndex);
       } else {
         const keyIndex = SettingKeys.indexOf(key);
         if (keyIndex === -1) throw new Error("Key not found in SettingKeys");
@@ -318,7 +325,7 @@ class SettingsObject {
 
       if (isCustomKey) {
         offset += BYTES_FOR_INDEX;
-        key = readString();
+        key = customKeys[read2BNumber()];
       } else {
         const keyIndex = read2BNumber();
         if (keyIndex < 0 || keyIndex >= SettingKeys.length) {
