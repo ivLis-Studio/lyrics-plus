@@ -721,7 +721,7 @@ const Utils = {
   /**
    * Current version of the lyrics-plus app
    */
-  currentVersion: "2.0.9",
+  currentVersion: "2.1.0",
 
   /**
    * Check for updates from remote repository
@@ -733,6 +733,7 @@ const Utils = {
       const urls = [
         "https://raw.githubusercontent.com/ivLis-Studio/lyrics-plus/main/version.txt",
         "https://cdn.jsdelivr.net/gh/ivLis-Studio/lyrics-plus@main/version.txt",
+        //https://ghproxy.link/
         "https://ghfast.top/https://raw.githubusercontent.com/ivLis-Studio/lyrics-plus/main/version.txt",
         "https://corsproxy.io/?url=https://raw.githubusercontent.com/ivLis-Studio/lyrics-plus/main/version.txt",
       ];

@@ -813,9 +813,35 @@ const StorageManager = {
     return Spicetify.LocalStorage.get(key);
   },
 
+  // Generate or retrieve client ID
+  getClientId() {
+    const CLIENT_ID_KEY = `${APP_NAME}:client-id`;
+    let clientId = this.getItemRaw(CLIENT_ID_KEY);
+    
+    if (!clientId) {
+      // Generate new UUID v4
+      clientId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+      
+      // Save to both storages for persistence
+      this.setPersisted(CLIENT_ID_KEY, clientId);
+      console.log("[Lyrics Plus] Generated new Client ID:", clientId);
+    }
+    
+    return clientId;
+  },
+
   async exportConfig() {
     const config = {};
+    const CLIENT_ID_KEY = `${APP_NAME}:client-id`;
+    
     StorageKeys.forEach((key) => {
+      // Client ID는 내보내기에서 제외
+      if (key === CLIENT_ID_KEY) return;
+      
       const val = StorageManager.getItem(key);
       if (val !== null) config[key] = StorageManager.getItem(key);
     });
@@ -834,6 +860,8 @@ const StorageManager = {
     return config;
   },
   async importConfig(config) {
+    const CLIENT_ID_KEY = `${APP_NAME}:client-id`;
+    
     // track-sync-offsets를 IndexedDB로 가져오기
     if (config["lyrics-plus:track-sync-offsets"]) {
       try {
@@ -844,6 +872,12 @@ const StorageManager = {
       } catch (error) {
         console.error("[Lyrics Plus] Failed to import track-sync-offsets:", error);
       }
+    }
+
+    // Client ID가 있다면 삭제 (불러오기에서 제외)
+    if (config[CLIENT_ID_KEY]) {
+      delete config[CLIENT_ID_KEY];
+      console.log("[Lyrics Plus] Client ID excluded from import");
     }
 
     // 나머지 설정을 localStorage에 저장
@@ -1907,6 +1941,33 @@ class LyricsContainer extends react.Component {
         } else {
           return;
         }
+      }
+
+      // Check if lyrics are instrumental (2 lines or less with "Instrumental" text)
+      const checkInstrumental = (lyrics) => {
+        if (!lyrics || lyrics.length <= 2) {
+          const text = lyrics?.map(line => line.text || '').join(' ').toLowerCase();
+          if (text && text.includes('instrumental')) {
+            return true;
+          }
+        }
+        return false;
+      };
+
+      // If all lyrics types are instrumental, treat as no lyrics
+      const isInstrumental = 
+        checkInstrumental(tempState.karaoke) &&
+        checkInstrumental(tempState.synced) &&
+        checkInstrumental(tempState.unsynced);
+
+      if (isInstrumental) {
+        tempState = {
+          ...tempState,
+          karaoke: null,
+          synced: null,
+          unsynced: null,
+          error: "Instrumental"
+        };
       }
 
       let finalMode = mode;
@@ -3987,4 +4048,45 @@ class LyricsContainer extends react.Component {
       document.head.appendChild(link);
     }
   });
+})();
+
+// URL Scheme 파라미터 처리
+(function handleURLScheme() {
+  // 현재 URL의 파라미터를 확인
+  const checkURLParams = () => {
+    try {
+      const currentPath = Spicetify.Platform.History.location.pathname;
+      const searchParams = new URLSearchParams(Spicetify.Platform.History.location.search);
+      
+      // spotify://lyrics-plus/ 경로인지 확인
+      if (currentPath.includes('/lyrics-plus')) {
+        // alert 파라미터가 있으면 알림 표시
+        const alertMessage = searchParams.get('alert');
+        if (alertMessage) {
+          Spicetify.showNotification(decodeURIComponent(alertMessage), false, 3000);
+          console.log('[Lyrics Plus] URL Scheme alert:', alertMessage);
+        }
+        
+        // 다른 파라미터들도 처리 가능
+        // 예: action, data 등
+        const action = searchParams.get('action');
+        if (action) {
+          console.log('[Lyrics Plus] URL Scheme action:', action);
+          // 향후 action 처리 로직 추가 가능
+        }
+      }
+    } catch (error) {
+      console.error('[Lyrics Plus] URL Scheme error:', error);
+    }
+  };
+  
+  // 초기 체크
+  if (Spicetify.Platform?.History) {
+    checkURLParams();
+    
+    // History 변경 감지
+    Spicetify.Platform.History.listen(() => {
+      checkURLParams();
+    });
+  }
 })();

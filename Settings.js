@@ -3962,6 +3962,100 @@ const ConfigModal = () => {
           )
         ),
         react.createElement(SectionTitle, {
+          title: "클라이언트 정보",
+          subtitle: "이 클라이언트의 고유 식별자",
+        }),
+        react.createElement(
+          "div",
+          {
+            className: "info-card",
+            style: {
+              padding: "20px",
+              background: "rgba(255, 255, 255, 0.03)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              borderRadius: "0 0 12px 12px",
+              backdropFilter: "blur(30px) saturate(150%)",
+              WebkitBackdropFilter: "blur(30px) saturate(150%)",
+              marginBottom: "24px",
+            },
+          },
+          react.createElement(
+            "p",
+            {
+              style: {
+                margin: "0 0 8px",
+                color: "rgba(255,255,255,0.7)",
+                fontSize: "13px",
+                lineHeight: "1.6",
+              },
+            },
+            "계정 연동을 위해 자동으로 생성된 고유 식별자입니다. 이 값은 수정할 수 없으며, 클라이언트마다 고유하게 할당됩니다. 이 값이 절대 노출되지 않도록 주의하세요.",
+          ),
+          react.createElement(
+            "div",
+            {
+              style: {
+                marginTop: "12px",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+              },
+            },
+            react.createElement(
+              "div",
+              {
+                style: {
+                  flex: 1,
+                  background: "rgba(0, 0, 0, 0.25)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  borderRadius: "8px",
+                  padding: "10px 14px",
+                  fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+                  fontSize: "13px",
+                  color: "rgba(255,255,255,0.9)",
+                  userSelect: "all",
+                  wordBreak: "break-all",
+                  lineHeight: "1.5",
+                },
+              },
+              StorageManager.getClientId()
+            ),
+            react.createElement(
+              "button",
+              {
+                onClick: () => {
+                  const clientId = StorageManager.getClientId();
+                  navigator.clipboard.writeText(clientId).then(() => {
+                    Spicetify.showNotification("클라이언트 ID가 복사되었습니다", false, 2000);
+                  }).catch(() => {
+                    Spicetify.showNotification("복사 실패", true, 2000);
+                  });
+                },
+                style: {
+                  background: "rgba(255, 255, 255, 0.08)",
+                  border: "1px solid rgba(255, 255, 255, 0.15)",
+                  color: "rgba(255, 255, 255, 0.9)",
+                  padding: "10px 16px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                  letterSpacing: "-0.01em",
+                  whiteSpace: "nowrap",
+                },
+                onMouseEnter: (e) => {
+                  e.target.style.background = "rgba(255, 255, 255, 0.12)";
+                },
+                onMouseLeave: (e) => {
+                  e.target.style.background = "rgba(255, 255, 255, 0.08)";
+                },
+              },
+              "복사"
+            )
+          )
+        ),
+        react.createElement(SectionTitle, {
           title: "업데이트",
           subtitle: "최신 버전 확인",
         }),
