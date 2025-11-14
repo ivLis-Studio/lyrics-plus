@@ -4,14 +4,16 @@ Spicetify용 **Lyrics Plus** 커스텀 앱을 뼈대만 남기고 모조리 다 
 
 관심있으시면 따봉(스타) 부탁드립니다. PR 환영합니다. :D
 
+각종 오류 및 ivLyrics의 싱크, 번역 문제는 디스코드에서 문의해주세요. : https://discord.gg/2fu36fUzdE
 
+# 2.1.0 이후로 업데이트가 너무 느려요!
+서버에서 작동하는 코드 열심히 짜고 있습니다...
+할일이 갑자기 이것 저것 늘어나서, 업데이트가 한동안 좀 느리지 않을까 싶슴다...!
 
+# 구걸
 넘치는 재력이 있으시다면... 커피 한 잔만 사주십시오...
 
 <a href="https://www.buymeacoffee.com/ivlis" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-
-
-각종 오류 및 ivLyrics의 싱크, 번역 문제는 디스코드에서 문의해주세요. : https://discord.gg/2fu36fUzdE
 
 
 https://github.com/user-attachments/assets/c865affb-1a7b-405c-86ac-e1421f426c58
