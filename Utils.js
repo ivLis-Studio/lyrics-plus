@@ -1,8 +1,51 @@
+// LRU Cache implementation for better cache performance (최적화 #10)
+class LRUCache {
+  constructor(maxSize = 100) {
+    this.cache = new Map();
+    this.maxSize = maxSize;
+  }
+
+  get(key) {
+    if (!this.cache.has(key)) return undefined;
+    const value = this.cache.get(key);
+    // Move to end (most recently used)
+    this.cache.delete(key);
+    this.cache.set(key, value);
+    return value;
+  }
+
+  set(key, value) {
+    if (this.cache.has(key)) this.cache.delete(key);
+    this.cache.set(key, value);
+    if (this.cache.size > this.maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+    }
+  }
+
+  has(key) {
+    return this.cache.has(key);
+  }
+
+  get size() {
+    return this.cache.size;
+  }
+}
+
 // Optimized Utils with performance improvements and caching
 const Utils = {
-  // Cache for frequently used operations
-  _colorCache: new Map(),
-  _normalizeCache: new Map(),
+  // LRU caches for frequently used operations (최적화 #10 - LRU 캐시 적용)
+  _colorCache: new LRUCache(100),
+  _normalizeCache: new LRUCache(200),
+  _langDetectCache: new LRUCache(100),
+
+  // Common cache size limiter (최적화 #1)
+  _limitCacheSize(cache, maxSize) {
+    if (cache.size > maxSize) {
+      const firstKey = cache.keys().next().value;
+      cache.delete(firstKey);
+    }
+  },
 
   addQueueListener(callback) {
     Spicetify.Player.origin._events.addListener("queue_update", callback);
@@ -27,14 +70,21 @@ const Utils = {
     const result = `rgb(${r},${g},${b})`;
 
     // Cache result (limit cache size)
-    if (this._colorCache.size > 100) {
-      const firstKey = this._colorCache.keys().next().value;
-      this._colorCache.delete(firstKey);
-    }
+    this._limitCacheSize(this._colorCache, 100);
     this._colorCache.set(cacheKey, result);
 
     return result;
   },
+  // 최적화 #11 - Character map for faster string normalization
+  _charNormalizeMap: {
+    '（': '(', '）': ')', '【': '[', '】': ']',
+    '。': '. ', '；': '; ', '：': ': ', '？': '? ',
+    '！': '! ', '、': ', ', '，': ', ', '\u2018': "'",
+    '\u2019': "'", '′': "'", '＇': "'", '\u201c': '"',
+    '\u201d': '"', '〜': '~', '·': '•', '・': '•'
+  },
+  _charNormalizePattern: null,
+
   /**
    * @param {string} s
    * @param {boolean} emptySymbol
@@ -47,28 +97,14 @@ const Utils = {
       return this._normalizeCache.get(cacheKey);
     }
 
-    // Optimized: use a single pass with compiled regex
-    const replacements = [
-      [/（/g, "("],
-      [/）/g, ")"],
-      [/【/g, "["],
-      [/】/g, "]"],
-      [/。/g, ". "],
-      [/；/g, "; "],
-      [/：/g, ": "],
-      [/？/g, "? "],
-      [/！/g, "! "],
-      [/、|，/g, ", "],
-      [/'|'|′|＇/g, "'"],
-      [/"|"/g, '"'],
-      [/〜/g, "~"],
-      [/·|・/g, "•"],
-    ];
-
-    let result = s;
-    for (const [regex, replacement] of replacements) {
-      result = result.replace(regex, replacement);
+    // Lazy compile the pattern (최적화 #11 - 정규식 사전 컴파일)
+    if (!this._charNormalizePattern) {
+      const chars = Object.keys(this._charNormalizeMap).join('|').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      this._charNormalizePattern = new RegExp(chars, 'g');
     }
+
+    // Single pass with character map (최적화 #11 - 단일 패스로 변경)
+    let result = s.replace(this._charNormalizePattern, match => this._charNormalizeMap[match] || match);
 
     if (emptySymbol) {
       result = result.replace(/[-/]/g, " ");
@@ -76,11 +112,7 @@ const Utils = {
 
     result = result.replace(/\s+/g, " ").trim();
 
-    // Cache result (limit cache size to prevent memory leaks)
-    if (this._normalizeCache.size > 200) {
-      const firstKey = this._normalizeCache.keys().next().value;
-      this._normalizeCache.delete(firstKey);
-    }
+    // LRU cache automatically handles size
     this._normalizeCache.set(cacheKey, result);
 
     return result;
@@ -136,14 +168,9 @@ const Utils = {
   capitalize(s) {
     return s.replace(/^(\w)/, ($1) => $1.toUpperCase());
   },
-  // Cache for language detection results
-  _langDetectCache: new Map(),
 
   _cacheLanguageResult(cacheKey, result) {
-    if (this._langDetectCache.size > 100) {
-      const firstKey = this._langDetectCache.keys().next().value;
-      this._langDetectCache.delete(firstKey);
-    }
+    this._limitCacheSize(this._langDetectCache, 100);
     this._langDetectCache.set(cacheKey, result);
   },
 
@@ -194,8 +221,14 @@ const Utils = {
     // Create cache key from lyrics text with safe extraction
     const rawLyrics = lyrics.map(extractTextSafely).join(" ");
 
+    // 최적화 #14 - Early return for empty lyrics
+    if (!rawLyrics || rawLyrics.length === 0) {
+      return null;
+    }
+
     const cacheKey = rawLyrics.substring(0, 200); // Use first 200 chars as cache key
 
+    // 최적화 #14 - Early return from cache
     if (this._langDetectCache.has(cacheKey)) {
       return this._langDetectCache.get(cacheKey);
     }
@@ -321,28 +354,38 @@ const Utils = {
       return result;
     }
 
-    // Priority 2: CJK languages
+    // Priority 2: CJK languages (최적화 #6 - 단일 순회로 변경)
     if (cjkMatch) {
-      const kanaCount = cjkMatch.filter((glyph) =>
-        kanaRegex.test(glyph)
-      ).length;
-      const hanziCount = cjkMatch.filter((glyph) =>
-        hanziRegex.test(glyph)
-      ).length;
-      const simpCount = cjkMatch.filter((glyph) =>
-        simpRegex.test(glyph)
-      ).length;
-      const tradCount = cjkMatch.filter((glyph) =>
-        tradRegex.test(glyph)
-      ).length;
+      const counts = { kana: 0, hanzi: 0, simp: 0, trad: 0, hangul: 0 };
 
-      const kanaPercentage = kanaCount / cjkMatch.length;
-      const hanziPercentage = hanziCount / cjkMatch.length;
-      const simpPercentage = simpCount / cjkMatch.length;
-      const tradPercentage = tradCount / cjkMatch.length;
+      // 최적화 #13 - Character code 체크로 성능 향상 (regex보다 빠름)
+      cjkMatch.forEach((glyph) => {
+        const code = glyph.charCodeAt(0);
 
-      // Korean (Hangul)
-      if (cjkMatch.filter((glyph) => hangulRegex.test(glyph)).length !== 0) {
+        // Korean (Hangul): U+AC00–U+D7A3
+        if (code >= 0xAC00 && code <= 0xD7A3) {
+          counts.hangul++;
+        }
+        // Japanese Hiragana: U+3040–U+309F, Katakana: U+30A0–U+30FF
+        else if ((code >= 0x3040 && code <= 0x309F) || (code >= 0x30A0 && code <= 0x30FF)) {
+          counts.kana++;
+        }
+        // Chinese characters - use regex for complex ranges
+        else if (hanziRegex.test(glyph)) {
+          counts.hanzi++;
+          if (simpRegex.test(glyph)) counts.simp++;
+          if (tradRegex.test(glyph)) counts.trad++;
+        }
+      });
+
+      const totalLength = cjkMatch.length;
+      const kanaPercentage = counts.kana / totalLength;
+      const hanziPercentage = counts.hanzi / totalLength;
+      const simpPercentage = counts.simp / totalLength;
+      const tradPercentage = counts.trad / totalLength;
+
+      // Korean (Hangul) - 이미 계산된 hangul 카운트 사용
+      if (counts.hangul !== 0) {
         const result = "ko";
         this._cacheLanguageResult(cacheKey, result);
         return result;
@@ -500,6 +543,76 @@ const Utils = {
       .replace(/&lt;\/rp&gt;/g, "</rp>");
     return out;
   },
+
+  /**
+   * 최적화 #9 - HTML props 생성 헬퍼 함수
+   * @param {string} text - HTML로 렌더링할 텍스트
+   * @returns {object} - dangerouslySetInnerHTML props 또는 빈 객체
+   */
+  createHTMLProps(text) {
+    return typeof text === "string" && text
+      ? { dangerouslySetInnerHTML: { __html: this.rubyTextToHTML(text) } }
+      : {};
+  },
+  /**
+   * Parse furigana HTML to extract readings for each kanji (최적화 #3)
+   * @param {string} processedText - HTML text with ruby tags
+   * @returns {Map<number, string>} - Map of position to reading
+   */
+  parseFuriganaMapping(processedText) {
+    const furiganaMap = new Map();
+    if (!processedText || typeof processedText !== "string") return furiganaMap;
+
+    const rubyRegex = /<ruby>([^<]+)<rt>([^<]+)<\/rt><\/ruby>/g;
+
+    // Build clean text from processedText (removing all HTML tags)
+    const cleanText = processedText.replace(/<ruby>([^<]+)<rt>[^<]+<\/rt><\/ruby>/g, '$1');
+
+    // Now parse the HTML and map positions
+    let currentPos = 0;
+    let lastMatchEnd = 0;
+    let match;
+
+    rubyRegex.lastIndex = 0;
+
+    while ((match = rubyRegex.exec(processedText)) !== null) {
+      const kanjiSequence = match[1];
+      const reading = match[2];
+
+      // Calculate position by counting plain text before this match
+      const beforeMatch = processedText.substring(lastMatchEnd, match.index);
+      const plainTextBefore = beforeMatch.replace(/<[^>]+>/g, '');
+      currentPos += plainTextBefore.length;
+
+      // Map each kanji to its reading
+      if (kanjiSequence.length === 1) {
+        furiganaMap.set(currentPos, reading);
+      } else {
+        // Multiple kanji - split the reading
+        const kanjiChars = Array.from(kanjiSequence);
+        const readingChars = Array.from(reading);
+        const charsPerKanji = Math.floor(readingChars.length / kanjiChars.length);
+
+        kanjiChars.forEach((kanji, idx) => {
+          let kanjiReading;
+          if (idx === kanjiChars.length - 1) {
+            // Last kanji gets all remaining reading
+            kanjiReading = readingChars.slice(idx * charsPerKanji).join('');
+          } else {
+            kanjiReading = readingChars.slice(idx * charsPerKanji, (idx + 1) * charsPerKanji).join('');
+          }
+          furiganaMap.set(currentPos + idx, kanjiReading);
+        });
+      }
+
+      // Move position forward by the number of kanji
+      currentPos += kanjiSequence.length;
+      lastMatchEnd = match.index + match[0].length;
+    }
+
+    return furiganaMap;
+  },
+
   /**
    * Apply furigana to Japanese text if enabled in settings
    * @param {string} text - The text to process
@@ -721,7 +834,7 @@ const Utils = {
   /**
    * Current version of the lyrics-plus app
    */
-  currentVersion: "2.1.0",
+  currentVersion: "2.1.1",
 
   /**
    * Check for updates from remote repository

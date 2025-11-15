@@ -13,6 +13,35 @@ const tinyPinyinPath =
 
 const dictPath = "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict";
 
+// 최적화 #7 - 에러 메시지 표준화
+const API_ERROR_MESSAGES = {
+  400: {
+    MISSING_API_KEY: "Gemini API 키가 설정되지 않았습니다. 설정에서 API 키를 입력해주세요.",
+    INVALID_API_KEY_FORMAT: "올바르지 않은 API 키 형식입니다. Gemini API 키는 'AIza'로 시작해야 합니다.",
+    DEFAULT: "요청 형식이 올바르지 않습니다. API 키를 확인해주세요."
+  },
+  401: "잘못된 API 키입니다. 설정에서 Gemini API 키를 확인해주세요.",
+  403: "API 접근이 금지되었습니다. API 키 권한을 확인해주세요.",
+  429: "요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.",
+  500: "번역 서비스를 일시적으로 사용할 수 없습니다. 나중에 다시 시도해주세요.",
+  502: "번역 서비스를 일시적으로 사용할 수 없습니다. 나중에 다시 시도해주세요.",
+  503: "번역 서비스를 일시적으로 사용할 수 없습니다. 나중에 다시 시도해주세요."
+};
+
+// 최적화 #7 - 에러 처리 헬퍼 함수
+function handleAPIError(status, errorData) {
+  const errorConfig = API_ERROR_MESSAGES[status];
+
+  if (typeof errorConfig === 'object') {
+    // 400 에러 - 코드별 메시지
+    const code = errorData?.code;
+    return errorConfig[code] || errorConfig.DEFAULT;
+  }
+
+  // 기타 에러 - 직접 메시지 반환
+  return errorConfig || `API 요청이 실패했습니다 (${status})`;
+}
+
 class Translator {
   constructor(lang, isUsingNetease = false) {
     this.finished = {
@@ -142,50 +171,9 @@ class Translator {
             throw new Error(errorData.message);
           }
 
-          switch (res.status) {
-            case 400:
-              // 400 오류는 클라이언트 오류이므로 JSON 응답에서 상세 정보 추출
-              try {
-                const errorData = await res.json();
-                if (errorData.code === "MISSING_API_KEY") {
-                  throw new Error(
-                    "Gemini API 키가 설정되지 않았습니다. 설정에서 API 키를 입력해주세요."
-                  );
-                } else if (errorData.code === "INVALID_API_KEY_FORMAT") {
-                  throw new Error(
-                    "올바르지 않은 API 키 형식입니다. Gemini API 키는 'AIza'로 시작해야 합니다."
-                  );
-                } else {
-                  throw new Error(
-                    errorData.message || "요청 형식이 올바르지 않습니다."
-                  );
-                }
-              } catch (jsonError) {
-                throw new Error(
-                  "요청 형식이 올바르지 않습니다. API 키를 확인해주세요."
-                );
-              }
-            case 401:
-              throw new Error(
-                "잘못된 API 키입니다. 설정에서 Gemini API 키를 확인해주세요."
-              );
-            case 403:
-              throw new Error(
-                "API 접근이 금지되었습니다. API 키 권한을 확인해주세요."
-              );
-            case 429:
-              throw new Error(
-                "요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요."
-              );
-            case 500:
-            case 502:
-            case 503:
-              throw new Error(
-                "번역 서비스를 일시적으로 사용할 수 없습니다. 나중에 다시 시도해주세요."
-              );
-            default:
-              throw new Error(`API 요청이 실패했습니다 (${res.status})`);
-          }
+          // 최적화 #7 - 표준화된 에러 처리 사용
+          const errorMessage = handleAPIError(res.status, errorData);
+          throw new Error(errorMessage);
         }
 
         throw lastError || new Error("All endpoints failed");
@@ -194,28 +182,20 @@ class Translator {
       const data = await res.json();
 
       if (data.error) {
-        // 서버에서 반환된 오류 코드별 처리
-        const errorMessage = data.message || "번역에 실패했습니다";
+        // 최적화 #7 - 표준화된 에러 처리 사용
         const errorCode = data.code;
+        const errorConfig = API_ERROR_MESSAGES[400];
 
-        switch (errorCode) {
-          case "MISSING_API_KEY":
-            throw new Error(
-              "Gemini API 키가 설정되지 않았습니다. 설정에서 API 키를 입력해주세요."
-            );
-          case "INVALID_API_KEY_FORMAT":
-            throw new Error(
-              "올바르지 않은 API 키 형식입니다. Gemini API 키는 'AIza'로 시작해야 합니다."
-            );
-          default:
-            // 기본적으로 서버에서 온 메시지 사용
-            if (errorMessage.includes("API 키")) {
-              throw new Error(
-                "Gemini API 키 관련 오류가 발생했습니다. 설정에서 API 키를 확인해주세요."
-              );
-            }
-            throw new Error(errorMessage);
+        if (errorConfig[errorCode]) {
+          throw new Error(errorConfig[errorCode]);
         }
+
+        // 기본 메시지
+        const errorMessage = data.message || "번역에 실패했습니다";
+        if (errorMessage.includes("API 키")) {
+          throw new Error("Gemini API 키 관련 오류가 발생했습니다. 설정에서 API 키를 확인해주세요.");
+        }
+        throw new Error(errorMessage);
       }
 
       return data;
@@ -411,20 +391,17 @@ class Translator {
     });
   }
 
+  // 최적화 #12 - Romaji character map
+  static _romajiMap = { 'ō': 'ou', 'ū': 'uu', 'ā': 'aa', 'ī': 'ii', 'ē': 'ee' };
+  static _romajiPattern = /[ōūāīē]/g;
+
   static normalizeRomajiString(s) {
     if (typeof s !== "string") return "";
-    return (
-      s
-        // Replace macrons with ASCII-only long vowels
-        .replace(/ō/g, "ou")
-        .replace(/ū/g, "uu")
-        .replace(/ā/g, "aa")
-        .replace(/ī/g, "ii")
-        .replace(/ē/g, "ee")
-        // Normalize multiple spaces
-        .replace(/\s{2,}/g, " ")
-        .trim()
-    );
+    // 최적화 #12 - 단일 replace로 변경
+    return s
+      .replace(this._romajiPattern, match => this._romajiMap[match])
+      .replace(/\s{2,}/g, " ")
+      .trim();
   }
 
   async romajifyText(text, target = "romaji", mode = "spaced") {

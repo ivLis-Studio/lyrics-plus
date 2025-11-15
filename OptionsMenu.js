@@ -111,6 +111,45 @@ const ICONS = {
   language: `<path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM1.026 7.5h1.332c.05.586.13 1.15.24 1.696-1.012-.34-1.782-.93-2.13-1.696zM14.974 7.5h-1.332a10.034 10.034 0 0 1-.24 1.696c1.012-.34 1.782-.93 2.13-1.696zM8 15c-1.07 0-2.096-.21-3.034-.604a.5.5 0 0 0-.416.924C5.59 15.8 6.758 16 8 16s2.41-.2 3.45-.68a.5.5 0 0 0-.416-.924C10.096 14.79 9.07 15 8 15zm0-1.5c.983 0 1.912-.18 2.76-.502.848-.323 1.543-.8 2.062-1.405.519-.604.85-1.353.972-2.155H2.206c.122.802.453 1.551.972 2.155.519.605 1.214 1.082 2.062 1.405C6.088 13.32 7.017 13.5 8 13.5z"/>`,
 };
 
+// 최적화 #5 - 공통 버튼 스타일 추출
+const BUTTON_STYLES = {
+  adjustBase: {
+    background: "rgba(255, 255, 255, 0.08)",
+    border: "1px solid rgba(255, 255, 255, 0.12)",
+    borderRadius: "8px",
+    color: "#ffffff",
+    cursor: "pointer",
+    padding: "6px 10px",
+    fontSize: "12px",
+    fontWeight: "600",
+    minWidth: "52px",
+    letterSpacing: "-0.01em",
+    transition: "all 0.2s ease",
+  },
+  adjustHover: {
+    background: "rgba(255, 255, 255, 0.12)",
+    transform: "translateY(-1px)",
+  },
+  adjustNormal: {
+    background: "rgba(255, 255, 255, 0.08)",
+    transform: "translateY(0)",
+  }
+};
+
+// 최적화 #5 - 재사용 가능한 Adjust 버튼 컴포넌트
+const AdjustButton = ({ value, onClick }) => {
+  return react.createElement("button", {
+    onClick,
+    style: BUTTON_STYLES.adjustBase,
+    onMouseEnter: (e) => {
+      Object.assign(e.target.style, BUTTON_STYLES.adjustHover);
+    },
+    onMouseLeave: (e) => {
+      Object.assign(e.target.style, BUTTON_STYLES.adjustNormal);
+    },
+  }, value);
+};
+
 const SettingRowDescription = ({ icon, text }) => {
   return react.createElement(
     "div",
@@ -1134,90 +1173,9 @@ const SyncAdjustButton = react.memo(
                     gap: "6px",
                   },
                 },
-                react.createElement(
-                  "button",
-                  {
-                    onClick: () => adjustOffset(-100),
-                    style: {
-                      background: "rgba(255, 255, 255, 0.08)",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
-                      borderRadius: "8px",
-                      color: "#ffffff",
-                      cursor: "pointer",
-                      padding: "6px 10px",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      minWidth: "52px",
-                      letterSpacing: "-0.01em",
-                      transition: "all 0.2s ease",
-                    },
-                    onMouseEnter: (e) => {
-                      e.target.style.background = "rgba(255, 255, 255, 0.12)";
-                      e.target.style.transform = "translateY(-1px)";
-                    },
-                    onMouseLeave: (e) => {
-                      e.target.style.background = "rgba(255, 255, 255, 0.08)";
-                      e.target.style.transform = "translateY(0)";
-                    },
-                  },
-                  "-100"
-                ),
-                react.createElement(
-                  "button",
-                  {
-                    onClick: () => adjustOffset(-10),
-                    style: {
-                      background: "rgba(255, 255, 255, 0.08)",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
-                      borderRadius: "8px",
-                      color: "#ffffff",
-                      cursor: "pointer",
-                      padding: "6px 10px",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      minWidth: "52px",
-                      letterSpacing: "-0.01em",
-                      transition: "all 0.2s ease",
-                    },
-                    onMouseEnter: (e) => {
-                      e.target.style.background = "rgba(255, 255, 255, 0.12)";
-                      e.target.style.transform = "translateY(-1px)";
-                    },
-                    onMouseLeave: (e) => {
-                      e.target.style.background = "rgba(255, 255, 255, 0.08)";
-                      e.target.style.transform = "translateY(0)";
-                    },
-                  },
-                  "-10"
-                ),
-                react.createElement(
-                  "button",
-                  {
-                    onClick: () => adjustOffset(-1),
-                    style: {
-                      background: "rgba(255, 255, 255, 0.08)",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
-                      borderRadius: "8px",
-                      color: "#ffffff",
-                      cursor: "pointer",
-                      padding: "6px 10px",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      minWidth: "52px",
-                      letterSpacing: "-0.01em",
-                      transition: "all 0.2s ease",
-                    },
-                    onMouseEnter: (e) => {
-                      e.target.style.background = "rgba(255, 255, 255, 0.12)";
-                      e.target.style.transform = "translateY(-1px)";
-                    },
-                    onMouseLeave: (e) => {
-                      e.target.style.background = "rgba(255, 255, 255, 0.08)";
-                      e.target.style.transform = "translateY(0)";
-                    },
-                  },
-                  "-1"
-                )
+                react.createElement(AdjustButton, { value: "-100", onClick: () => adjustOffset(-100) }),
+                react.createElement(AdjustButton, { value: "-10", onClick: () => adjustOffset(-10) }),
+                react.createElement(AdjustButton, { value: "-1", onClick: () => adjustOffset(-1) })
               ),
               react.createElement(
                 "div",
@@ -1227,90 +1185,9 @@ const SyncAdjustButton = react.memo(
                     gap: "6px",
                   },
                 },
-                react.createElement(
-                  "button",
-                  {
-                    onClick: () => adjustOffset(100),
-                    style: {
-                      background: "rgba(255, 255, 255, 0.08)",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
-                      borderRadius: "8px",
-                      color: "#ffffff",
-                      cursor: "pointer",
-                      padding: "6px 10px",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      minWidth: "52px",
-                      letterSpacing: "-0.01em",
-                      transition: "all 0.2s ease",
-                    },
-                    onMouseEnter: (e) => {
-                      e.target.style.background = "rgba(255, 255, 255, 0.12)";
-                      e.target.style.transform = "translateY(-1px)";
-                    },
-                    onMouseLeave: (e) => {
-                      e.target.style.background = "rgba(255, 255, 255, 0.08)";
-                      e.target.style.transform = "translateY(0)";
-                    },
-                  },
-                  "+100"
-                ),
-                react.createElement(
-                  "button",
-                  {
-                    onClick: () => adjustOffset(10),
-                    style: {
-                      background: "rgba(255, 255, 255, 0.08)",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
-                      borderRadius: "8px",
-                      color: "#ffffff",
-                      cursor: "pointer",
-                      padding: "6px 10px",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      minWidth: "52px",
-                      letterSpacing: "-0.01em",
-                      transition: "all 0.2s ease",
-                    },
-                    onMouseEnter: (e) => {
-                      e.target.style.background = "rgba(255, 255, 255, 0.12)";
-                      e.target.style.transform = "translateY(-1px)";
-                    },
-                    onMouseLeave: (e) => {
-                      e.target.style.background = "rgba(255, 255, 255, 0.08)";
-                      e.target.style.transform = "translateY(0)";
-                    },
-                  },
-                  "+10"
-                ),
-                react.createElement(
-                  "button",
-                  {
-                    onClick: () => adjustOffset(1),
-                    style: {
-                      background: "rgba(255, 255, 255, 0.08)",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
-                      borderRadius: "8px",
-                      color: "#ffffff",
-                      cursor: "pointer",
-                      padding: "6px 10px",
-                      fontSize: "12px",
-                      fontWeight: "600",
-                      minWidth: "52px",
-                      letterSpacing: "-0.01em",
-                      transition: "all 0.2s ease",
-                    },
-                    onMouseEnter: (e) => {
-                      e.target.style.background = "rgba(255, 255, 255, 0.12)";
-                      e.target.style.transform = "translateY(-1px)";
-                    },
-                    onMouseLeave: (e) => {
-                      e.target.style.background = "rgba(255, 255, 255, 0.08)";
-                      e.target.style.transform = "translateY(0)";
-                    },
-                  },
-                  "+1"
-                )
+                react.createElement(AdjustButton, { value: "+100", onClick: () => adjustOffset(100) }),
+                react.createElement(AdjustButton, { value: "+10", onClick: () => adjustOffset(10) }),
+                react.createElement(AdjustButton, { value: "+1", onClick: () => adjustOffset(1) })
               )
             ),
             // Reset button

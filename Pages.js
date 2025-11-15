@@ -173,15 +173,23 @@ const AnimationManager = {
 	}
 };
 
-// Enhanced visibility change manager to prevent duplicate listeners
+// Enhanced visibility change manager to prevent duplicate listeners (최적화 #8 - 메모리 누수 수정)
 const VisibilityManager = {
 	listeners: new Set(),
 	isListening: false,
+	boundHandler: null,
+
+	init() {
+		// bind()로 생성된 함수 참조를 저장하여 제거 가능하게 함
+		this.boundHandler = this.handleVisibilityChange.bind(this);
+	},
 
 	addListener(callback) {
+		if (!this.boundHandler) this.init();
+
 		this.listeners.add(callback);
 		if (!this.isListening) {
-			document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
+			document.addEventListener('visibilitychange', this.boundHandler);
 			this.isListening = true;
 		}
 	},
@@ -189,7 +197,7 @@ const VisibilityManager = {
 	removeListener(callback) {
 		this.listeners.delete(callback);
 		if (this.listeners.size === 0 && this.isListening) {
-			document.removeEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
+			document.removeEventListener('visibilitychange', this.boundHandler);
 			this.isListening = false;
 		}
 	},

@@ -11,6 +11,8 @@ const FuriganaConverter = (() => {
 
   // Debug mode - set to false to reduce console logs
   const DEBUG_MODE = false;
+  const MAX_CONVERSION_CACHE_SIZE = 1000;
+  let hasLoggedKuromojiWarning = false;
 
   // Patch XMLHttpRequest to fix URL issues
   const originalXHROpen = XMLHttpRequest.prototype.open;
@@ -114,6 +116,10 @@ const FuriganaConverter = (() => {
     }
 
     if (!kuromojiInstance) {
+      if (DEBUG_MODE && !hasLoggedKuromojiWarning) {
+        console.warn("[Lyrics Plus] Kuromoji is not initialized yet.");
+        hasLoggedKuromojiWarning = true;
+      }
       return text;
     }
 
@@ -198,7 +204,7 @@ const FuriganaConverter = (() => {
         }
       }
 
-      if (conversionCache.size > 1000) {
+      if (conversionCache.size > MAX_CONVERSION_CACHE_SIZE) {
         const firstKey = conversionCache.keys().next().value;
         conversionCache.delete(firstKey);
       }
@@ -206,6 +212,9 @@ const FuriganaConverter = (() => {
 
       return result;
     } catch (error) {
+      if (DEBUG_MODE) {
+        console.error("[Lyrics Plus] Furigana conversion failed:", error);
+      }
       return text;
     }
   };
@@ -272,7 +281,6 @@ const { useState, useEffect, useCallback, useMemo, useRef } = react;
 const UpdateBanner = ({ updateInfo, onDismiss }) => {
   const [copied, setCopied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const platform = Utils.detectPlatform();
   const installCommand = Utils.getInstallCommand();
   const platformName = Utils.getPlatformName();
 
@@ -521,8 +529,6 @@ function ensureReactDOM() {
 }
 
 window.lyricsPlusEnsureReactDOM = ensureReactDOM;
-const spotifyVersion = Spicetify.Platform.version;
-
 // Define a function called "render" to specify app entry point
 // This function will be used to mount app to main view.
 function render() {
@@ -841,9 +847,9 @@ const StorageManager = {
     StorageKeys.forEach((key) => {
       // Client ID는 내보내기에서 제외
       if (key === CLIENT_ID_KEY) return;
-      
+
       const val = StorageManager.getItem(key);
-      if (val !== null) config[key] = StorageManager.getItem(key);
+      if (val !== null) config[key] = val;
     });
     
     // IndexedDB의 track-sync-offsets를 포함
