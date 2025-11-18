@@ -1173,9 +1173,9 @@ const SyncAdjustButton = react.memo(
                     gap: "6px",
                   },
                 },
+                react.createElement(AdjustButton, { value: "-1000", onClick: () => adjustOffset(-1000) }),
                 react.createElement(AdjustButton, { value: "-100", onClick: () => adjustOffset(-100) }),
-                react.createElement(AdjustButton, { value: "-10", onClick: () => adjustOffset(-10) }),
-                react.createElement(AdjustButton, { value: "-1", onClick: () => adjustOffset(-1) })
+                react.createElement(AdjustButton, { value: "-10", onClick: () => adjustOffset(-10) })
               ),
               react.createElement(
                 "div",
@@ -1185,9 +1185,9 @@ const SyncAdjustButton = react.memo(
                     gap: "6px",
                   },
                 },
+                react.createElement(AdjustButton, { value: "+1000", onClick: () => adjustOffset(1000) }),
                 react.createElement(AdjustButton, { value: "+100", onClick: () => adjustOffset(100) }),
-                react.createElement(AdjustButton, { value: "+10", onClick: () => adjustOffset(10) }),
-                react.createElement(AdjustButton, { value: "+1", onClick: () => adjustOffset(1) })
+                react.createElement(AdjustButton, { value: "+10", onClick: () => adjustOffset(10) })
               )
             ),
             // Reset button
