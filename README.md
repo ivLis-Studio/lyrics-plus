@@ -42,6 +42,8 @@ https://github.com/user-attachments/assets/c865affb-1a7b-405c-86ac-e1421f426c58
 Spotify 공식 홈페이지를 통해 스포티파이를 설치하였을 경우, spicetify 와 버전이 호환되지 않을 수 있습니다.
 아래 명령어를 통해 패치가 가능한 버전의 스포티파이를 설치해주세요. 해당 방법으로 스포티파이를 설치 시, 자동 업데이트가 차단됩니다.
 
+스포티파이가 기존에 설치되어 있다면, 삭제 후 진행하십시오.
+
 Windows : 
 ```
 iex "& { $(iwr -useb 'https://raw.githubusercontent.com/SpotX-Official/SpotX/refs/heads/main/run.ps1') } -premium -new_theme"
