@@ -1,7 +1,6 @@
-# 현재 오류가 발생하여 버튼으로 가사 페이지 활성화가 불가능합니다.
-
-https://ivlis.kr/lyrics-plus 이 링크를 통해 가사 페이지를 여시면 정상적으로 동작합니다.
-spotify 및 spicetify 업데이트 문제로 보입니다.
+# 최신버전의 Spotify 에서 spicetify가 제대로 동작하지 않습니다.
+가사 버튼을 클릭했을 때, 제대로 표시되지 않는 분들께서는
+아래 수정된 설치 방법을 참고하여 spotify 를 구버전으로 돌리면 정상 사용 가능합니다.
 
 # Lyrics Plus (한국어 커스텀 버전)
 
@@ -39,11 +38,19 @@ https://github.com/user-attachments/assets/c865affb-1a7b-405c-86ac-e1421f426c58
 ## 설치 방법 
 
 ### 1. 사전 준비
-- Spotify (웹 버전 설치 필요, Microsoft Store 버전 불가)
-- Spicetify 설치: https://spicetify.app/docs/getting-started
 
-Lyrics-Plus 는 spicetify의 확장 프로그램으로, Spicetify 가 설치되어 있어야 사용할 수 있습니다.
-Spicetify 설치 방법은 아래를 참고하십시오.
+Spotify 공식 홈페이지를 통해 스포티파이를 설치하였을 경우, spicetify 와 버전이 호환되지 않을 수 있습니다.
+아래 명령어를 통해 패치가 가능한 버전의 스포티파이를 설치해주세요.
+
+Windows : 
+```
+iex "& { $(iwr -useb 'https://raw.githubusercontent.com/SpotX-Official/SpotX/refs/heads/main/run.ps1') } -premium -new_theme"
+```
+
+Mac Os :
+```
+bash <(curl -sSL https://raw.githubusercontent.com/SpotX-Official/SpotX-Bash/main/spotx.sh)
+```
 
 ### 2. Spicetify 설치 (이미 설치 되어있다면, 다음 단계로!)
 
