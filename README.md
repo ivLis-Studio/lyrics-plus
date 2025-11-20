@@ -1,6 +1,6 @@
 # 현재 오류가 발생하여 버튼으로 가사 페이지 활성화가 불가능합니다.
 
-<a href="spotify://lyrics-plus" target="_blank">가사열기</a> 이 링크를 통해 가사 페이지를 여시면 정상적으로 동작합니다.
+https://ivlis.kr/lyrics-plus 이 링크를 통해 가사 페이지를 여시면 정상적으로 동작합니다.
 spotify 및 spicetify 업데이트 문제로 보입니다.
 
 # Lyrics Plus (한국어 커스텀 버전)
