@@ -48,7 +48,7 @@ Windows :
 1. 시작 버튼을 누르고 "Windows Powershell" 프로그램을 실행합니다.
 2. 아래 코드를 복사해서 붙여넣기 합니다.
 ```
-iex "& { $(iwr -useb 'https://raw.githubusercontent.com/SpotX-Official/SpotX/refs/heads/main/run.ps1') } -premium -new_theme"
+iex "& { $(iwr -useb 'https://amd64fox.github.io/Rollback-Spotify/run.ps1') } -version 1.2.76.298-x64"
 ```
 3. 엔터를 누릅니다.
 
