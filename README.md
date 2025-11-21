@@ -59,7 +59,13 @@ Mac Os :
 bash <(curl -sSL https://raw.githubusercontent.com/jetfir3/TBZify/main/tbzify.sh) -v 1.2.76.298
 ```
 3. 엔터를 누릅니다.
-   
+
+
+혹은 아래 링크에서 수동으로 받을 수 있습니다.
+윈도우 : https://loadspot.pages.dev/?os=win&build=release&search=1.2.76.298
+맥 : https://loadspot.pages.dev/?os=mac&build=release&search=1.2.76.298
+
+
 ### 2. Spicetify 설치 (이미 설치 되어있다면, 다음 단계로!)
 
 *주의* : 관리자 권한으로 실행하면 안됩니다.
