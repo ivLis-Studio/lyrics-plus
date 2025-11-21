@@ -39,27 +39,16 @@ https://github.com/user-attachments/assets/c865affb-1a7b-405c-86ac-e1421f426c58
 
 ### 1. 사전 준비
 
-Spotify 공식 홈페이지를 통해 스포티파이를 설치하였을 경우, spicetify 와 버전이 호환되지 않을 수 있습니다.
-아래 명령어를 통해 패치가 가능한 버전의 스포티파이를 설치해주세요. 해당 방법으로 스포티파이를 설치 시, 자동 업데이트가 차단됩니다.
+Spotify 공식 홈페이지에서 다운로드 받으신 Spotify는, 높은 확률로 spicetify 버전과 호환되지 않을 수 있습니다.
 
-스포티파이가 기존에 설치되어 있다면, 삭제 후 진행하십시오.
+윈도우 : https://loadspot.pages.dev/?os=win&build=release&search=1.2.76.298
 
-Windows : 
-1. 시작 버튼을 누르고 "Windows Powershell" 프로그램을 실행합니다.
-2. 아래 코드를 복사해서 붙여넣기 합니다.
-```
-iex "& { $(iwr -useb 'https://amd64fox.github.io/Rollback-Spotify/run.ps1') } -version 1.2.76.298-x64"
-```
-3. 엔터를 누릅니다.
+맥 : https://loadspot.pages.dev/?os=mac&build=release&search=1.2.76.298
 
-Mac Os :
-1. Terminal (터미널) 앱을 실행합니다.
-2. 아래 코드를 복사해서 붙여넣기 합니다.
-```
-bash <(curl -sSL https://raw.githubusercontent.com/SpotX-Official/SpotX-Bash/main/spotx.sh)
-```
-3. 엔터를 누릅니다.
-   
+해당 사이트에서 구버전 스포티파이를 다운로드해주세요.
+
+(해당 사이트에서 받는 설치 파일은, spotify 공식 cdn에서 다운로드 됩니다 안심하고 받으셔도 됩니다.)
+
 ### 2. Spicetify 설치 (이미 설치 되어있다면, 다음 단계로!)
 
 *주의* : 관리자 권한으로 실행하면 안됩니다.
