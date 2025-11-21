@@ -62,7 +62,9 @@ bash <(curl -sSL https://raw.githubusercontent.com/jetfir3/TBZify/main/tbzify.sh
 
 
 혹은 아래 링크에서 수동으로 받을 수 있습니다.
+
 윈도우 : https://loadspot.pages.dev/?os=win&build=release&search=1.2.76.298
+
 맥 : https://loadspot.pages.dev/?os=mac&build=release&search=1.2.76.298
 
 
