@@ -45,15 +45,21 @@ Spotify 공식 홈페이지를 통해 스포티파이를 설치하였을 경우,
 스포티파이가 기존에 설치되어 있다면, 삭제 후 진행하십시오.
 
 Windows : 
+1. 시작 버튼을 누르고 "Windows Powershell" 프로그램을 실행합니다.
+2. 아래 코드를 복사해서 붙여넣기 합니다.
 ```
 iex "& { $(iwr -useb 'https://raw.githubusercontent.com/SpotX-Official/SpotX/refs/heads/main/run.ps1') } -premium -new_theme"
 ```
+3. 엔터를 누릅니다.
 
 Mac Os :
+1. Terminal (터미널) 앱을 실행합니다.
+2. 아래 코드를 복사해서 붙여넣기 합니다.
 ```
 bash <(curl -sSL https://raw.githubusercontent.com/SpotX-Official/SpotX-Bash/main/spotx.sh)
 ```
-
+3. 엔터를 누릅니다.
+   
 ### 2. Spicetify 설치 (이미 설치 되어있다면, 다음 단계로!)
 
 *주의* : 관리자 권한으로 실행하면 안됩니다.
@@ -64,7 +70,7 @@ Windows :
    ```
    iwr -useb https://raw.githubusercontent.com/spicetify/cli/main/install.ps1 | iex
    ```
-5. 엔터를 누릅니다.
+3. 엔터를 누릅니다.
 
 Mac Os :
 1. Terminal (터미널) 앱을 실행합니다.
@@ -72,7 +78,7 @@ Mac Os :
    ```
    curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh
    ```
-4. 엔터를 누릅니다
+3. 엔터를 누릅니다
 
 설치 과정에서 Marketplace를 설치할지 물어보는 질문이 있습니다.
 Marketplace에서 다운로드 받을 수 있는 FullScreen 확장프로그램과 Lyrics-Plus의 궁합이 아주 좋으므로 설치를 권장합니다.
