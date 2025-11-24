@@ -1155,8 +1155,7 @@ const CONFIG = {
     "fullscreen-key":
       StorageManager.getItem("lyrics-plus:visual:fullscreen-key") || "f12",
     "synced-compact": StorageManager.get("lyrics-plus:visual:synced-compact"),
-    "global-delay":
-      Number(StorageManager.getItem("lyrics-plus:visual:global-delay")) || 0,
+
     delay: 0,
   },
   providers: {

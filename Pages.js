@@ -22,7 +22,7 @@ const CreditFooter = react.memo(({ provider, copyright }) => {
 
 // Optimized IdlingIndicator with memoization and performance improvements
 const IdlingIndicator = react.memo(({ isActive = false, progress = 0, delay = 0 }) => {
-	const className = useMemo(() => 
+	const className = useMemo(() =>
 		`lyrics-idling-indicator ${!isActive ? "lyrics-idling-indicator-hidden" : ""} lyrics-lyricsContainer-LyricsLine lyrics-lyricsContainer-LyricsLine-active`,
 		[isActive]
 	);
@@ -92,12 +92,12 @@ const getLyricsDisplayMode = (isKara, line, text, originalText, text2) => {
 		// originalText is the actual original lyrics
 		// text is the first translation (can be null)
 		// text2 is the second translation (can be null)
-		
+
 		if (showTranslatedBelow) {
 			// Show original as main, translations below
 			// Apply furigana to original text if enabled
 			const processedOriginalText = safeRenderText(originalText);
-			mainText = typeof processedOriginalText === 'string' ? 
+			mainText = typeof processedOriginalText === 'string' ?
 				Utils.applyFuriganaIfEnabled(processedOriginalText) : processedOriginalText;
 			subText = text ? safeRenderText(text) : null;
 			subText2 = text2 ? safeRenderText(text2) : null;
@@ -109,7 +109,7 @@ const getLyricsDisplayMode = (isKara, line, text, originalText, text2) => {
 		} else {
 			// Default: just show original with furigana if enabled
 			const processedOriginalText = safeRenderText(originalText);
-			mainText = typeof processedOriginalText === 'string' ? 
+			mainText = typeof processedOriginalText === 'string' ?
 				Utils.applyFuriganaIfEnabled(processedOriginalText) : processedOriginalText;
 			subText = null;
 			subText2 = null;
@@ -396,26 +396,26 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 	const furiganaMap = new Map(); // position -> reading
 	if (hasFurigana) {
 		const rubyRegex = /<ruby>([^<]+)<rt>([^<]+)<\/rt><\/ruby>/g;
-		
+
 		// Build clean text from processedText (removing all HTML tags)
 		const cleanText = processedText.replace(/<ruby>([^<]+)<rt>[^<]+<\/rt><\/ruby>/g, '$1');
-		
+
 		// Now parse the HTML and map positions
 		let currentPos = 0;
 		let lastMatchEnd = 0;
 		let match;
-		
+
 		rubyRegex.lastIndex = 0;
-		
+
 		while ((match = rubyRegex.exec(processedText)) !== null) {
 			const kanjiSequence = match[1];
 			const reading = match[2];
-			
+
 			// Calculate position by counting plain text before this match
 			const beforeMatch = processedText.substring(lastMatchEnd, match.index);
 			const plainTextBefore = beforeMatch.replace(/<[^>]+>/g, '');
 			currentPos += plainTextBefore.length;
-			
+
 			// Map each kanji to its reading
 			if (kanjiSequence.length === 1) {
 				furiganaMap.set(currentPos, reading);
@@ -436,7 +436,7 @@ const KaraokeLine = react.memo(({ line, position, isActive, globalCharOffset = 0
 					furiganaMap.set(currentPos + idx, kanjiReading);
 				});
 			}
-			
+
 			// Move position forward by the number of kanji
 			currentPos += kanjiSequence.length;
 			lastMatchEnd = match.index + match[0].length;
@@ -615,8 +615,40 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 	// 유효성 검사를 Hook 호출 전에 수행하지 않음 - Hook은 항상 같은 순서로 호출되어야 함
 	const [position, setPosition] = useState(0);
 	const [trackOffset, setTrackOffset] = useState(0);
+	const [isScrolling, setIsScrolling] = useState(false);
 	const activeLineEle = useRef();
 	const lyricContainerEle = useRef();
+	const scrollTimeout = useRef(null);
+	const lyricsId = useMemo(() => lyrics[0]?.text || "no-lyrics", [lyrics]);
+
+	useEffect(() => {
+		const container = lyricContainerEle.current;
+		if (!container) return;
+
+		const handleWheel = () => {
+			setIsScrolling(true);
+			if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+			scrollTimeout.current = setTimeout(() => {
+				setIsScrolling(false);
+			}, 3000);
+		};
+
+		container.addEventListener("wheel", handleWheel, { passive: true });
+		container.addEventListener("touchmove", handleWheel, { passive: true });
+
+		return () => {
+			container.removeEventListener("wheel", handleWheel);
+			container.removeEventListener("touchmove", handleWheel);
+			if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+		};
+	}, [lyricsId]);
+
+	const handleContainerClick = () => {
+		if (isScrolling) {
+			setIsScrolling(false);
+			if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+		}
+	};
 
 	// Load track offset asynchronously
 	useEffect(() => {
@@ -627,7 +659,7 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 				setTrackOffset(offset);
 			}
 		};
-		
+
 		loadOffset();
 
 		// Listen for offset changes
@@ -646,7 +678,7 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 
 	useTrackPosition(() => {
 		const newPos = Spicetify.Player.getProgress();
-		const delay = CONFIG.visual["global-delay"] + CONFIG.visual.delay + trackOffset;
+		const delay = CONFIG.visual.delay + trackOffset;
 		// Always update position for smoother karaoke animation
 		setPosition(newPos + delay);
 	});
@@ -663,7 +695,7 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 
 			if (line?.syllables && Array.isArray(line.syllables)) {
 				// 이 줄이 활성 상태인지 확인
-				const isLineActive = position >= (line.startTime || 0) && 
+				const isLineActive = position >= (line.startTime || 0) &&
 					(i === lyrics.length - 1 || position < (lyrics[i + 1]?.startTime || Infinity));
 
 				for (const syllable of line.syllables) {
@@ -702,8 +734,6 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 		[lyrics]
 	);
 
-	const lyricsId = useMemo(() => lyrics[0]?.text || "no-lyrics", [lyrics]);
-
 	// Optimize active line calculation with memoization
 	const activeLineIndex = useMemo(() => {
 		for (let i = lyricWithEmptyLines.length - 1; i > 0; i--) {
@@ -716,10 +746,26 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 	}, [lyricWithEmptyLines, position]);
 
 	const activeLines = useMemo(() => {
+		if (isScrolling) return lyricWithEmptyLines;
 		const startIndex = Math.max(activeLineIndex - CONFIG.visual["lines-before"], 0);
 		const linesCount = CONFIG.visual["lines-before"] + CONFIG.visual["lines-after"] + 1;
 		return lyricWithEmptyLines.slice(startIndex, startIndex + linesCount);
-	}, [activeLineIndex, lyricWithEmptyLines]);
+	}, [activeLineIndex, lyricWithEmptyLines, isScrolling]);
+
+	useEffect(() => {
+		if (!isScrolling) return;
+		const node = activeLineEle.current;
+		if (!node) return;
+		const raf = typeof requestAnimationFrame === "function"
+			? requestAnimationFrame
+			: (cb) => setTimeout(cb, 0);
+		raf(() => {
+			node.scrollIntoView({
+				block: "center",
+				inline: "nearest",
+			});
+		});
+	}, [isScrolling, activeLineIndex]);
 
 	// 유효성 검사는 Hook 호출 후에 수행
 	if (!Array.isArray(lyrics) || lyrics.length === 0) {
@@ -743,11 +789,14 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 		offset += -(activeLineEle.current.offsetTop + activeLineEle.current.clientHeight / 2);
 	}
 
+	if (isScrolling) offset = 0;
+
 	return react.createElement(
 		"div",
 		{
-			className: "lyrics-lyricsContainer-SyncedLyricsPage",
+			className: `lyrics-lyricsContainer-SyncedLyricsPage ${isScrolling ? "scrolling-active" : ""}`,
 			ref: lyricContainerEle,
+			onClick: handleContainerClick,
 		},
 		react.createElement(
 			"div",
@@ -771,26 +820,29 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 				}
 
 				let className = "lyrics-lyricsContainer-LyricsLine";
-				const activeElementIndex = Math.min(activeLineIndex, CONFIG.visual["lines-before"]);
+				// 스크롤 모드일 때는 i가 곧 인덱스, 아닐 때는 상대적 인덱스 계산
+				const activeElementIndex = isScrolling ? activeLineIndex : Math.min(activeLineIndex, CONFIG.visual["lines-before"]);
 				let ref;
 
-				if (i === activeElementIndex) {
+				if (lineNumber === activeLineIndex) {
 					className += " lyrics-lyricsContainer-LyricsLine-active";
 					ref = activeLineEle;
 				}
 
 				let animationIndex;
-				if (activeLineIndex <= CONFIG.visual["lines-before"]) {
+				if (isScrolling) {
+					animationIndex = 0; // 스크롤 모드에서는 애니메이션 인덱스 무시
+				} else if (activeLineIndex <= CONFIG.visual["lines-before"]) {
 					animationIndex = i - activeLineIndex;
 				} else {
 					animationIndex = i - CONFIG.visual["lines-before"] - 1;
 				}
 
-				const paddingLine = (animationIndex < 0 && -animationIndex > CONFIG.visual["lines-before"]) || animationIndex > CONFIG.visual["lines-after"];
+				const paddingLine = !isScrolling && ((animationIndex < 0 && -animationIndex > CONFIG.visual["lines-before"]) || animationIndex > CONFIG.visual["lines-after"]);
 				if (paddingLine) {
 					className += " lyrics-lyricsContainer-LyricsLine-paddingLine";
 				}
-				const isActive = i === activeElementIndex;
+				const isActive = lineNumber === activeLineIndex;
 				const { mainText, subText, subText2 } = getLyricsDisplayMode(isKara, line, text, originalText, text2);
 
 				if (isActive) {
@@ -834,10 +886,10 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 							if (isKara) {
 								// 새로운 노래방 모드 - 전역 글자 인덱스 전달
 								const currentLineIndex = lineNumber - 2; // emptyLine 2개 제외
-								const globalOffset = currentLineIndex >= 0 && currentLineIndex < globalCharOffsets.length 
-									? globalCharOffsets[currentLineIndex] 
+								const globalOffset = currentLineIndex >= 0 && currentLineIndex < globalCharOffsets.length
+									? globalCharOffsets[currentLineIndex]
 									: 0;
-								
+
 								return react.createElement(KaraokeLine, {
 									line,
 									position,
@@ -969,7 +1021,7 @@ class SearchBar extends react.Component {
 
 		this.viewPort = document.querySelector(".main-view-container .os-viewport");
 		this.mainViewOffsetTop = document.querySelector(".Root__main-view")?.offsetTop || 0;
-		
+
 		this.toggleCallback = () => {
 			if (!(Spicetify.Platform.History.location.pathname === "/lyrics-plus" && this.container)) return;
 
@@ -1121,8 +1173,39 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 	// Hook은 항상 먼저 호출되어야 함 - React 130 방지
 	const [position, setPosition] = useState(0);
 	const [trackOffset, setTrackOffset] = useState(0);
+	const [isScrolling, setIsScrolling] = useState(false);
 	const activeLineRef = useRef(null);
 	const pageRef = useRef(null);
+	const scrollTimeout = useRef(null);
+
+	useEffect(() => {
+		const container = pageRef.current;
+		if (!container) return;
+
+		const handleWheel = () => {
+			setIsScrolling(true);
+			if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+			scrollTimeout.current = setTimeout(() => {
+				setIsScrolling(false);
+			}, 3000);
+		};
+
+		container.addEventListener("wheel", handleWheel, { passive: true });
+		container.addEventListener("touchmove", handleWheel, { passive: true });
+
+		return () => {
+			container.removeEventListener("wheel", handleWheel);
+			container.removeEventListener("touchmove", handleWheel);
+			if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+		};
+	}, [lyricsId]);
+
+	const handleContainerClick = () => {
+		if (isScrolling) {
+			setIsScrolling(false);
+			if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+		}
+	};
 
 	// Load track offset asynchronously
 	useEffect(() => {
@@ -1133,7 +1216,7 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 				setTrackOffset(offset);
 			}
 		};
-		
+
 		loadOffset();
 
 		// Listen for offset changes
@@ -1152,7 +1235,7 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 
 	useTrackPosition(() => {
 		const newPos = Spicetify.Player.getProgress();
-		const delay = CONFIG.visual["global-delay"] + CONFIG.visual.delay + trackOffset;
+		const delay = CONFIG.visual.delay + trackOffset;
 		// Always update position for smoother karaoke animation
 		setPosition(newPos + delay);
 	});
@@ -1175,7 +1258,7 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 	}, [padded, position]);
 
 	useEffect(() => {
-		if (activeLineRef.current && (!intialScroll[0] || isInViewport(activeLineRef.current))) {
+		if (!isScrolling && activeLineRef.current && (!intialScroll[0] || isInViewport(activeLineRef.current))) {
 			activeLineRef.current.scrollIntoView({
 				behavior: "smooth",
 				block: "center",
@@ -1183,7 +1266,19 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 			});
 			intialScroll[0] = true;
 		}
-	}, [activeLineRef.current]);
+	}, [activeLineRef.current, isScrolling]);
+
+	// 스크롤 모드 진입 시 현재 가사 위치로 이동
+	useEffect(() => {
+		if (isScrolling && activeLineRef.current) {
+			// 렌더링 후 위치를 잡기 위해 약간의 지연
+			setTimeout(() => {
+				if (activeLineRef.current) {
+					activeLineRef.current.scrollIntoView({ block: "center", behavior: "auto" });
+				}
+			}, 0);
+		}
+	}, [isScrolling]);
 
 	// 유효성 검사는 Hook 호출 후에 수행
 	if (!Array.isArray(lyrics) || lyrics.length === 0) {
@@ -1208,21 +1303,22 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 			className: "lyrics-lyricsContainer-UnsyncedLyricsPage",
 			key: lyricsId,
 			ref: pageRef,
+			onClick: handleContainerClick,
 		},
 		react.createElement("p", {
 			className: "lyrics-lyricsContainer-LyricsUnsyncedPadding",
 		}),
 		padded.map(({ text, startTime, originalText, text2 }, i) => {
-				if (i === 0) {
-					const nextLine = padded[1];
-					const nextStartTime = nextLine?.startTime || 1;
-					return react.createElement(IdlingIndicator, {
-						key: `expanded-idling-${i}`,
-						isActive: activeLineIndex === 0,
-						progress: position / nextStartTime,
-						delay: nextStartTime / 3,
-					});
-				}
+			if (i === 0) {
+				const nextLine = padded[1];
+				const nextStartTime = nextLine?.startTime || 1;
+				return react.createElement(IdlingIndicator, {
+					key: `expanded-idling-${i}`,
+					isActive: activeLineIndex === 0,
+					progress: position / nextStartTime,
+					delay: nextStartTime / 3,
+				});
+			}
 
 			const isActive = i === activeLineIndex;
 			const { mainText, subText, subText2 } = getLyricsDisplayMode(false, null, text, originalText, text2);
@@ -1278,7 +1374,7 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 								.then(() => Spicetify.showNotification("✓ 가사가 클립보드에 복사되었습니다", false, 2000))
 								.catch(() => Spicetify.showNotification("가사 클립보드 복사 실패", true, 2000));
 						},
-						// For Furigana/Hiragana HTML strings - React 310 방지
+						// For Furigana/Hiragana HTML strings - React 310 방지를 위한 안전한 검증
 						...(typeof mainText === "string" && !isKara && mainText ? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(mainText) } } : {}),
 					},
 					// Safe rendering for main text
@@ -1416,47 +1512,47 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 					typeof lineText === "string" ? null : lineText
 				),
 				belowMode &&
-					react.createElement(
-						"p",
-						{
-							className: "lyrics-lyricsContainer-LyricsLine-phonetic",
-							style: { 
-								"--sub-lyric-color": CONFIG.visual["inactive-color"]
-							},
-							onContextMenu: (event) => {
-								event.preventDefault();
-								Spicetify.Platform.ClipboardAPI.copy(Utils.convertParsedToUnsynced(lyrics, belowMode).conver)
-									.then(() => Spicetify.showNotification("✓ Translation copied to clipboard", false, 2000))
-									.catch(() => Spicetify.showNotification("번역 클립보드 복사 실패", true, 2000));
-							},
-							// React 310 방지: 문자열이고 비어있지 않을 때만 dangerouslySetInnerHTML 사용
-							...(typeof subText === "string" && subText
-								? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(subText) } }
-								: {}),
+				react.createElement(
+					"p",
+					{
+						className: "lyrics-lyricsContainer-LyricsLine-phonetic",
+						style: {
+							"--sub-lyric-color": CONFIG.visual["inactive-color"]
 						},
-						typeof subText === "string" ? null : subText
-					),
+						onContextMenu: (event) => {
+							event.preventDefault();
+							Spicetify.Platform.ClipboardAPI.copy(Utils.convertParsedToUnsynced(lyrics, belowMode).conver)
+								.then(() => Spicetify.showNotification("✓ Translation copied to clipboard", false, 2000))
+								.catch(() => Spicetify.showNotification("번역 클립보드 복사 실패", true, 2000));
+						},
+						// React 310 방지: 문자열이고 비어있지 않을 때만 dangerouslySetInnerHTML 사용
+						...(typeof subText === "string" && subText
+							? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(subText) } }
+							: {}),
+					},
+					typeof subText === "string" ? null : subText
+				),
 				showMode2 &&
-					react.createElement(
-						"p",
-						{
-							className: "lyrics-lyricsContainer-LyricsLine-translation",
-							style: { 
-								"--sub-lyric-color": CONFIG.visual["inactive-color"]
-							},
-							onContextMenu: (event) => {
-								event.preventDefault();
-								Spicetify.Platform.ClipboardAPI.copy(showMode2Translation)
-									.then(() => Spicetify.showNotification("✓ Second translation copied to clipboard", false, 2000))
-									.catch(() => Spicetify.showNotification("두 번째 번역 클립보드 복사 실패", true, 2000));
-							},
-							// React 310 방지: 문자열이고 비어있지 않을 때만 dangerouslySetInnerHTML 사용
-							...(typeof showMode2Translation === "string" && showMode2Translation
-								? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(showMode2Translation) } }
-								: {}),
+				react.createElement(
+					"p",
+					{
+						className: "lyrics-lyricsContainer-LyricsLine-translation",
+						style: {
+							"--sub-lyric-color": CONFIG.visual["inactive-color"]
 						},
-						typeof showMode2Translation === "string" ? null : showMode2Translation
-					)
+						onContextMenu: (event) => {
+							event.preventDefault();
+							Spicetify.Platform.ClipboardAPI.copy(showMode2Translation)
+								.then(() => Spicetify.showNotification("✓ Second translation copied to clipboard", false, 2000))
+								.catch(() => Spicetify.showNotification("두 번째 번역 클립보드 복사 실패", true, 2000));
+						},
+						// React 310 방지: 문자열이고 비어있지 않을 때만 dangerouslySetInnerHTML 사용
+						...(typeof showMode2Translation === "string" && showMode2Translation
+							? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(showMode2Translation) } }
+							: {}),
+					},
+					typeof showMode2Translation === "string" ? null : showMode2Translation
+				)
 			);
 		}),
 		react.createElement("p", {

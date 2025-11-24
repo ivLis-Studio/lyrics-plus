@@ -834,7 +834,7 @@ const Utils = {
   /**
    * Current version of the lyrics-plus app
    */
-  currentVersion: "2.1.3",
+  currentVersion: "2.1.4",
 
   /**
    * Check for updates from remote repository

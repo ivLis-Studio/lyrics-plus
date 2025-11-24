@@ -1323,6 +1323,8 @@ const ConfigModal = () => {
             .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
             .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            // 이미지
+            .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" style="max-width: 100%; height: auto; border-radius: 8px; margin: 12px 0; display: block;" />')
             // 링크
             .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color: #60a5fa; text-decoration: none; border-bottom: 1px solid rgba(96, 165, 250, 0.3); transition: border-color 0.2s;" onmouseover="this.style.borderBottomColor=\'rgba(96, 165, 250, 0.8)\'" onmouseout="this.style.borderBottomColor=\'rgba(96, 165, 250, 0.3)\'">$1</a>')
             // 체크박스 리스트
@@ -3273,15 +3275,7 @@ const ConfigModal = () => {
               info: "Spotify의 기본 가사 버튼을 Lyrics Plus로 교체합니다",
               type: ConfigSlider,
             },
-            {
-              desc: "전역 지연 시간",
-              info: "모든 곡에 적용되는 가사 동기화 오프셋 (밀리초)",
-              key: "global-delay",
-              type: ConfigAdjust,
-              min: -10000,
-              max: 10000,
-              step: 250,
-            },
+
             {
               desc: "전체화면 단축키",
               key: "fullscreen-key",
