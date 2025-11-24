@@ -255,21 +255,21 @@ if (typeof window.kuromoji === "undefined") {
             if (window.lyricContainer) {
               try {
                 window.lyricContainer.forceUpdate();
-              } catch (e) {}
+              } catch (e) { }
             }
           }
         })
-        .catch((err) => {});
+        .catch((err) => { });
     }
   };
-  kuromojiScript.onerror = (err) => {};
+  kuromojiScript.onerror = (err) => { };
   document.head.appendChild(kuromojiScript);
 } else {
   // If Kuromoji is already loaded, initialize immediately
   if (typeof window.FuriganaConverter !== "undefined") {
     window.FuriganaConverter.init()
-      .then(() => {})
-      .catch((err) => {});
+      .then(() => { })
+      .catch((err) => { });
   }
 }
 
@@ -403,108 +403,108 @@ const UpdateBanner = ({ updateInfo, onDismiss }) => {
       )
     ),
     isExpanded &&
+    react.createElement(
+      "div",
+      {
+        style: {
+          padding: "0 20px 20px 20px",
+          borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+          animation: "expandDown 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+        },
+      },
       react.createElement(
         "div",
-        {
-          style: {
-            padding: "0 20px 20px 20px",
-            borderTop: "1px solid rgba(255, 255, 255, 0.06)",
-            animation: "expandDown 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-          },
-        },
+        { style: { marginTop: "16px" } },
         react.createElement(
           "div",
-          { style: { marginTop: "16px" } },
-          react.createElement(
-            "div",
-            {
-              style: {
-                fontSize: "13px",
-                color: "rgba(255, 255, 255, 0.7)",
-                marginBottom: "10px",
-                fontWeight: "500",
-              },
+          {
+            style: {
+              fontSize: "13px",
+              color: "rgba(255, 255, 255, 0.7)",
+              marginBottom: "10px",
+              fontWeight: "500",
             },
-            platformName
-          ),
-          react.createElement(
-            "div",
-            {
-              style: {
-                background: "rgba(0, 0, 0, 0.25)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                borderRadius: "8px",
-                padding: "12px 14px",
-                fontFamily: 'Consolas, Monaco, "Courier New", monospace',
-                fontSize: "12px",
-                color: "rgba(255, 255, 255, 0.85)",
-                wordBreak: "break-all",
-                lineHeight: "1.6",
-                marginBottom: "12px",
-                userSelect: "all",
-              },
-            },
-            installCommand
-          )
+          },
+          platformName
         ),
         react.createElement(
           "div",
-          { style: { display: "flex", gap: "8px", marginTop: "12px" } },
-          react.createElement(
-            "button",
-            {
-              onClick: handleCopy,
-              className: "lyrics-update-button-secondary",
-              disabled: copied,
-              style: {
-                flex: 1,
-                background: copied
-                  ? "rgba(16, 185, 129, 0.15)"
-                  : "rgba(255, 255, 255, 0.08)",
-                border: copied
-                  ? "1px solid rgba(16, 185, 129, 0.3)"
-                  : "1px solid rgba(255, 255, 255, 0.15)",
-                color: copied
-                  ? "rgba(16, 185, 129, 1)"
-                  : "rgba(255, 255, 255, 0.9)",
-                padding: "10px 16px",
-                borderRadius: "8px",
-                cursor: copied ? "default" : "pointer",
-                fontSize: "13px",
-                fontWeight: "600",
-                transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-                letterSpacing: "-0.01em",
-              },
+          {
+            style: {
+              background: "rgba(0, 0, 0, 0.25)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              borderRadius: "8px",
+              padding: "12px 14px",
+              fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+              fontSize: "12px",
+              color: "rgba(255, 255, 255, 0.85)",
+              wordBreak: "break-all",
+              lineHeight: "1.6",
+              marginBottom: "12px",
+              userSelect: "all",
             },
-            copied ? "복사됨" : "명령어 복사"
-          ),
-          react.createElement(
-            "a",
-            {
-              href: updateInfo.releaseUrl,
-              target: "_blank",
-              rel: "noopener noreferrer",
-              style: {
-                flex: 1,
-                background: "rgba(255, 255, 255, 0.08)",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                color: "rgba(255, 255, 255, 0.9)",
-                padding: "10px 16px",
-                borderRadius: "8px",
-                textDecoration: "none",
-                fontSize: "13px",
-                fontWeight: "600",
-                transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                letterSpacing: "-0.01em",
-              },
+          },
+          installCommand
+        )
+      ),
+      react.createElement(
+        "div",
+        { style: { display: "flex", gap: "8px", marginTop: "12px" } },
+        react.createElement(
+          "button",
+          {
+            onClick: handleCopy,
+            className: "lyrics-update-button-secondary",
+            disabled: copied,
+            style: {
+              flex: 1,
+              background: copied
+                ? "rgba(16, 185, 129, 0.15)"
+                : "rgba(255, 255, 255, 0.08)",
+              border: copied
+                ? "1px solid rgba(16, 185, 129, 0.3)"
+                : "1px solid rgba(255, 255, 255, 0.15)",
+              color: copied
+                ? "rgba(16, 185, 129, 1)"
+                : "rgba(255, 255, 255, 0.9)",
+              padding: "10px 16px",
+              borderRadius: "8px",
+              cursor: copied ? "default" : "pointer",
+              fontSize: "13px",
+              fontWeight: "600",
+              transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+              letterSpacing: "-0.01em",
             },
-            "릴리즈 노트"
-          )
+          },
+          copied ? "복사됨" : "명령어 복사"
+        ),
+        react.createElement(
+          "a",
+          {
+            href: updateInfo.releaseUrl,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            style: {
+              flex: 1,
+              background: "rgba(255, 255, 255, 0.08)",
+              border: "1px solid rgba(255, 255, 255, 0.15)",
+              color: "rgba(255, 255, 255, 0.9)",
+              padding: "10px 16px",
+              borderRadius: "8px",
+              textDecoration: "none",
+              fontSize: "13px",
+              fontWeight: "600",
+              transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              letterSpacing: "-0.01em",
+            },
+          },
+          "릴리즈 노트"
         )
       )
+    )
   );
 };
 /** @type {import("react").ReactDOM | null} */
@@ -823,27 +823,27 @@ const StorageManager = {
   getClientId() {
     const CLIENT_ID_KEY = `${APP_NAME}:client-id`;
     let clientId = this.getItemRaw(CLIENT_ID_KEY);
-    
+
     if (!clientId) {
       // Generate new UUID v4
-      clientId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      clientId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0;
         const v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
       });
-      
+
       // Save to both storages for persistence
       this.setPersisted(CLIENT_ID_KEY, clientId);
       console.log("[Lyrics Plus] Generated new Client ID:", clientId);
     }
-    
+
     return clientId;
   },
 
   async exportConfig() {
     const config = {};
     const CLIENT_ID_KEY = `${APP_NAME}:client-id`;
-    
+
     StorageKeys.forEach((key) => {
       // Client ID는 내보내기에서 제외
       if (key === CLIENT_ID_KEY) return;
@@ -851,7 +851,7 @@ const StorageManager = {
       const val = StorageManager.getItem(key);
       if (val !== null) config[key] = val;
     });
-    
+
     // IndexedDB의 track-sync-offsets를 포함
     const trackSyncOffsets = await TrackSyncDB.getAllOffsets();
     if (Object.keys(trackSyncOffsets).length > 0) {
@@ -860,14 +860,14 @@ const StorageManager = {
     } else {
       console.log("[Lyrics Plus] No track-sync-offsets found in IndexedDB");
     }
-    
+
     console.log("[Lyrics Plus] Exported config keys:", Object.keys(config));
-    
+
     return config;
   },
   async importConfig(config) {
     const CLIENT_ID_KEY = `${APP_NAME}:client-id`;
-    
+
     // track-sync-offsets를 IndexedDB로 가져오기
     if (config["lyrics-plus:track-sync-offsets"]) {
       try {
@@ -1730,8 +1730,8 @@ class LyricsContainer extends react.Component {
         mode2 === "gemini_romaji"
           ? response.phonetic
           : mode2 === "gemini_ko"
-          ? response.vi
-          : null;
+            ? response.vi
+            : null;
 
       const translatedLyrics1 = mode1Text
         ? processTranslationResult(mode1Text, originalLyrics)
@@ -1883,9 +1883,8 @@ class LyricsContainer extends react.Component {
       ) {
         const styledMode =
           currentMode.charAt(0).toUpperCase() + currentMode.slice(1);
-        finalData.copyright = `${styledMode} lyrics provided by ${
-          data.provider
-        }\n${finalData.copyright || ""}`.trim();
+        finalData.copyright = `${styledMode} lyrics provided by ${data.provider
+          }\n${finalData.copyright || ""}`.trim();
       }
 
       return finalData;
@@ -1961,7 +1960,7 @@ class LyricsContainer extends react.Component {
       };
 
       // If all lyrics types are instrumental, treat as no lyrics
-      const isInstrumental = 
+      const isInstrumental =
         checkInstrumental(tempState.karaoke) &&
         checkInstrumental(tempState.synced) &&
         checkInstrumental(tempState.unsynced);
@@ -3529,19 +3528,16 @@ class LyricsContainer extends react.Component {
       "--lyrics-translation-font-weight":
         CONFIG.visual["translation-font-weight"],
       "--lyrics-translation-font-size": `${CONFIG.visual["translation-font-size"]}px`,
-      "--lyrics-translation-spacing": `${
-        CONFIG.visual["translation-spacing"] || 8
-      }px`,
+      "--lyrics-translation-spacing": `${CONFIG.visual["translation-spacing"] || 8
+        }px`,
       "--lyrics-phonetic-font-weight":
         CONFIG.visual["phonetic-font-weight"] || "400",
-      "--lyrics-phonetic-font-size": `${
-        CONFIG.visual["phonetic-font-size"] || 20
-      }px`,
+      "--lyrics-phonetic-font-size": `${CONFIG.visual["phonetic-font-size"] || 20
+        }px`,
       "--lyrics-phonetic-opacity":
         (CONFIG.visual["phonetic-opacity"] || 70) / 100,
-      "--lyrics-phonetic-spacing": `${
-        CONFIG.visual["phonetic-spacing"] || 4
-      }px`,
+      "--lyrics-phonetic-spacing": `${CONFIG.visual["phonetic-spacing"] || 4
+        }px`,
       "--lyrics-furigana-font-weight": CONFIG.visual["furigana-font-weight"],
       "--lyrics-furigana-font-size": `${CONFIG.visual["furigana-font-size"]}px`,
       "--lyrics-furigana-opacity": CONFIG.visual["furigana-opacity"] / 100,
@@ -3576,9 +3572,8 @@ class LyricsContainer extends react.Component {
 
     const displayMode1 = CONFIG.visual[`translation-mode:${modeKey}`];
     const displayMode2 = CONFIG.visual[`translation-mode-2:${modeKey}`];
-    const currentModeKey = `${mode}_${displayMode1 || "none"}_${
-      displayMode2 || "none"
-    }`;
+    const currentModeKey = `${mode}_${displayMode1 || "none"}_${displayMode2 || "none"
+      }`;
 
     // Only call lyricsSource on state/mode/translation changes, not every render
     if (
@@ -3598,10 +3593,10 @@ class LyricsContainer extends react.Component {
       this.state.explicitMode !== -1
         ? this.state.explicitMode
         : this.state.lockMode !== -1
-        ? this.state.lockMode
-        : this.state.isLoading
-        ? this.lastModeBeforeLoading || SYNCED
-        : mode;
+          ? this.state.lockMode
+          : this.state.isLoading
+            ? this.lastModeBeforeLoading || SYNCED
+            : mode;
 
     showTranslationButton =
       potentialMode === KARAOKE ||
@@ -3717,18 +3712,17 @@ class LyricsContainer extends react.Component {
     // Update banner component
     const updateBanner = window.lyricsPlus_updateInfo?.available
       ? react.createElement(UpdateBanner, {
-          updateInfo: window.lyricsPlus_updateInfo,
-          onDismiss: () =>
-            Utils.dismissUpdate(window.lyricsPlus_updateInfo.latestVersion),
-        })
+        updateInfo: window.lyricsPlus_updateInfo,
+        onDismiss: () =>
+          Utils.dismissUpdate(window.lyricsPlus_updateInfo.latestVersion),
+      })
       : null;
 
     const out = react.createElement(
       "div",
       {
-        className: `lyrics-lyricsContainer-LyricsContainer${
-          CONFIG.visual["fade-blur"] ? " blur-enabled" : ""
-        }${fadLyricsContainer ? " fad-enabled" : ""}`,
+        className: `lyrics-lyricsContainer-LyricsContainer${CONFIG.visual["fade-blur"] ? " blur-enabled" : ""
+          }${fadLyricsContainer ? " fad-enabled" : ""}`,
         style: this.styleVariables,
         ref: (el) => {
           if (!el) return;
@@ -3748,59 +3742,59 @@ class LyricsContainer extends react.Component {
       }),
       // Phonetic loading indicator
       this.state.isPhoneticLoading &&
+      react.createElement(
+        "div",
+        {
+          className: "lyrics-translation-loading-indicator",
+        },
         react.createElement(
           "div",
           {
-            className: "lyrics-translation-loading-indicator",
+            className: "lyrics-translation-loading-content",
           },
+          react.createElement("div", {
+            className: "lyrics-translation-loading-spinner",
+          }),
           react.createElement(
-            "div",
-            {
-              className: "lyrics-translation-loading-content",
-            },
-            react.createElement("div", {
-              className: "lyrics-translation-loading-spinner",
-            }),
-            react.createElement(
-              "span",
-              null,
-              "발음을 요청하고 있습니다. 30초 정도 소요됩니다"
-            )
+            "span",
+            null,
+            "발음을 요청하고 있습니다. 30초 정도 소요됩니다"
           )
-        ),
+        )
+      ),
       // Translation loading indicator
       this.state.isTranslationLoading &&
+      react.createElement(
+        "div",
+        {
+          className: "lyrics-translation-loading-indicator",
+          style: { top: this.state.isPhoneticLoading ? "100px" : "20px" },
+        },
         react.createElement(
           "div",
           {
-            className: "lyrics-translation-loading-indicator",
-            style: { top: this.state.isPhoneticLoading ? "100px" : "20px" },
+            className: "lyrics-translation-loading-content",
           },
+          react.createElement("div", {
+            className: "lyrics-translation-loading-spinner",
+          }),
           react.createElement(
-            "div",
-            {
-              className: "lyrics-translation-loading-content",
-            },
-            react.createElement("div", {
-              className: "lyrics-translation-loading-spinner",
-            }),
-            react.createElement(
-              "span",
-              null,
-              "번역을 요청하고 있습니다. 30초 정도 소요됩니다"
-            )
+            "span",
+            null,
+            "번역을 요청하고 있습니다. 30초 정도 소요됩니다"
           )
-        ),
+        )
+      ),
       react.createElement(
         "div",
         {
           className: "lyrics-config-button-container",
         },
         showTranslationButton &&
-          react.createElement(TranslationMenu, {
-            friendlyLanguage,
-            hasTranslation: {},
-          }),
+        react.createElement(TranslationMenu, {
+          friendlyLanguage,
+          hasTranslation: {},
+        }),
         react.createElement(RegenerateTranslationButton, {
           onRegenerate: this.regenerateTranslation,
           isEnabled: canRegenerateTranslation,
@@ -3862,7 +3856,7 @@ class LyricsContainer extends react.Component {
               dangerouslySetInnerHTML: {
                 __html:
                   Spicetify.SVGIcons[
-                    this.state.isCached ? "downloaded" : "download"
+                  this.state.isCached ? "downloaded" : "download"
                   ],
               },
             })
@@ -3911,35 +3905,35 @@ class LyricsContainer extends react.Component {
           const hasLyrics = this.state.synced || this.state.unsynced;
           return hasLyrics;
         })() &&
+        react.createElement(
+          Spicetify.ReactComponent.TooltipWrapper,
+          {
+            label: "Reset translation cache",
+          },
           react.createElement(
-            Spicetify.ReactComponent.TooltipWrapper,
+            "button",
             {
-              label: "Reset translation cache",
-            },
-            react.createElement(
-              "button",
-              {
-                className: "lyrics-config-button",
-                onClick: () => {
-                  this.resetTranslationCache(this.currentTrackUri);
-                },
+              className: "lyrics-config-button",
+              onClick: () => {
+                this.resetTranslationCache(this.currentTrackUri);
               },
-              react.createElement("svg", {
-                width: 16,
-                height: 16,
-                viewBox: "0 0 16 16",
-                fill: "currentColor",
-                dangerouslySetInnerHTML: {
-                  __html:
-                    Spicetify.SVGIcons["x"] ||
-                    Spicetify.SVGIcons["close"] ||
-                    Spicetify.SVGIcons["cross"] ||
-                    // Simple X icon as fallback for reset
-                    '<path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>',
-                },
-              })
-            )
+            },
+            react.createElement("svg", {
+              width: 16,
+              height: 16,
+              viewBox: "0 0 16 16",
+              fill: "currentColor",
+              dangerouslySetInnerHTML: {
+                __html:
+                  Spicetify.SVGIcons["x"] ||
+                  Spicetify.SVGIcons["close"] ||
+                  Spicetify.SVGIcons["cross"] ||
+                  // Simple X icon as fallback for reset
+                  '<path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>',
+              },
+            })
           )
+        )
       ),
       activeItem
     );
@@ -4006,33 +4000,24 @@ class LyricsContainer extends react.Component {
 
   const fontsToLoad = new Set();
 
+  // Helper to add fonts from comma-separated string
+  const addFonts = (fontString) => {
+    if (!fontString) return;
+    const fonts = fontString.split(",").map((f) => f.trim().replace(/['"]/g, ""));
+    fonts.forEach((font) => {
+      if (font && GOOGLE_FONTS.includes(font)) {
+        fontsToLoad.add(font);
+      }
+    });
+  };
+
   // 전체 폰트 (레거시)
-  if (
-    CONFIG.visual["font-family"] &&
-    GOOGLE_FONTS.includes(CONFIG.visual["font-family"])
-  ) {
-    fontsToLoad.add(CONFIG.visual["font-family"]);
-  }
+  addFonts(CONFIG.visual["font-family"]);
 
   // 개별 폰트
-  if (
-    CONFIG.visual["original-font-family"] &&
-    GOOGLE_FONTS.includes(CONFIG.visual["original-font-family"])
-  ) {
-    fontsToLoad.add(CONFIG.visual["original-font-family"]);
-  }
-  if (
-    CONFIG.visual["phonetic-font-family"] &&
-    GOOGLE_FONTS.includes(CONFIG.visual["phonetic-font-family"])
-  ) {
-    fontsToLoad.add(CONFIG.visual["phonetic-font-family"]);
-  }
-  if (
-    CONFIG.visual["translation-font-family"] &&
-    GOOGLE_FONTS.includes(CONFIG.visual["translation-font-family"])
-  ) {
-    fontsToLoad.add(CONFIG.visual["translation-font-family"]);
-  }
+  addFonts(CONFIG.visual["original-font-family"]);
+  addFonts(CONFIG.visual["phonetic-font-family"]);
+  addFonts(CONFIG.visual["translation-font-family"]);
 
   // Google Fonts 로드
   fontsToLoad.forEach((font) => {
@@ -4063,7 +4048,7 @@ class LyricsContainer extends react.Component {
     try {
       const currentPath = Spicetify.Platform.History.location.pathname;
       const searchParams = new URLSearchParams(Spicetify.Platform.History.location.search);
-      
+
       // spotify://lyrics-plus/ 경로인지 확인
       if (currentPath.includes('/lyrics-plus')) {
         // alert 파라미터가 있으면 알림 표시
@@ -4072,7 +4057,7 @@ class LyricsContainer extends react.Component {
           Spicetify.showNotification(decodeURIComponent(alertMessage), false, 3000);
           console.log('[Lyrics Plus] URL Scheme alert:', alertMessage);
         }
-        
+
         // 다른 파라미터들도 처리 가능
         // 예: action, data 등
         const action = searchParams.get('action');
@@ -4085,11 +4070,11 @@ class LyricsContainer extends react.Component {
       console.error('[Lyrics Plus] URL Scheme error:', error);
     }
   };
-  
+
   // 초기 체크
   if (Spicetify.Platform?.History) {
     checkURLParams();
-    
+
     // History 변경 감지
     Spicetify.Platform.History.listen(() => {
       checkURLParams();

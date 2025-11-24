@@ -77,7 +77,7 @@ const CacheButton = () => {
   );
 };
 
-const ConfigButton = ({ name, info, text, onChange = () => {} }) => {
+const ConfigButton = ({ name, info, text, onChange = () => { } }) => {
   return react.createElement(
     "div",
     {
@@ -91,12 +91,12 @@ const ConfigButton = ({ name, info, text, onChange = () => {} }) => {
         { className: "setting-row-left" },
         react.createElement("div", { className: "setting-name" }, name),
         info &&
-          react.createElement("div", {
-            className: "setting-description",
-            dangerouslySetInnerHTML: {
-              __html: info,
-            },
-          })
+        react.createElement("div", {
+          className: "setting-description",
+          dangerouslySetInnerHTML: {
+            __html: info,
+          },
+        })
       ),
       react.createElement(
         "div",
@@ -115,7 +115,7 @@ const ConfigButton = ({ name, info, text, onChange = () => {} }) => {
 };
 
 const ConfigSlider = react.memo(
-  ({ name, defaultValue, disabled, onChange = () => {} }) => {
+  ({ name, defaultValue, disabled, onChange = () => { } }) => {
     const [active, setActive] = useState(defaultValue);
 
     useEffect(() => {
@@ -148,7 +148,7 @@ const ConfigSliderRange = ({
   step = 1,
   unit = "",
   disabled,
-  onChange = () => {},
+  onChange = () => { },
 }) => {
   const [value, setValue] = useState(defaultValue);
   const sliderRef = useRef(null);
@@ -216,7 +216,7 @@ const ConfigSliderRange = ({
   );
 };
 
-const ConfigColorPicker = ({ name, defaultValue, onChange = () => {} }) => {
+const ConfigColorPicker = ({ name, defaultValue, onChange = () => { } }) => {
   const [value, setValue] = useState(defaultValue);
 
   useEffect(() => {
@@ -252,7 +252,7 @@ const ConfigColorPicker = ({ name, defaultValue, onChange = () => {} }) => {
   );
 };
 
-const ColorPresetSelector = ({ name, defaultValue, onChange = () => {} }) => {
+const ColorPresetSelector = ({ name, defaultValue, onChange = () => { } }) => {
   const [selectedColor, setSelectedColor] = useState(defaultValue);
   const [showAll, setShowAll] = useState(false);
 
@@ -405,56 +405,56 @@ const ColorPresetSelector = ({ name, defaultValue, onChange = () => {} }) => {
     ),
     // 색상 팔레트
     showAll &&
-      react.createElement(
-        "div",
-        {
-          style: {
-            display: "grid",
-            gridTemplateColumns: "repeat(6, 1fr)",
-            gap: "6px",
-            padding: "12px",
-            backgroundColor: "rgba(var(--spice-rgb-button), 0.3)",
-            borderRadius: "8px",
-            border: "1px solid var(--spice-button)",
-          },
+    react.createElement(
+      "div",
+      {
+        style: {
+          display: "grid",
+          gridTemplateColumns: "repeat(6, 1fr)",
+          gap: "6px",
+          padding: "12px",
+          backgroundColor: "rgba(var(--spice-rgb-button), 0.3)",
+          borderRadius: "8px",
+          border: "1px solid var(--spice-button)",
         },
-        ...colorPresets.map((preset, index) =>
-          react.createElement("button", {
-            key: index,
-            onClick: () => handleColorClick(preset.color),
-            title: preset.name,
-            "aria-label": preset.name,
-            style: {
-              width: "100%",
-              aspectRatio: "1",
-              borderRadius: "6px",
-              backgroundColor: preset.color,
-              border:
-                selectedColor === preset.color
-                  ? "2.5px solid var(--spice-text)"
-                  : "1.5px solid rgba(0,0,0,0.2)",
-              cursor: "pointer",
-              transition: "all 0.15s ease",
-              outline: "none",
-              boxShadow:
-                selectedColor === preset.color
-                  ? "0 0 0 3px rgba(var(--spice-rgb-text), 0.2), 0 2px 4px rgba(0,0,0,0.2)"
-                  : "0 1px 2px rgba(0,0,0,0.1)",
-            },
-            onMouseEnter: (e) => {
-              e.target.style.transform = "scale(1.1)";
-              e.target.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
-            },
-            onMouseLeave: (e) => {
-              e.target.style.transform = "scale(1)";
-              e.target.style.boxShadow =
-                selectedColor === preset.color
-                  ? "0 0 0 3px rgba(var(--spice-rgb-text), 0.2), 0 2px 4px rgba(0,0,0,0.2)"
-                  : "0 1px 2px rgba(0,0,0,0.1)";
-            },
-          })
-        )
+      },
+      ...colorPresets.map((preset, index) =>
+        react.createElement("button", {
+          key: index,
+          onClick: () => handleColorClick(preset.color),
+          title: preset.name,
+          "aria-label": preset.name,
+          style: {
+            width: "100%",
+            aspectRatio: "1",
+            borderRadius: "6px",
+            backgroundColor: preset.color,
+            border:
+              selectedColor === preset.color
+                ? "2.5px solid var(--spice-text)"
+                : "1.5px solid rgba(0,0,0,0.2)",
+            cursor: "pointer",
+            transition: "all 0.15s ease",
+            outline: "none",
+            boxShadow:
+              selectedColor === preset.color
+                ? "0 0 0 3px rgba(var(--spice-rgb-text), 0.2), 0 2px 4px rgba(0,0,0,0.2)"
+                : "0 1px 2px rgba(0,0,0,0.1)",
+          },
+          onMouseEnter: (e) => {
+            e.target.style.transform = "scale(1.1)";
+            e.target.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
+          },
+          onMouseLeave: (e) => {
+            e.target.style.transform = "scale(1)";
+            e.target.style.boxShadow =
+              selectedColor === preset.color
+                ? "0 0 0 3px rgba(var(--spice-rgb-text), 0.2), 0 2px 4px rgba(0,0,0,0.2)"
+                : "0 1px 2px rgba(0,0,0,0.1)";
+          },
+        })
       )
+    )
   );
 };
 
@@ -499,7 +499,7 @@ const ConfigSelection = ({
   defaultValue,
   options,
   disabled,
-  onChange = () => {},
+  onChange = () => { },
 }) => {
   const [value, setValue] = useState(defaultValue);
 
@@ -542,7 +542,7 @@ const ConfigSelection = ({
   );
 };
 
-const ConfigInput = ({ name, defaultValue, onChange = () => {} }) => {
+const ConfigInput = ({ name, defaultValue, onChange = () => { } }) => {
   const [value, setValue] = useState(defaultValue);
 
   const setValueCallback = useCallback(
@@ -609,7 +609,7 @@ const ConfigFontSelector = ({
   name,
   info,
   defaultValue,
-  onChange = () => {},
+  onChange = () => { },
 }) => {
   const [useCustomFont, setUseCustomFont] = useState(() => {
     // 기본값이 Google Fonts 목록에 없으면 커스텀 폰트 사용 중
@@ -681,23 +681,23 @@ const ConfigFontSelector = ({
     { style: { display: "flex", gap: "10px", alignItems: "center" } },
     useCustomFont
       ? react.createElement("input", {
-          type: "text",
-          value: customFont,
-          onChange: handleCustomFontChange,
-          placeholder: "폰트명 입력 (예: Arial, 맑은 고딕)",
-          style: commonStyle,
-        })
+        type: "text",
+        value: customFont,
+        onChange: handleCustomFontChange,
+        placeholder: "폰트명 입력 (예: Arial, 맑은 고딕)",
+        style: commonStyle,
+      })
       : react.createElement(
-          "select",
-          {
-            value: selectedFont,
-            onChange: handleFontChange,
-            style: commonStyle,
-          },
-          GOOGLE_FONTS.map((font) =>
-            react.createElement("option", { key: font, value: font }, font)
-          )
-        ),
+        "select",
+        {
+          value: selectedFont,
+          onChange: handleFontChange,
+          style: commonStyle,
+        },
+        GOOGLE_FONTS.map((font) =>
+          react.createElement("option", { key: font, value: font }, font)
+        )
+      ),
     react.createElement(ButtonSVG, {
       icon: Spicetify.SVGIcons.edit,
       active: useCustomFont,
@@ -718,12 +718,12 @@ const ConfigFontSelector = ({
           { className: "setting-row-left" },
           react.createElement("div", { className: "setting-name" }, name),
           info &&
-            react.createElement("div", {
-              className: "setting-description",
-              dangerouslySetInnerHTML: {
-                __html: info,
-              },
-            })
+          react.createElement("div", {
+            className: "setting-description",
+            dangerouslySetInnerHTML: {
+              __html: info,
+            },
+          })
         ),
         react.createElement(
           "div",
@@ -743,7 +743,7 @@ const ConfigAdjust = ({
   step,
   min,
   max,
-  onChange = () => {},
+  onChange = () => { },
 }) => {
   const [value, setValue] = useState(defaultValue);
 
@@ -788,7 +788,7 @@ const ConfigAdjust = ({
   );
 };
 
-const ConfigHotkey = ({ name, defaultValue, onChange = () => {} }) => {
+const ConfigHotkey = ({ name, defaultValue, onChange = () => { } }) => {
   const [value, setValue] = useState(defaultValue);
   const [trap] = useState(new Spicetify.Mousetrap());
 
@@ -807,7 +807,7 @@ const ConfigHotkey = ({ name, defaultValue, onChange = () => {} }) => {
   }
 
   function finishRecord() {
-    trap.handleKey = () => {};
+    trap.handleKey = () => { };
     onChange(value);
   }
 
@@ -930,49 +930,49 @@ const ServiceOption = react.memo(
         )
       ),
       item.token !== undefined &&
-        react.createElement(
-          "div",
-          {
-            className: "service-token-input-wrapper",
-            style: {
-              padding: "0 16px 12px 16px",
-              background: "rgba(28, 28, 30, 0.5)",
-              backdropFilter: "blur(30px) saturate(150%)",
-              WebkitBackdropFilter: "blur(30px) saturate(150%)",
-              borderLeft: "1px solid rgba(255, 255, 255, 0.08)",
-              borderRight: "1px solid rgba(255, 255, 255, 0.08)",
-              borderBottom: "0.5px solid rgba(255, 255, 255, 0.08)",
-              marginTop: "-1px",
-            },
+      react.createElement(
+        "div",
+        {
+          className: "service-token-input-wrapper",
+          style: {
+            padding: "0 16px 12px 16px",
+            background: "rgba(28, 28, 30, 0.5)",
+            backdropFilter: "blur(30px) saturate(150%)",
+            WebkitBackdropFilter: "blur(30px) saturate(150%)",
+            borderLeft: "1px solid rgba(255, 255, 255, 0.08)",
+            borderRight: "1px solid rgba(255, 255, 255, 0.08)",
+            borderBottom: "0.5px solid rgba(255, 255, 255, 0.08)",
+            marginTop: "-1px",
           },
-          react.createElement("input", {
-            type: "text",
-            placeholder: `Place your ${item.name} token here`,
-            value: token,
-            onChange: (event) => setTokenCallback(event.target.value),
-            style: {
-              backgroundColor: "rgba(0, 0, 0, 0.3)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "8px",
-              padding: "8px 12px",
-              color: "#ffffff",
-              fontSize: "13px",
-              width: "100%",
-              boxSizing: "border-box",
-              fontFamily:
-                "Pretendard Variable, -apple-system, BlinkMacSystemFont, sans-serif",
-            },
-          })
-        )
+        },
+        react.createElement("input", {
+          type: "text",
+          placeholder: `Place your ${item.name} token here`,
+          value: token,
+          onChange: (event) => setTokenCallback(event.target.value),
+          style: {
+            backgroundColor: "rgba(0, 0, 0, 0.3)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            borderRadius: "8px",
+            padding: "8px 12px",
+            color: "#ffffff",
+            fontSize: "13px",
+            width: "100%",
+            boxSizing: "border-box",
+            fontFamily:
+              "Pretendard Variable, -apple-system, BlinkMacSystemFont, sans-serif",
+          },
+        })
+      )
     );
   }
 );
 
 const ServiceList = ({
   itemsList,
-  onListChange = () => {},
-  onToggle = () => {},
-  onTokenChange = () => {},
+  onListChange = () => { },
+  onToggle = () => { },
+  onTokenChange = () => { },
 }) => {
   const [items, setItems] = useState(itemsList);
   const maxIndex = items.length - 1;
@@ -1079,12 +1079,12 @@ const OptionList = ({ type, items, onChange }) => {
           { className: "setting-row-left" },
           react.createElement("div", { className: "setting-name" }, item.desc),
           item.info &&
-            react.createElement("div", {
-              className: "setting-description",
-              dangerouslySetInnerHTML: {
-                __html: item.info,
-              },
-            })
+          react.createElement("div", {
+            className: "setting-description",
+            dangerouslySetInnerHTML: {
+              __html: item.info,
+            },
+          })
         ),
         react.createElement(
           "div",
@@ -1149,36 +1149,49 @@ const ConfigModal = () => {
 
   // 컴포넌트 마운트 시 저장된 폰트 설정 로드 및 Google Font 링크 추가
   react.useEffect(() => {
-    const loadFont = (fontFamily, linkId) => {
-      console.log(
-        `[Lyrics Plus] Attempting to load font: ${fontFamily} (${linkId})`
-      );
-      if (fontFamily && GOOGLE_FONTS.includes(fontFamily)) {
-        let link = document.getElementById(linkId);
-        if (!link) {
-          link = document.createElement("link");
-          link.id = linkId;
-          link.rel = "stylesheet";
-          document.head.appendChild(link);
+    const loadFont = (fontFamily, linkIdPrefix) => {
+      if (!fontFamily) return;
+
+      // Split by comma and trim whitespace to handle multiple fonts
+      const fonts = fontFamily.split(",").map((f) => f.trim().replace(/['"]/g, ""));
+
+      fonts.forEach((font) => {
+        console.log(
+          `[Lyrics Plus] Checking font: ${font} for loading`
+        );
+
+        if (font && GOOGLE_FONTS.includes(font)) {
+          // Create unique ID for each font to avoid duplicates
+          const fontId = font.replace(/ /g, "-").toLowerCase();
+          const linkId = `lyrics-plus-google-font-${fontId}`;
+
+          let link = document.getElementById(linkId);
+          if (!link) {
+            link = document.createElement("link");
+            link.id = linkId;
+            link.rel = "stylesheet";
+            document.head.appendChild(link);
+            console.log(
+              `[Lyrics Plus] Created new link element for: ${font}`
+            );
+
+            if (font === "Pretendard Variable") {
+              link.href =
+                "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
+            } else {
+              link.href = `https://fonts.googleapis.com/css2?family=${font.replace(
+                / /g,
+                "+"
+              )}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+            }
+            console.log(`[Lyrics Plus] Font link href set to: ${link.href}`);
+          }
+        } else {
           console.log(
-            `[Lyrics Plus] Created new link element for: ${fontFamily}`
+            `[Lyrics Plus] Font ${font} not in GOOGLE_FONTS list or invalid`
           );
         }
-        if (fontFamily === "Pretendard Variable") {
-          link.href =
-            "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
-        } else {
-          link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(
-            / /g,
-            "+"
-          )}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
-        }
-        console.log(`[Lyrics Plus] Font link href set to: ${link.href}`);
-      } else {
-        console.log(
-          `[Lyrics Plus] Font ${fontFamily} not in GOOGLE_FONTS list or invalid`
-        );
-      }
+      });
     };
 
     // 기본 폰트 로드 (separate-fonts가 false일 때 사용)
@@ -1275,7 +1288,7 @@ const ConfigModal = () => {
           const response = await fetch(
             "https://api.github.com/repos/ivLis-Studio/lyrics-plus/releases/latest"
           );
-          
+
           if (!response.ok) {
             throw new Error("Failed to fetch release notes");
           }
@@ -1284,15 +1297,15 @@ const ConfigModal = () => {
           const version = data.tag_name || "Unknown";
           const publishedDate = data.published_at
             ? new Date(data.published_at).toLocaleDateString("ko-KR", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
             : "Unknown";
-          
+
           // Markdown을 HTML로 변환
           let body = data.body || "패치 노트가 없습니다.";
-          
+
           // 마크다운 변환 (순서 중요)
           body = body
             // 코드 블록 먼저 처리 (```로 감싼 부분)
@@ -1447,6 +1460,29 @@ const ConfigModal = () => {
               },
             }),
             react.createElement("span", null, "GitHub")
+          ),
+          react.createElement(
+            "button",
+            {
+              className: "settings-discord-btn",
+              onClick: () =>
+                window.open(
+                  "https://ivlis.kr/lyrics-plus/discord.php",
+                  "_blank"
+                ),
+              title: "Discord 서버 참여",
+            },
+            react.createElement("svg", {
+              width: 16,
+              height: 16,
+              viewBox: "0 0 24 24",
+              fill: "currentColor",
+              dangerouslySetInnerHTML: {
+                __html:
+                  '<path d="M19.27 5.33C17.94 4.71 16.5 4.26 15 4a.09.09 0 0 0-.07.03c-.18.33-.39.76-.53 1.09a16.09 16.09 0 0 0-4.8 0c-.14-.34-.35-.76-.54-1.09c-.01-.02-.04-.03-.07-.03c-1.5.26-2.93.71-4.27 1.33c-.01 0-.02.01-.03.02c-2.72 4.07-3.47 8.03-3.1 11.95c0 .02.01.04.03.05c1.8 1.32 3.53 2.12 5.2 2.65c.03.01.06 0 .07-.02c.4-.55.76-1.13 1.07-1.74c.02-.04 0-.08-.04-.09c-.57-.22-1.11-.48-1.64-.78c-.04-.02-.04-.08-.01-.11c.11-.08.22-.17.33-.25c.02-.02.05-.02.07-.01c3.44 1.57 7.15 1.57 10.55 0c.02-.01.05-.01.07.01c.11.09.22.17.33.26c.04.03.04.09-.01.11c-.52.31-1.07.56-1.64.78c-.04.01-.05.05-.04.09c.32.61.68 1.19 1.07 1.74c.03.01.06.02.09.01c1.72-.53 3.45-1.33 5.25-2.65c.02-.01.03-.03.03-.05c.44-4.53-.73-8.46-3.1-11.95c-.01-.01-.02-.02-.04-.02zM8.52 14.91c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12c0 1.17-.84 2.12-1.89 2.12zm6.97 0c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12c0 1.17-.83 2.12-1.89 2.12z"/>',
+              },
+            }),
+            react.createElement("span", null, "Discord")
           ),
           react.createElement(
             "button",
@@ -2394,41 +2430,41 @@ const ConfigModal = () => {
         }),
         // FAD 경고 메시지
         isFadActive &&
+        react.createElement(
+          "div",
+          {
+            className: "setting-row",
+            style: {
+              backgroundColor: "rgba(var(--spice-rgb-warning), 0.1)",
+            },
+          },
           react.createElement(
             "div",
-            {
-              className: "setting-row",
-              style: {
-                backgroundColor: "rgba(var(--spice-rgb-warning), 0.1)",
-              },
-            },
+            { className: "setting-row-content" },
             react.createElement(
               "div",
-              { className: "setting-row-content" },
+              { className: "setting-row-left" },
               react.createElement(
                 "div",
-                { className: "setting-row-left" },
-                react.createElement(
-                  "div",
-                  {
-                    className: "setting-name",
-                    style: { color: "var(--spice-text)", fontWeight: "600" },
-                  },
-                  "⚠️ Full Screen 확장 프로그램 사용 중"
-                ),
-                react.createElement(
-                  "div",
-                  {
-                    className: "setting-description",
-                    style: { color: "var(--spice-subtext)" },
-                  },
-                  "Full Screen 확장 프로그램 사용 중에는 지원하지 않습니다.",
-                  react.createElement("br"),
-                  "정렬 방식은 Full Screen 자체 설정에서 변경하십시오."
-                )
+                {
+                  className: "setting-name",
+                  style: { color: "var(--spice-text)", fontWeight: "600" },
+                },
+                "⚠️ Full Screen 확장 프로그램 사용 중"
+              ),
+              react.createElement(
+                "div",
+                {
+                  className: "setting-description",
+                  style: { color: "var(--spice-subtext)" },
+                },
+                "Full Screen 확장 프로그램 사용 중에는 지원하지 않습니다.",
+                react.createElement("br"),
+                "정렬 방식은 Full Screen 자체 설정에서 변경하십시오."
               )
             )
-          ),
+          )
+        ),
         react.createElement(OptionList, {
           items: [
             {
@@ -2577,9 +2613,8 @@ const ConfigModal = () => {
       react.createElement(
         "div",
         {
-          className: `tab-content ${
-            activeTab === "appearance" ? "active" : ""
-          }`,
+          className: `tab-content ${activeTab === "appearance" ? "active" : ""
+            }`,
         },
         react.createElement(SectionTitle, {
           title: "실시간 미리보기",
@@ -2608,17 +2643,16 @@ const ConfigModal = () => {
                   textAlign: CONFIG.visual["alignment"] || "left",
                   opacity: (CONFIG.visual["original-opacity"] || 100) / 100,
                   textShadow: CONFIG.visual["text-shadow-enabled"]
-                    ? `0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${
-                        CONFIG.visual["text-shadow-color"] || "#000000"
-                      }${Math.round(
-                        (CONFIG.visual["text-shadow-opacity"] || 50) * 2.55
-                      )
-                        .toString(16)
-                        .padStart(2, "0")}`
+                    ? `0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"
+                    }${Math.round(
+                      (CONFIG.visual["text-shadow-opacity"] || 50) * 2.55
+                    )
+                      .toString(16)
+                      .padStart(2, "0")}`
                     : "none",
                 },
               },
-              "Sample lyrics text goes here"
+              "가사가 here에 見えます"
             ),
             react.createElement(
               "div",
@@ -2634,21 +2668,19 @@ const ConfigModal = () => {
                   lineHeight: "1.3",
                   opacity: (CONFIG.visual["phonetic-opacity"] || 70) / 100,
                   color: "rgba(255,255,255,0.7)",
-                  marginTop: `${
-                    (parseInt(CONFIG.visual["phonetic-spacing"]) || 4) - 10
-                  }px`,
+                  marginTop: `${(parseInt(CONFIG.visual["phonetic-spacing"]) || 4) - 10
+                    }px`,
                   textShadow: CONFIG.visual["text-shadow-enabled"]
-                    ? `0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${
-                        CONFIG.visual["text-shadow-color"] || "#000000"
-                      }${Math.round(
-                        (CONFIG.visual["text-shadow-opacity"] || 50) * 2.55
-                      )
-                        .toString(16)
-                        .padStart(2, "0")}`
+                    ? `0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"
+                    }${Math.round(
+                      (CONFIG.visual["text-shadow-opacity"] || 50) * 2.55
+                    )
+                      .toString(16)
+                      .padStart(2, "0")}`
                     : "none",
                 },
               },
-              "Saempeul lirilseu tekseuteu gouseu hieol"
+              "gasaga hereye dekimasu"
             ),
             react.createElement(
               "div",
@@ -2664,21 +2696,19 @@ const ConfigModal = () => {
                   lineHeight: "1.4",
                   opacity: (CONFIG.visual["translation-opacity"] || 100) / 100,
                   color: "rgba(255,255,255,0.7)",
-                  marginTop: `${
-                    parseInt(CONFIG.visual["translation-spacing"]) || 8
-                  }px`,
+                  marginTop: `${parseInt(CONFIG.visual["translation-spacing"]) || 8
+                    }px`,
                   textShadow: CONFIG.visual["text-shadow-enabled"]
-                    ? `0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${
-                        CONFIG.visual["text-shadow-color"] || "#000000"
-                      }${Math.round(
-                        (CONFIG.visual["text-shadow-opacity"] || 50) * 2.55
-                      )
-                        .toString(16)
-                        .padStart(2, "0")}`
+                    ? `0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"
+                    }${Math.round(
+                      (CONFIG.visual["text-shadow-opacity"] || 50) * 2.55
+                    )
+                      .toString(16)
+                      .padStart(2, "0")}`
                     : "none",
                 },
               },
-              "샘플 가사가 여기 있습니다."
+              "가사가 여기 있습니다"
             )
           )
         ),
@@ -2703,7 +2733,7 @@ const ConfigModal = () => {
               react.createElement(
                 "div",
                 { className: "setting-description" },
-                "원문 가사에 적용할 폰트를 선택하세요"
+                "원문 가사에 적용할 폰트를 선택하세요. 쉼표(,)로 구분하여 여러 폰트를 입력하면 순서대로 적용됩니다."
               )
             ),
             react.createElement(
@@ -2721,24 +2751,31 @@ const ConfigModal = () => {
                     value
                   );
 
-                  if (GOOGLE_FONTS.includes(value)) {
-                    const linkId = "lyrics-plus-google-font-original";
-                    let link = document.getElementById(linkId);
-                    if (!link) {
-                      link = document.createElement("link");
-                      link.id = linkId;
-                      link.rel = "stylesheet";
-                      document.head.appendChild(link);
-                    }
-                    if (value === "Pretendard Variable") {
-                      link.href =
-                        "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
-                    } else {
-                      link.href = `https://fonts.googleapis.com/css2?family=${value.replace(
-                        / /g,
-                        "+"
-                      )}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
-                    }
+                  if (value) {
+                    const fonts = value.split(",").map((f) => f.trim().replace(/['"]/g, ""));
+                    fonts.forEach((font) => {
+                      if (font && GOOGLE_FONTS.includes(font)) {
+                        const fontId = font.replace(/ /g, "-").toLowerCase();
+                        const linkId = `lyrics-plus-google-font-${fontId}`;
+
+                        let link = document.getElementById(linkId);
+                        if (!link) {
+                          link = document.createElement("link");
+                          link.id = linkId;
+                          link.rel = "stylesheet";
+                          document.head.appendChild(link);
+                        }
+                        if (font === "Pretendard Variable") {
+                          link.href =
+                            "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
+                        } else {
+                          link.href = `https://fonts.googleapis.com/css2?family=${font.replace(
+                            / /g,
+                            "+"
+                          )}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+                        }
+                      }
+                    });
                   }
 
                   const lyricsPreview =
@@ -2843,7 +2880,7 @@ const ConfigModal = () => {
               react.createElement(
                 "div",
                 { className: "setting-description" },
-                "로마자 발음 표기에 적용할 폰트를 선택하세요"
+                "로마자 발음 표기에 적용할 폰트를 선택하세요. 쉼표(,)로 구분하여 여러 폰트를 입력하면 순서대로 적용됩니다."
               )
             ),
             react.createElement(
@@ -2861,24 +2898,31 @@ const ConfigModal = () => {
                     value
                   );
 
-                  if (GOOGLE_FONTS.includes(value)) {
-                    const linkId = "lyrics-plus-google-font-phonetic";
-                    let link = document.getElementById(linkId);
-                    if (!link) {
-                      link = document.createElement("link");
-                      link.id = linkId;
-                      link.rel = "stylesheet";
-                      document.head.appendChild(link);
-                    }
-                    if (value === "Pretendard Variable") {
-                      link.href =
-                        "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
-                    } else {
-                      link.href = `https://fonts.googleapis.com/css2?family=${value.replace(
-                        / /g,
-                        "+"
-                      )}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
-                    }
+                  if (value) {
+                    const fonts = value.split(",").map((f) => f.trim().replace(/['"]/g, ""));
+                    fonts.forEach((font) => {
+                      if (font && GOOGLE_FONTS.includes(font)) {
+                        const fontId = font.replace(/ /g, "-").toLowerCase();
+                        const linkId = `lyrics-plus-google-font-${fontId}`;
+
+                        let link = document.getElementById(linkId);
+                        if (!link) {
+                          link = document.createElement("link");
+                          link.id = linkId;
+                          link.rel = "stylesheet";
+                          document.head.appendChild(link);
+                        }
+                        if (font === "Pretendard Variable") {
+                          link.href =
+                            "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
+                        } else {
+                          link.href = `https://fonts.googleapis.com/css2?family=${font.replace(
+                            / /g,
+                            "+"
+                          )}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+                        }
+                      }
+                    });
                   }
 
                   const phoneticPreview =
@@ -2995,7 +3039,7 @@ const ConfigModal = () => {
               react.createElement(
                 "div",
                 { className: "setting-description" },
-                "번역된 가사에 적용할 폰트를 선택하세요"
+                "번역된 가사에 적용할 폰트를 선택하세요. 쉼표(,)로 구분하여 여러 폰트를 입력하면 순서대로 적용됩니다."
               )
             ),
             react.createElement(
@@ -3013,24 +3057,31 @@ const ConfigModal = () => {
                     value
                   );
 
-                  if (GOOGLE_FONTS.includes(value)) {
-                    const linkId = "lyrics-plus-google-font-translation";
-                    let link = document.getElementById(linkId);
-                    if (!link) {
-                      link = document.createElement("link");
-                      link.id = linkId;
-                      link.rel = "stylesheet";
-                      document.head.appendChild(link);
-                    }
-                    if (value === "Pretendard Variable") {
-                      link.href =
-                        "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
-                    } else {
-                      link.href = `https://fonts.googleapis.com/css2?family=${value.replace(
-                        / /g,
-                        "+"
-                      )}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
-                    }
+                  if (value) {
+                    const fonts = value.split(",").map((f) => f.trim().replace(/['"]/g, ""));
+                    fonts.forEach((font) => {
+                      if (font && GOOGLE_FONTS.includes(font)) {
+                        const fontId = font.replace(/ /g, "-").toLowerCase();
+                        const linkId = `lyrics-plus-google-font-${fontId}`;
+
+                        let link = document.getElementById(linkId);
+                        if (!link) {
+                          link = document.createElement("link");
+                          link.id = linkId;
+                          link.rel = "stylesheet";
+                          document.head.appendChild(link);
+                        }
+                        if (font === "Pretendard Variable") {
+                          link.href =
+                            "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css";
+                        } else {
+                          link.href = `https://fonts.googleapis.com/css2?family=${font.replace(
+                            / /g,
+                            "+"
+                          )}:wght@100;200;300;400;500;600;700;800;900&display=swap`;
+                        }
+                      }
+                    });
                   }
 
                   const translationPreview = document.getElementById(
@@ -3119,9 +3170,8 @@ const ConfigModal = () => {
               if (name === "translation-opacity")
                 translationPreview.style.opacity = value / 100;
               if (name === "translation-spacing")
-                translationPreview.style.marginTop = `${
-                  parseInt(value) || 0
-                }px`;
+                translationPreview.style.marginTop = `${parseInt(value) || 0
+                  }px`;
             }
             lyricContainerUpdate?.();
             window.dispatchEvent(
@@ -3302,16 +3352,15 @@ const ConfigModal = () => {
               },
             },
           ],
-          onChange: () => {},
+          onChange: () => { },
         })
       ),
       // 번역 탭 (가사 제공자 포함)
       react.createElement(
         "div",
         {
-          className: `tab-content ${
-            activeTab === "translation" ? "active" : ""
-          }`,
+          className: `tab-content ${activeTab === "translation" ? "active" : ""
+            }`,
         },
         react.createElement(SectionTitle, {
           title: "가사 제공자",
@@ -3536,9 +3585,8 @@ const ConfigModal = () => {
 													</svg>
 													<div>
 														<div style="font-weight: 600; margin-bottom: 2px;">설정 내보내기 실패</div>
-														<div style="opacity: 0.8; font-size: 12px;">${
-                              e.message || e.reason || e.toString()
-                            }</div>
+														<div style="opacity: 0.8; font-size: 12px;">${e.message || e.reason || e.toString()
+                    }</div>
 													</div>
 												</div>
 											</div>
@@ -3646,7 +3694,7 @@ const ConfigModal = () => {
 														</div>
 													</div>
 												</div>`;
-                        
+
                         // 1.5초 후 자동 새로고침
                         setTimeout(() => {
                           location.reload();
@@ -3695,9 +3743,8 @@ const ConfigModal = () => {
 													</svg>
 													<div>
 														<div style="font-weight: 600; margin-bottom: 2px;">설정 불러오기 실패</div>
-														<div style="opacity: 0.8; font-size: 12px;">${
-                              e.message || e.reason || e.toString()
-                            }</div>
+														<div style="opacity: 0.8; font-size: 12px;">${e.message || e.reason || e.toString()
+                          }</div>
 													</div>
 												</div>
 											</div>
@@ -3719,7 +3766,7 @@ const ConfigModal = () => {
               },
             },
           ],
-          onChange: () => {},
+          onChange: () => { },
         }),
         react.createElement(SectionTitle, {
           title: "설정 초기화",
@@ -3774,7 +3821,7 @@ const ConfigModal = () => {
                       keysToRemove.push(key);
                     }
                   }
-                  
+
                   keysToRemove.forEach((key) => {
                     localStorage.removeItem(key);
                   });
@@ -3839,9 +3886,8 @@ const ConfigModal = () => {
 													</svg>
 													<div>
 														<div style="font-weight: 600; margin-bottom: 2px;">초기화 실패</div>
-														<div style="opacity: 0.8; font-size: 12px;">${
-                            e.message || e.reason || e.toString()
-                          }</div>
+														<div style="opacity: 0.8; font-size: 12px;">${e.message || e.reason || e.toString()
+                    }</div>
 													</div>
 												</div>
 											</div>
@@ -3853,7 +3899,7 @@ const ConfigModal = () => {
               },
             },
           ],
-          onChange: () => {},
+          onChange: () => { },
         })
       ),
       // 정보 탭
@@ -4345,7 +4391,7 @@ const ConfigModal = () => {
               },
             },
           ],
-          onChange: () => {},
+          onChange: () => { },
         }),
 
         react.createElement(SectionTitle, {

@@ -9,44 +9,53 @@
  * Config saved to config.json and https://gist.github.com/35378cd201a131f69c68a64bc4438544
  */
 
- @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
 
+/* Translation Loading Indicator */
 /* Translation Loading Indicator */
 .lyrics-translation-loading-indicator {
 	position: fixed;
 	top: 24px;
 	left: 24px;
 	z-index: 9999;
-	background: var(--spice-main);
-	border: 1px solid var(--spice-misc);
-	border-radius: 8px;
-	padding: 12px 16px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
-	max-width: 300px;
-	animation: fadeInSlide 0.3s ease-out;
+	background: rgba(var(--spice-rgb-card), 0.6);
+	border: 1px solid rgba(var(--spice-rgb-text), 0.1);
+	border-radius: 12px;
+	padding: 16px 20px;
+	box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+	backdrop-filter: blur(20px) saturate(180%);
+	-webkit-backdrop-filter: blur(20px) saturate(180%);
+	max-width: 320px;
+	animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	margin-top: 50px;
+	transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lyrics-translation-loading-indicator:hover {
+	background: rgba(var(--spice-rgb-card), 0.8);
+	box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25);
+	transform: translateY(2px);
 }
 
 .lyrics-translation-loading-content {
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	gap: 16px;
 	color: var(--spice-text);
 	font-family: var(--font-family);
 	font-size: 14px;
-	font-weight: 500;
-	line-height: 1.4;
+	font-weight: 600;
+	line-height: 1.5;
+	letter-spacing: -0.01em;
 }
 
 .lyrics-translation-loading-spinner {
-	width: 20px;
-	height: 20px;
-	border: 2px solid var(--spice-misc);
-	border-top: 2px solid var(--spice-accent);
+	width: 18px;
+	height: 18px;
+	border: 2px solid rgba(var(--spice-rgb-text), 0.2);
+	border-top: 2px solid var(--spice-text);
 	border-radius: 50%;
-	animation: spin 1s linear infinite;
+	animation: spin 0.8s linear infinite;
 	flex-shrink: 0;
 }
 
@@ -55,6 +64,7 @@
 		opacity: 0;
 		transform: translateX(-20px);
 	}
+
 	to {
 		opacity: 1;
 		transform: translateX(0);
@@ -62,8 +72,13 @@
 }
 
 @keyframes spin {
-	0% { transform: rotate(0deg); }
-	100% { transform: rotate(360deg); }
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
 }
 
 @keyframes slideDown {
@@ -71,6 +86,7 @@
 		opacity: 0;
 		transform: translateY(-12px);
 	}
+
 	to {
 		opacity: 1;
 		transform: translateY(0);
@@ -82,6 +98,7 @@
 		opacity: 0;
 		max-height: 0;
 	}
+
 	to {
 		opacity: 1;
 		max-height: 500px;
@@ -240,8 +257,8 @@
 	/* 2 padding blocks & 1 line height & Provider block */
 	height: calc(50vh - 91px - 8px - var(--lyrics-font-size));
 }
-.lyrics-lyricsContainer-UnsyncedLyricsPage:has(.lyrics-versionSelector, .lyrics-lyricsContainer-LyricsLine:nth-child(4))
-	.lyrics-lyricsContainer-LyricsUnsyncedPadding {
+
+.lyrics-lyricsContainer-UnsyncedLyricsPage:has(.lyrics-versionSelector, .lyrics-lyricsContainer-LyricsLine:nth-child(4)) .lyrics-lyricsContainer-LyricsUnsyncedPadding {
 	height: 10vh;
 }
 
@@ -272,7 +289,8 @@
 	justify-self: stretch;
 	height: 25px;
 	overflow: hidden;
-	background: linear-gradient(0deg, transparent 30%, transparent); /* transparent footer */
+	background: linear-gradient(0deg, transparent 30%, transparent);
+	/* transparent footer */
 	z-index: 3;
 	padding: 60px 20px 30px;
 	pointer-events: none;
@@ -341,7 +359,7 @@
 	transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.lyrics-lyricsContainer-SyncedLyrics > .lyrics-lyricsContainer-LyricsLine-paddingLine {
+.lyrics-lyricsContainer-SyncedLyrics>.lyrics-lyricsContainer-LyricsLine-paddingLine {
 	opacity: 0;
 	pointer-events: none;
 }
@@ -353,6 +371,7 @@
 }
 
 @media (min-width: 1024px) {
+
 	.lyrics-lyricsContainer-LyricsLine,
 	.lyrics-versionSelector {
 		margin-left: 80px;
@@ -361,6 +380,7 @@
 }
 
 @media (min-width: 1280px) {
+
 	.lyrics-lyricsContainer-LyricsLine,
 	.lyrics-versionSelector {
 		margin-left: 120px;
@@ -377,10 +397,11 @@
 	text-shadow: var(--lyrics-text-shadow);
 	opacity: var(--lyrics-original-opacity, 1);
 	overflow-wrap: break-word;
-	margin-bottom: 32px; /* Increased spacing between lyrics lines */
+	margin-bottom: 32px;
+	/* Increased spacing between lyrics lines */
 }
 
-.lyrics-lyricsContainer-UnsyncedLyricsPage .lyrics-lyricsContainer-LyricsLine > p {
+.lyrics-lyricsContainer-UnsyncedLyricsPage .lyrics-lyricsContainer-LyricsLine>p {
 	display: block;
 	margin: 0;
 	padding: 0;
@@ -418,16 +439,20 @@
 	text-shadow: var(--lyrics-text-shadow);
 	line-height: 1;
 	opacity: var(--lyrics-original-opacity, 1);
-	white-space: normal; /* Allow text wrapping */
-	margin-bottom: 0; /* Remove any bottom margin */
+	white-space: normal;
+	/* Allow text wrapping */
+	margin-bottom: 0;
+	/* Remove any bottom margin */
 }
 
-.lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine > p {
+.lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine>p {
 	display: block;
 	padding: 0;
-	white-space: normal; /* Allow text wrapping */
+	white-space: normal;
+	/* Allow text wrapping */
 	overflow-wrap: break-word;
-	width: 100%; /* Ensure full width for wrapping */
+	width: 100%;
+	/* Ensure full width for wrapping */
 }
 
 @media (min-width: 1280px) {
@@ -577,13 +602,11 @@ div.lyrics-tabBar-headerItemLink {
 
 .lyrics-lyricsContainer-Karaoke-Word {
 	color: var(--lyrics-color-inactive);
-	background-image: linear-gradient(
-		to right,
-		var(--lyrics-color-active),
-		var(--lyrics-color-active) 45%,
-		var(--lyrics-color-inactive) 55%,
-		var(--lyrics-color-inactive)
-	);
+	background-image: linear-gradient(to right,
+			var(--lyrics-color-active),
+			var(--lyrics-color-active) 45%,
+			var(--lyrics-color-inactive) 55%,
+			var(--lyrics-color-inactive));
 	-webkit-background-clip: text;
 	background-clip: text;
 	-webkit-text-fill-color: transparent;
@@ -596,15 +619,19 @@ div.lyrics-tabBar-headerItemLink {
 
 /* 새로운 노래방 스타일 - synced 모드 기반 */
 .lyrics-karaoke-line {
-	display: block; /* inline에서 block으로 변경하여 정상적인 줄바꿈 허용 */
-	letter-spacing: -0.045em; /* 글자 간격 조정 (-0.06em에서 -0.02em으로 변경) */
-	line-height: 1.3; /* 줄바꿈 시 줄간격 조정 */
+	display: block;
+	/* inline에서 block으로 변경하여 정상적인 줄바꿈 허용 */
+	letter-spacing: -0.045em;
+	/* 글자 간격 조정 (-0.06em에서 -0.02em으로 변경) */
+	line-height: 1.3;
+	/* 줄바꿈 시 줄간격 조정 */
 }
 
 .lyrics-karaoke-word {
 	/* Make word a block that wraps as a unit, but can break if too long */
 	display: inline-block;
-	white-space: nowrap; /* keep word together */
+	white-space: nowrap;
+	/* keep word together */
 	/* If word is too long for the line, allow breaking inside */
 	max-width: 100%;
 	overflow-wrap: break-word;
@@ -617,15 +644,18 @@ div.lyrics-tabBar-headerItemLink {
 	display: inline;
 	white-space: pre-wrap;
 	letter-spacing: 0;
-	min-width: 0.5em; /* 띄어쓰기 간격 증가 (0.3em -> 0.5em) */
+	min-width: 0.5em;
+	/* 띄어쓰기 간격 증가 (0.3em -> 0.5em) */
 }
 
 .lyrics-karaoke-char {
-	display: inline-block; /* transform 적용을 위해 inline-block 유지 */
+	display: inline-block;
+	/* transform 적용을 위해 inline-block 유지 */
 	position: relative;
 	color: var(--lyrics-color-inactive);
 	/* 글자 간격을 살짝 더 넓게 조정 */
-	letter-spacing: -0.045em; /* -0.06em에서 -0.02em으로 변경 */
+	letter-spacing: -0.045em;
+	/* -0.06em에서 -0.02em으로 변경 */
 	/* 부드러운 transition은 inline style에서 처리 */
 	/* GPU 가속 활성화 */
 	will-change: transform, color;
@@ -643,7 +673,8 @@ div.lyrics-tabBar-headerItemLink {
 
 .lyrics-karaoke-space {
 	display: inline-block;
-	width: 0.1em; /* 띄어쓰기 너비 더 좁게 (0.2em -> 0.1em) */
+	width: 0.1em;
+	/* 띄어쓰기 너비 더 좁게 (0.2em -> 0.1em) */
 	letter-spacing: 0;
 }
 
@@ -748,6 +779,7 @@ div.lyrics-tabBar-headerItemLink {
 	background-color: var(--lyrics-color-active);
 	color: var(--lyrics-highlight-background);
 }
+
 .lyrics-versionSelector option {
 	background-color: var(--lyrics-color-active);
 }
@@ -767,17 +799,20 @@ div.lyrics-tabBar-headerItemLink {
 	display: table;
 	clear: both;
 }
+
 .lyrics-tooltip-wrapper .setting-row .col,
 #lyrics-plus-config-container .setting-row .col {
 	padding: 16px 0 4px;
 	align-items: center;
 }
+
 .lyrics-tooltip-wrapper .setting-row .col.description,
 #lyrics-plus-config-container .setting-row .col.description {
 	float: left;
 	padding-right: 15px;
 	cursor: default;
 }
+
 .lyrics-tooltip-wrapper .setting-row .col.action,
 #lyrics-plus-config-container .setting-row .col.action {
 	float: right;
@@ -785,6 +820,7 @@ div.lyrics-tabBar-headerItemLink {
 	justify-content: flex-end;
 	align-items: center;
 }
+
 .lyrics-tooltip-wrapper button.switch,
 #lyrics-plus-config-container button.switch {
 	align-items: center;
@@ -798,12 +834,14 @@ div.lyrics-tabBar-headerItemLink {
 	width: 32px;
 	height: 32px;
 }
+
 .lyrics-tooltip-wrapper button.switch.disabled,
 .lyrics-tooltip-wrapper button.switch[disabled],
 #lyrics-plus-config-container button.switch.disabled,
 #lyrics-plus-config-container button.switch[disabled] {
 	color: rgba(var(--spice-rgb-text), 0.3);
 }
+
 .lyrics-tooltip-wrapper button.switch.small,
 #lyrics-plus-config-container button.switch.small {
 	width: 22px;
@@ -821,6 +859,7 @@ div.lyrics-tabBar-headerItemLink {
 	background-color: initial;
 	border-bottom: 1px solid var(--spice-text);
 }
+
 .lyrics-tooltip-wrapper .col.action .adjust-value,
 #lyrics-plus-config-container .col.action .adjust-value {
 	margin-inline-start: 12px;
@@ -833,6 +872,7 @@ div.lyrics-tabBar-headerItemLink {
 	font-size: 14px;
 	opacity: 0.8;
 }
+
 .lyrics-tooltip-wrapper .col.action .btn,
 #lyrics-plus-config-container .col.action .btn {
 	font-weight: 700;
@@ -858,6 +898,7 @@ div.lyrics-tabBar-headerItemLink {
 	opacity: 0.5;
 	cursor: not-allowed;
 }
+
 .lyrics-tooltip-wrapper .col.action .main-dropDown-dropDown,
 .lyrics-tooltip-wrapper .col.action input,
 #lyrics-plus-config-container .col.action .main-dropDown-dropDown,
@@ -882,7 +923,8 @@ div.lyrics-tabBar-headerItemLink {
 }
 
 #lyrics-fullscreen-container .lyrics-lyricsContainer-LyricsContainer::-webkit-scrollbar {
-	background-color: transparent; /* transparent scrollbar track */
+	background-color: transparent;
+	/* transparent scrollbar track */
 }
 
 .lyrics-lyricsContainer-LyricsContainer.fad-enabled {
@@ -940,6 +982,7 @@ div.lyrics-tabBar-headerItemLink {
 	width: var(--lyrics-font-size);
 	transform: scale(0.5);
 }
+
 .lyrics-idling-indicator__circle.active {
 	opacity: 1;
 	transform: scale(0.7);
@@ -956,14 +999,14 @@ div.lyrics-tabBar-headerItemLink {
 	margin-inline-end: 32px;
 	position: sticky;
 	z-index: 10;
-	
+
 	/* Auto-hide functionality */
 	opacity: 0;
 	transform: translateX(20px);
 	transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.lyrics-config-button-container > * {
+.lyrics-config-button-container>* {
 	pointer-events: auto;
 }
 
@@ -984,6 +1027,7 @@ div.lyrics-tabBar-headerItemLink {
 	0% {
 		-webkit-transform: rotate(0deg);
 	}
+
 	100% {
 		-webkit-transform: rotate(360deg);
 	}
@@ -993,6 +1037,7 @@ div.lyrics-tabBar-headerItemLink {
 	0% {
 		transform: rotate(0deg);
 	}
+
 	100% {
 		transform: rotate(360deg);
 	}
@@ -1022,24 +1067,30 @@ div.lyrics-tabBar-headerItemLink {
 .lyrics-lyricsContainer-UnsyncedLyricsPage .split {
 	display: flex;
 }
-.lyrics-lyricsContainer-UnsyncedLyricsPage .split > div {
+
+.lyrics-lyricsContainer-UnsyncedLyricsPage .split>div {
 	flex: 50%;
 }
-.lyrics-lyricsContainer-UnsyncedLyricsPage .split > div > div:not(.lyrics-versionSelector) {
+
+.lyrics-lyricsContainer-UnsyncedLyricsPage .split>div>div:not(.lyrics-versionSelector) {
 	margin-left: 0;
 	margin-right: 0;
 }
+
 .split .lyrics-lyricsContainer-LyricsLine {
 	padding-left: 50px;
 	padding-right: 50px;
 }
+
 .split .lyrics-versionSelector {
 	margin-right: 50px;
 	margin-left: 50px;
 }
+
 .split .lyrics-versionSelector select {
 	width: 100%;
 }
+
 .main-content-view {
 	height: 100%;
 }
@@ -1049,6 +1100,7 @@ div.lyrics-tabBar-headerItemLink {
 		padding-left: 75px;
 		padding-right: 75px;
 	}
+
 	.split .lyrics-versionSelector {
 		margin-right: 75px;
 		margin-left: 75px;
@@ -1060,6 +1112,7 @@ div.lyrics-tabBar-headerItemLink {
 		padding-left: 100px;
 		padding-right: 100px;
 	}
+
 	.split .lyrics-versionSelector {
 		margin-right: 100px;
 		margin-left: 100px;
@@ -1077,7 +1130,7 @@ div.lyrics-tabBar-headerItemLink {
 }
 
 /* Remove default p tag margins */
-.lyrics-lyricsContainer-LyricsLine > p {
+.lyrics-lyricsContainer-LyricsLine>p {
 	padding: 0;
 }
 
@@ -1123,14 +1176,15 @@ div.lyrics-tabBar-headerItemLink {
 }
 
 #lyrics-plus-gradient-background {
-    position: fixed; /* 배경을 화면에 고정 */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    transition: background-color 0.5s ease, background-image 0.5s ease, filter 0.5s ease;
-    pointer-events: none;
+	position: fixed;
+	/* 배경을 화면에 고정 */
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 0;
+	transition: background-color 0.5s ease, background-image 0.5s ease, filter 0.5s ease;
+	pointer-events: none;
 }
 
 /* Furigana Ruby Styles */
@@ -1200,67 +1254,68 @@ ruby .lyrics-karaoke-char.active {
 ruby .lyrics-karaoke-char.sung {
 	color: var(--karaoke-sung-color, currentColor);
 }
+
 /* Sync Adjust Modal Slider Styles */
 .lyrics-sync-adjust-modal input[type="range"] {
--webkit-appearance: none;
-appearance: none;
+	-webkit-appearance: none;
+	appearance: none;
 }
 
 .lyrics-sync-adjust-modal input[type="range"]::-webkit-slider-thumb {
--webkit-appearance: none;
-appearance: none;
-width: 16px;
-height: 16px;
-background: #ffffff;
-border-radius: 50%;
-cursor: pointer;
-transition: all 0.15s ease;
-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+	-webkit-appearance: none;
+	appearance: none;
+	width: 16px;
+	height: 16px;
+	background: #ffffff;
+	border-radius: 50%;
+	cursor: pointer;
+	transition: all 0.15s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .lyrics-sync-adjust-modal input[type="range"]::-webkit-slider-thumb:hover {
-background: #1db954;
-transform: scale(1.1);
+	background: #1db954;
+	transform: scale(1.1);
 }
 
 .lyrics-sync-adjust-modal input[type="range"]::-moz-range-thumb {
-width: 16px;
-height: 16px;
-background: #ffffff;
-border: none;
-border-radius: 50%;
-cursor: pointer;
-transition: all 0.15s ease;
-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+	width: 16px;
+	height: 16px;
+	background: #ffffff;
+	border: none;
+	border-radius: 50%;
+	cursor: pointer;
+	transition: all 0.15s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .lyrics-sync-adjust-modal input[type="range"]::-moz-range-thumb:hover {
-background: #1db954;
-transform: scale(1.1);
+	background: #1db954;
+	transform: scale(1.1);
 }
 
 .lyrics-sync-adjust-modal input[type="range"]::-webkit-slider-runnable-track {
-width: 100%;
-height: 4px;
-background: linear-gradient(to right, #ff4444 0%, #ffaa00 25%, #2b2b2b 50%, #00ff88 75%, #00ff88 100%);
-border-radius: 2px;
+	width: 100%;
+	height: 4px;
+	background: linear-gradient(to right, #ff4444 0%, #ffaa00 25%, #2b2b2b 50%, #00ff88 75%, #00ff88 100%);
+	border-radius: 2px;
 }
 
 .lyrics-sync-adjust-modal input[type="range"]::-moz-range-track {
-width: 100%;
-height: 4px;
-background: linear-gradient(to right, #ff4444 0%, #ffaa00 25%, #2b2b2b 50%, #00ff88 75%, #00ff88 100%);
-border-radius: 2px;
+	width: 100%;
+	height: 4px;
+	background: linear-gradient(to right, #ff4444 0%, #ffaa00 25%, #2b2b2b 50%, #00ff88 75%, #00ff88 100%);
+	border-radius: 2px;
 }
 
 .lyrics-sync-adjust-modal button:hover {
-background: #323232 !important;
-border-color: #505050 !important;
+	background: #323232 !important;
+	border-color: #505050 !important;
 }
 
 .lyrics-sync-adjust-modal button:active {
-background: #1f1f1f !important;
-transform: scale(0.95);
+	background: #1f1f1f !important;
+	transform: scale(0.95);
 }
 
 /* Furigana (Ruby) Styling */
@@ -1367,15 +1422,15 @@ transform: scale(0.95);
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.ios-toggle-switch input:checked + .ios-toggle-slider {
+.ios-toggle-switch input:checked+.ios-toggle-slider {
 	background-color: var(--spice-button, #1db954);
 }
 
-.ios-toggle-switch input:checked + .ios-toggle-slider:before {
+.ios-toggle-switch input:checked+.ios-toggle-slider:before {
 	transform: translateX(18px);
 }
 
-.ios-toggle-switch input:focus + .ios-toggle-slider {
+.ios-toggle-switch input:focus+.ios-toggle-slider {
 	box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.3);
 }
 
@@ -1402,8 +1457,72 @@ transform: scale(0.95);
 	flex-shrink: 0;
 }
 
-.font-selector-container > div:last-child {
+.font-selector-container>div:last-child {
 	flex: 1;
 	min-width: 0;
 }
 
+/* Settings Header Buttons */
+/* Settings Header Buttons */
+.settings-buttons {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	/* Ensure vertical alignment */
+}
+
+.settings-github-btn,
+.settings-coffee-btn,
+.settings-discord-btn {
+	display: inline-flex;
+	/* Use inline-flex to respect height/width better */
+	align-items: center;
+	justify-content: center;
+	/* Center content */
+	gap: 8px;
+	/* Slightly increased gap */
+	padding: 0 16px;
+	/* Horizontal padding only, height handles vertical */
+	height: 36px;
+	/* Fixed height for consistency */
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 8px;
+	color: var(--spice-text);
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 600;
+	transition: all 0.2s ease;
+	box-sizing: border-box;
+	/* Ensure padding doesn't affect total size */
+	line-height: 1;
+	/* Reset line-height */
+}
+
+.settings-github-btn:hover,
+.settings-coffee-btn:hover,
+.settings-discord-btn:hover {
+	background: rgba(255, 255, 255, 0.1);
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	/* Add subtle shadow on hover */
+}
+
+.settings-discord-btn {
+	color: #5865F2;
+	/* Discord Brand Color */
+}
+
+.settings-coffee-btn {
+	color: #FFDD00;
+	/* Coffee Brand Color */
+}
+
+/* Ensure SVGs are sized correctly */
+.settings-github-btn svg,
+.settings-coffee-btn svg,
+.settings-discord-btn svg {
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+}

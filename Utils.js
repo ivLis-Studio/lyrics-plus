@@ -404,7 +404,7 @@ const Utils = {
       // Chinese (Simplified vs Traditional)
       const result =
         ((simpPercentage - tradPercentage + 1) / 2) * 100 >=
-        CONFIG.visual["hans-detect-threshold"]
+          CONFIG.visual["hans-detect-threshold"]
           ? "zh-hans"
           : "zh-hant";
       this._cacheLanguageResult(cacheKey, result);
@@ -834,7 +834,7 @@ const Utils = {
   /**
    * Current version of the lyrics-plus app
    */
-  currentVersion: "2.1.2",
+  currentVersion: "2.1.3",
 
   /**
    * Check for updates from remote repository
@@ -1034,7 +1034,7 @@ const Utils = {
     if (window.lyricContainer) {
       try {
         window.lyricContainer.forceUpdate();
-      } catch (e) {}
+      } catch (e) { }
     }
   },
 
@@ -1109,8 +1109,8 @@ const Utils = {
     try {
       await TrackSyncDB.setOffset(trackUri, offset);
       // Dispatch custom event to notify offset change
-      window.dispatchEvent(new CustomEvent('lyrics-plus:offset-changed', { 
-        detail: { trackUri, offset } 
+      window.dispatchEvent(new CustomEvent('lyrics-plus:offset-changed', {
+        detail: { trackUri, offset }
       }));
     } catch (error) {
       console.error("[Lyrics Plus] Failed to set track sync offset:", error);
