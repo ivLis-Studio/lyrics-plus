@@ -82,6 +82,7 @@
 		"FullscreenOverlay.js"
 	],
 	"subfiles_extension": [
-		"PlaybarButton.js"
+		"PlaybarButton.js",
+		"VideoBackgroundDepend.js"
 	]
 }

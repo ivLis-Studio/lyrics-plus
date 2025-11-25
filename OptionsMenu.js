@@ -870,6 +870,7 @@ const SyncAdjustButton = react.memo(
   ({ trackUri, onOffsetChange }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [offset, setOffset] = useState(0);
+    const buttonRef = useRef(null);
 
     // Load offset when trackUri changes
     useEffect(() => {
@@ -905,6 +906,27 @@ const SyncAdjustButton = react.memo(
     const toggleModal = () => {
       setIsOpen(!isOpen);
     };
+    
+    // 버튼 위치 기반으로 모달 위치 계산
+    const getModalStyle = () => {
+      // 전체화면 모드인지 확인
+      const isFullscreen = document.querySelector('.lyrics-lyricsContainer-LyricsContainer.fullscreen-active');
+      
+      if (isFullscreen && buttonRef.current) {
+        // 전체화면: 버튼 기준으로 위치 계산
+        const rect = buttonRef.current.getBoundingClientRect();
+        return {
+          bottom: `${window.innerHeight - rect.top + 8}px`,
+          right: `${window.innerWidth - rect.right}px`
+        };
+      } else {
+        // 일반 모드: 버튼 컨테이너가 우측 하단에 고정되어 있으므로 고정 위치 사용
+        return {
+          bottom: "80px",
+          right: "32px"
+        };
+      }
+    };
 
     return react.createElement(
       react.Fragment,
@@ -915,6 +937,7 @@ const SyncAdjustButton = react.memo(
         react.createElement(
           "button",
           {
+            ref: buttonRef,
             className: "lyrics-config-button",
             onClick: toggleModal,
           },
@@ -936,31 +959,32 @@ const SyncAdjustButton = react.memo(
         )
       ),
       isOpen &&
-        react.createElement(
-          "div",
-          {
-            className: "lyrics-sync-adjust-modal",
-            style: {
-              position: "fixed",
-              top: "50%",
-              left: "50vw",
-              transform: "translate(-50%, -50%)",
-              background: "rgba(28, 28, 30, 0.95)",
-              backdropFilter: "blur(60px) saturate(200%)",
-              WebkitBackdropFilter: "blur(60px) saturate(200%)",
-              border: "1px solid rgba(255, 255, 255, 0.08)",
-              borderRadius: "16px",
-              padding: "20px 24px",
-              zIndex: 99999,
-              minWidth: "520px",
-              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
-              fontFamily:
-                "Pretendard Variable, -apple-system, BlinkMacSystemFont, sans-serif",
+        (() => {
+          const modalStyle = getModalStyle();
+          return react.createElement(
+            "div",
+            {
+              className: "lyrics-sync-adjust-modal",
+              style: {
+                position: "fixed",
+                bottom: modalStyle.bottom,
+                right: modalStyle.right,
+                background: "rgba(28, 28, 30, 0.95)",
+                backdropFilter: "blur(60px) saturate(200%)",
+                WebkitBackdropFilter: "blur(60px) saturate(200%)",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
+                borderRadius: "16px",
+                padding: "20px 24px",
+                zIndex: 99999,
+                minWidth: "520px",
+                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+                fontFamily:
+                  "Pretendard Variable, -apple-system, BlinkMacSystemFont, sans-serif",
+              },
             },
-          },
-          react.createElement("style", {
-            dangerouslySetInnerHTML: {
-              __html: `
+            react.createElement("style", {
+              dangerouslySetInnerHTML: {
+                __html: `
 .lyrics-sync-adjust-modal .slider-container {
 	flex: 1;
 	display: flex;
@@ -1222,7 +1246,8 @@ const SyncAdjustButton = react.memo(
               "초기화"
             )
           )
-        )
+        );
+        })()
     );
   }
 );
