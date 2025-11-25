@@ -2410,6 +2410,13 @@ const ConfigModal = () => {
         onClick: setActiveTab,
       }),
       react.createElement(TabButton, {
+        id: "fullscreen",
+        label: "전체화면",
+        icon: "",
+        isActive: activeTab === "fullscreen",
+        onClick: setActiveTab,
+      }),
+      react.createElement(TabButton, {
         id: "about",
         label: "정보",
         icon: "",
@@ -2518,6 +2525,33 @@ const ConfigModal = () => {
               when: () => CONFIG.visual["solid-background"],
             },
             {
+              desc: "동영상 배경",
+              info: "YouTube 동영상을 배경으로 사용합니다 (베타)",
+              key: "video-background",
+              type: ConfigSlider,
+              disabled: isFadActive,
+            },
+            {
+              desc: "동영상 블러",
+              info: "영상 배경에 적용할 흐림 강도를 조절합니다 (0-40px)",
+              key: "video-blur",
+              type: ConfigSliderRange,
+              disabled: isFadActive,
+              when: () => CONFIG.visual["video-background"],
+              min: 0,
+              max: 40,
+              step: 1,
+              unit: "px",
+            },
+            {
+              desc: "영상 화면 채우기",
+              info: "영상을 화면에 꽉 차게 확대합니다 (상하 또는 좌우가 잨릴 수 있습니다)",
+              key: "video-cover",
+              type: ConfigSlider,
+              disabled: isFadActive,
+              when: () => CONFIG.visual["video-background"],
+            },
+            {
               desc: "",
               key: "solid-background-warning",
               type: ConfigWarning,
@@ -2538,22 +2572,35 @@ const ConfigModal = () => {
             },
           ],
           onChange: (name, value) => {
-            // 컬러풀 배경, 앨범 커버 배경, 단색 배경은 상호 배타적으로 동작
+            // 컬러풀 배경, 앨범 커버 배경, 단색 배경, 동영상 배경은 상호 배타적으로 동작
             if (name === "colorful" && value) {
               CONFIG.visual["gradient-background"] = false;
               CONFIG.visual["solid-background"] = false;
+              CONFIG.visual["video-background"] = false;
               StorageManager.saveConfig("gradient-background", false);
               StorageManager.saveConfig("solid-background", false);
+              StorageManager.saveConfig("video-background", false);
             } else if (name === "gradient-background" && value) {
               CONFIG.visual["colorful"] = false;
               CONFIG.visual["solid-background"] = false;
+              CONFIG.visual["video-background"] = false;
               StorageManager.saveConfig("colorful", false);
               StorageManager.saveConfig("solid-background", false);
+              StorageManager.saveConfig("video-background", false);
             } else if (name === "solid-background" && value) {
               CONFIG.visual["colorful"] = false;
               CONFIG.visual["gradient-background"] = false;
+              CONFIG.visual["video-background"] = false;
               StorageManager.saveConfig("colorful", false);
               StorageManager.saveConfig("gradient-background", false);
+              StorageManager.saveConfig("video-background", false);
+            } else if (name === "video-background" && value) {
+              CONFIG.visual["colorful"] = false;
+              CONFIG.visual["gradient-background"] = false;
+              CONFIG.visual["solid-background"] = false;
+              StorageManager.saveConfig("colorful", false);
+              StorageManager.saveConfig("gradient-background", false);
+              StorageManager.saveConfig("solid-background", false);
             }
 
             CONFIG.visual[name] = value;
@@ -3894,6 +3941,322 @@ const ConfigModal = () => {
             },
           ],
           onChange: () => { },
+        })
+      ),
+      // 전체화면 탭
+      react.createElement(
+        "div",
+        {
+          className: `tab-content ${activeTab === "fullscreen" ? "active" : ""}`,
+        },
+        react.createElement(SectionTitle, {
+          title: "전체화면 모드",
+          subtitle: "전체화면 모드의 레이아웃과 표시 설정",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "전체화면 단축키",
+              info: "전체화면 모드를 토글하는 키보드 단축키를 설정합니다",
+              key: "fullscreen-key",
+              type: ConfigHotkey,
+            },
+            {
+              desc: "2열 레이아웃 사용",
+              info: "전체화면에서 왼쪽에 앨범 아트, 오른쪽에 가사를 표시합니다",
+              key: "fullscreen-two-column",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-two-column"] ?? true,
+            },
+            {
+              desc: "앨범/가사 위치 반전",
+              info: "앨범과 가사의 위치를 바꿉니다 (좌우 ↔ 우좌, 세로모드에선 상하 ↔ 하상)",
+              key: "fullscreen-layout-reverse",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-layout-reverse"] ?? false,
+              when: () => CONFIG.visual["fullscreen-two-column"] !== false,
+            },
+            {
+              desc: "앨범 아트 표시",
+              info: "전체화면 왼쪽 패널에 앨범 아트를 표시합니다",
+              key: "fullscreen-show-album",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-show-album"] ?? true,
+              when: () => CONFIG.visual["fullscreen-two-column"] !== false,
+            },
+            {
+              desc: "트랙 정보 표시",
+              info: "전체화면에서 곡 제목과 아티스트를 표시합니다",
+              key: "fullscreen-show-info",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-show-info"] ?? true,
+              when: () => CONFIG.visual["fullscreen-two-column"] !== false,
+            },
+            {
+              desc: "가사 없을 때 앨범 중앙 배치",
+              info: "가사가 없거나 로딩 중일 때 앨범 아트를 화면 중앙에 배치합니다",
+              key: "fullscreen-center-when-no-lyrics",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-center-when-no-lyrics"] ?? true,
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("lyrics-plus", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+        react.createElement(SectionTitle, {
+          title: "전체화면 스타일",
+          subtitle: "전체화면 모드의 시각적 요소 설정",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "앨범 아트 크기",
+              info: "전체화면에서 앨범 아트의 최대 크기를 설정합니다 (100-500px)",
+              key: "fullscreen-album-size",
+              type: ConfigSliderRange,
+              min: 100,
+              max: 500,
+              step: 10,
+              unit: "px",
+              defaultValue: CONFIG.visual["fullscreen-album-size"] || 400,
+            },
+            {
+              desc: "앨범 아트 둥글기",
+              info: "앨범 아트의 모서리 둥글기를 설정합니다 (0-50px)",
+              key: "fullscreen-album-radius",
+              type: ConfigSliderRange,
+              min: 0,
+              max: 50,
+              step: 1,
+              unit: "px",
+              defaultValue: CONFIG.visual["fullscreen-album-radius"] || 12,
+            },
+            {
+              desc: "제목 글자 크기",
+              info: "전체화면에서 곡 제목의 글자 크기를 설정합니다 (24-72px)",
+              key: "fullscreen-title-size",
+              type: ConfigSliderRange,
+              min: 24,
+              max: 72,
+              step: 2,
+              unit: "px",
+              defaultValue: CONFIG.visual["fullscreen-title-size"] || 48,
+            },
+            {
+              desc: "아티스트 글자 크기",
+              info: "전체화면에서 아티스트 이름의 글자 크기를 설정합니다 (14-36px)",
+              key: "fullscreen-artist-size",
+              type: ConfigSliderRange,
+              min: 14,
+              max: 36,
+              step: 1,
+              unit: "px",
+              defaultValue: CONFIG.visual["fullscreen-artist-size"] || 24,
+            },
+            {
+              desc: "가사 오른쪽 여백",
+              info: "전체화면에서 가사 영역의 오른쪽 여백을 설정합니다. 가운데 정렬 시 가사가 오른쪽에 치우쳐 보이는 것을 방지합니다 (0-300px)",
+              key: "fullscreen-lyrics-right-padding",
+              type: ConfigSliderRange,
+              min: 0,
+              max: 300,
+              step: 10,
+              unit: "px",
+              defaultValue: CONFIG.visual["fullscreen-lyrics-right-padding"] || 0,
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("lyrics-plus", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+        react.createElement(SectionTitle, {
+          title: "전체화면 UI 요소",
+          subtitle: "전체화면에 표시되는 추가 UI 요소들을 설정합니다",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "시계 표시",
+              info: "화면 우측 상단에 현재 시간을 표시합니다",
+              key: "fullscreen-show-clock",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-show-clock"] ?? true,
+            },
+            {
+              desc: "시계 크기",
+              info: "시계 텍스트의 크기를 설정합니다 (24-72px)",
+              key: "fullscreen-clock-size",
+              type: ConfigSliderRange,
+              min: 24,
+              max: 72,
+              step: 2,
+              unit: "px",
+              defaultValue: CONFIG.visual["fullscreen-clock-size"] || 48,
+              when: () => CONFIG.visual["fullscreen-show-clock"] !== false,
+            },
+            {
+              desc: "재생 컨텍스트 표시",
+              info: "현재 재생 중인 플레이리스트/앨범 정보를 좌측 상단에 표시합니다",
+              key: "fullscreen-show-context",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-show-context"] ?? true,
+            },
+            {
+              desc: "컨텍스트 이미지 표시",
+              info: "플레이리스트/앨범 썸네일 이미지를 함께 표시합니다",
+              key: "fullscreen-show-context-image",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-show-context-image"] ?? true,
+              when: () => CONFIG.visual["fullscreen-show-context"] !== false,
+            },
+            {
+              desc: "다음 곡 미리보기",
+              info: "곡이 끝나기 전 다음 곡 정보를 우측 상단에 표시합니다 (음악 방송 스타일)",
+              key: "fullscreen-show-next-track",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-show-next-track"] ?? true,
+            },
+            {
+              desc: "다음 곡 표시 시간",
+              info: "곡 종료 몇 초 전부터 다음 곡을 표시할지 설정합니다 (5-30초)",
+              key: "fullscreen-next-track-seconds",
+              type: ConfigSliderRange,
+              min: 5,
+              max: 30,
+              step: 1,
+              unit: "초",
+              defaultValue: CONFIG.visual["fullscreen-next-track-seconds"] || 15,
+              when: () => CONFIG.visual["fullscreen-show-next-track"] !== false,
+            },
+            {
+              desc: "플레이어 컨트롤 표시",
+              info: "재생/일시정지, 이전/다음곡, 셔플, 반복, 좋아요 버튼을 표시합니다",
+              key: "fullscreen-show-controls",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-show-controls"] ?? true,
+            },
+            {
+              desc: "볼륨 컨트롤 표시",
+              info: "플레이어 컨트롤에 볼륨 조절 슬라이더를 표시합니다",
+              key: "fullscreen-show-volume",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-show-volume"] ?? true,
+              when: () => CONFIG.visual["fullscreen-show-controls"] !== false,
+            },
+            {
+              desc: "재생 진행바 표시",
+              info: "곡의 현재 재생 위치와 전체 시간을 표시하는 진행바를 표시합니다",
+              key: "fullscreen-show-progress",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-show-progress"] ?? true,
+              when: () => CONFIG.visual["fullscreen-show-controls"] !== false,
+            },
+            {
+              desc: "가사 진행률 표시",
+              info: "현재 가사 줄 번호와 전체 가사 줄 수를 표시합니다",
+              key: "fullscreen-show-lyrics-progress",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-show-lyrics-progress"] ?? false,
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("lyrics-plus", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+        react.createElement(SectionTitle, {
+          title: "컨트롤러 스타일",
+          subtitle: "플레이어 컨트롤러의 외형을 설정합니다",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "컨트롤 버튼 크기",
+              info: "재생, 이전/다음곡 등 버튼의 크기를 설정합니다 (28-48px)",
+              key: "fullscreen-control-button-size",
+              type: ConfigSliderRange,
+              min: 28,
+              max: 48,
+              step: 2,
+              unit: "px",
+              defaultValue: CONFIG.visual["fullscreen-control-button-size"] || 36,
+            },
+            {
+              desc: "컨트롤러 배경",
+              info: "컨트롤러에 반투명 배경을 추가합니다",
+              key: "fullscreen-controls-background",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-controls-background"] ?? false,
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("lyrics-plus", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
+        }),
+        react.createElement(SectionTitle, {
+          title: "자동 숨김",
+          subtitle: "마우스 비활동 시 UI 자동 숨김 설정",
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: "UI 자동 숨김",
+              info: "마우스를 움직이지 않으면 컨트롤러와 정보가 자동으로 숨겨집니다",
+              key: "fullscreen-auto-hide-ui",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-auto-hide-ui"] ?? true,
+            },
+            {
+              desc: "자동 숨김 딜레이",
+              info: "마우스 비활동 후 UI가 숨겨지기까지의 시간 (1-10초)",
+              key: "fullscreen-auto-hide-delay",
+              type: ConfigSliderRange,
+              min: 1,
+              max: 10,
+              step: 0.5,
+              unit: "초",
+              defaultValue: CONFIG.visual["fullscreen-auto-hide-delay"] || 3,
+              when: () => CONFIG.visual["fullscreen-auto-hide-ui"] !== false,
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            lyricContainerUpdate?.();
+            window.dispatchEvent(
+              new CustomEvent("lyrics-plus", {
+                detail: { type: "config", name, value },
+              })
+            );
+          },
         })
       ),
       // 정보 탭

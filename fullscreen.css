@@ -1,0 +1,112 @@
+/* Fullscreen Mode Styles */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: var(--spice-main);
+    /* Fallback background */
+}
+
+/* Left Panel (Album Art & Info) */
+.lyrics-fullscreen-left-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 40px;
+    box-sizing: border-box;
+    z-index: 10;
+}
+
+.lyrics-fullscreen-left-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Center align content */
+    text-align: center;
+    max-width: 80%;
+}
+
+.lyrics-fullscreen-album-art {
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 1/1;
+    border-radius: 12px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+    margin-bottom: 40px;
+    object-fit: cover;
+}
+
+.lyrics-fullscreen-track-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.lyrics-fullscreen-title {
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--spice-text);
+    line-height: 1.1;
+    word-break: keep-all;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.lyrics-fullscreen-artist {
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--spice-subtext);
+    opacity: 0.9;
+}
+
+/* Right Panel (Lyrics) Adjustments */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage,
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-UnsyncedLyricsPage {
+    grid-area: auto;
+    /* Reset grid area to allow side-by-side */
+    height: 100vh;
+    width: 100%;
+    padding: 0 40px;
+    box-sizing: border-box;
+    /* Center lyrics vertically */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Adjust lyrics text size and alignment in fullscreen */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-LyricsLine {
+    text-align: left;
+    /* Align lyrics to left in split view */
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    transform-origin: left center;
+    /* Transform from left */
+}
+
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine {
+    transform-origin: left center;
+}
+
+/* Hide other elements in fullscreen */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-config-button-container,
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-tabBar-header {
+    display: none;
+    /* Hide controls in fullscreen for clean look */
+}
+
+/* Add a way to exit fullscreen (ESC hint or button could be added later) */
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .lyrics-fullscreen-title {
+        font-size: 36px;
+    }
+
+    .lyrics-fullscreen-album-art {
+        max-width: 300px;
+    }
+}

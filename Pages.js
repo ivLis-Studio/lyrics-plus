@@ -752,6 +752,15 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 		return lyricWithEmptyLines.slice(startIndex, startIndex + linesCount);
 	}, [activeLineIndex, lyricWithEmptyLines, isScrolling]);
 
+	// Emit current lyric index for fullscreen overlay
+	useEffect(() => {
+		// Subtract 2 for the empty lines at the beginning
+		const actualIndex = Math.max(0, activeLineIndex - 2);
+		window.dispatchEvent(new CustomEvent('lyrics-plus:lyric-index-changed', {
+			detail: { index: actualIndex, total: lyrics.length }
+		}));
+	}, [activeLineIndex, lyrics.length]);
+
 	useEffect(() => {
 		if (!isScrolling) return;
 		const node = activeLineEle.current;

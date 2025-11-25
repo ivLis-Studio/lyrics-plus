@@ -915,6 +915,16 @@ const CONFIG = {
       "lyrics-plus:visual:solid-background",
       false
     ),
+    "video-background": StorageManager.get(
+      "lyrics-plus:visual:video-background",
+      false
+    ),
+    "video-blur":
+      StorageManager.getItem("lyrics-plus:visual:video-blur") || "5",
+    "video-cover": StorageManager.get(
+      "lyrics-plus:visual:video-cover",
+      false
+    ),
     "solid-background-color":
       StorageManager.getItem("lyrics-plus:visual:solid-background-color") ||
       "#1e3a8a",
@@ -1155,6 +1165,93 @@ const CONFIG = {
     "fullscreen-key":
       StorageManager.getItem("lyrics-plus:visual:fullscreen-key") || "f12",
     "synced-compact": StorageManager.get("lyrics-plus:visual:synced-compact"),
+    // Fullscreen settings
+    "fullscreen-two-column": StorageManager.get(
+      "lyrics-plus:visual:fullscreen-two-column",
+      true
+    ),
+    "fullscreen-layout-reverse": StorageManager.get(
+      "lyrics-plus:visual:fullscreen-layout-reverse",
+      false
+    ),
+    "fullscreen-show-album": StorageManager.get(
+      "lyrics-plus:visual:fullscreen-show-album",
+      true
+    ),
+    "fullscreen-show-info": StorageManager.get(
+      "lyrics-plus:visual:fullscreen-show-info",
+      true
+    ),
+    "fullscreen-center-when-no-lyrics": StorageManager.get(
+      "lyrics-plus:visual:fullscreen-center-when-no-lyrics",
+      true
+    ),
+    "fullscreen-album-size":
+      StorageManager.getItem("lyrics-plus:visual:fullscreen-album-size") ||
+      "400",
+    "fullscreen-album-radius":
+      StorageManager.getItem("lyrics-plus:visual:fullscreen-album-radius") ||
+      "12",
+    "fullscreen-title-size":
+      StorageManager.getItem("lyrics-plus:visual:fullscreen-title-size") ||
+      "48",
+    "fullscreen-artist-size":
+      StorageManager.getItem("lyrics-plus:visual:fullscreen-artist-size") ||
+      "24",
+    "fullscreen-lyrics-right-padding":
+      Number(StorageManager.getItem("lyrics-plus:visual:fullscreen-lyrics-right-padding")) ||
+      0,
+    // Fullscreen UI elements
+    "fullscreen-show-clock": StorageManager.get(
+      "lyrics-plus:visual:fullscreen-show-clock",
+      true
+    ),
+    "fullscreen-clock-size":
+      Number(StorageManager.getItem("lyrics-plus:visual:fullscreen-clock-size")) ||
+      48,
+    "fullscreen-show-context": StorageManager.get(
+      "lyrics-plus:visual:fullscreen-show-context",
+      true
+    ),
+    "fullscreen-show-next-track": StorageManager.get(
+      "lyrics-plus:visual:fullscreen-show-next-track",
+      true
+    ),
+    "fullscreen-next-track-seconds":
+      Number(StorageManager.getItem("lyrics-plus:visual:fullscreen-next-track-seconds")) ||
+      15,
+    "fullscreen-show-controls": StorageManager.get(
+      "lyrics-plus:visual:fullscreen-show-controls",
+      true
+    ),
+    "fullscreen-show-volume": StorageManager.get(
+      "lyrics-plus:visual:fullscreen-show-volume",
+      true
+    ),
+    "fullscreen-show-progress": StorageManager.get(
+      "lyrics-plus:visual:fullscreen-show-progress",
+      true
+    ),
+    "fullscreen-show-lyrics-progress": StorageManager.get(
+      "lyrics-plus:visual:fullscreen-show-lyrics-progress",
+      false
+    ),
+    // Fullscreen control styles
+    "fullscreen-control-button-size":
+      Number(StorageManager.getItem("lyrics-plus:visual:fullscreen-control-button-size")) ||
+      36,
+    "fullscreen-controls-background": StorageManager.get(
+      "lyrics-plus:visual:fullscreen-controls-background",
+      false
+    ),
+    // Fullscreen auto-hide
+    "fullscreen-auto-hide-ui": StorageManager.get(
+      "lyrics-plus:visual:fullscreen-auto-hide-ui",
+      true
+    ),
+    "fullscreen-auto-hide-delay":
+      Number(StorageManager.getItem("lyrics-plus:visual:fullscreen-auto-hide-delay")) ||
+      3,
 
     delay: 0,
   },
@@ -1495,6 +1592,7 @@ class LyricsContainer extends react.Component {
       language: null,
       isPhoneticLoading: false,
       isTranslationLoading: false,
+      currentLyricIndex: 0,
     };
     this.currentTrackUri = "";
     this.nextTrackUri = "";
@@ -1901,7 +1999,7 @@ class LyricsContainer extends react.Component {
       }
 
       // keep artist/title for prompts
-      this.setState({ artist: info.artist, title: info.title });
+      this.setState({ artist: info.artist, title: info.title, coverUrl: info.image });
 
       let isCached = this.lyricsSaved(info.uri);
 
@@ -3246,11 +3344,12 @@ class LyricsContainer extends react.Component {
       const isEnabled = !this.state.isFullscreen;
       if (isEnabled) {
         document.body.append(this.fullscreenContainer);
-        document.documentElement.requestFullscreen();
         this.mousetrap.bind("esc", this.toggleFullscreen);
       } else {
         this.fullscreenContainer.remove();
-        document.exitFullscreen();
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => { });
+        }
         this.mousetrap.unbind("esc");
       }
 
@@ -3271,6 +3370,14 @@ class LyricsContainer extends react.Component {
       }
     };
     window.addEventListener("lyrics-plus", this.handleConfigChange);
+
+    // Listen for lyric index changes from Pages.js
+    this.handleLyricIndexChange = (event) => {
+      if (event.detail && typeof event.detail.index === 'number') {
+        this.setState({ currentLyricIndex: event.detail.index });
+      }
+    };
+    window.addEventListener("lyrics-plus:lyric-index-changed", this.handleLyricIndexChange);
   }
 
   componentWillUnmount() {
@@ -3280,6 +3387,7 @@ class LyricsContainer extends react.Component {
     this.mousetrap?.reset();
     window.removeEventListener("fad-request", lyricContainerUpdate);
     window.removeEventListener("lyrics-plus", this.handleConfigChange);
+    window.removeEventListener("lyrics-plus:lyric-index-changed", this.handleLyricIndexChange);
 
     // Clean up translation loading timer
     this.clearTranslationLoading();
@@ -3366,6 +3474,7 @@ class LyricsContainer extends react.Component {
         CONFIG.visual["phonetic-font-family"] || "var(--font-family)",
       "--lyrics-translation-font-family":
         CONFIG.visual["translation-font-family"] || "var(--font-family)",
+      "--lyrics-fullscreen-right-padding": `${CONFIG.visual["fullscreen-lyrics-right-padding"] || 40}px`,
     };
 
     this.mousetrap.reset();
@@ -3459,7 +3568,9 @@ class LyricsContainer extends react.Component {
 
     const backgroundStyle = {};
     // Disable background features when in FAD mode (Full Screen extension)
-    if (!this.state.isFADMode && CONFIG.visual["gradient-background"]) {
+    if (!this.state.isFADMode && CONFIG.visual["video-background"]) {
+      // Video background is handled by the component
+    } else if (!this.state.isFADMode && CONFIG.visual["gradient-background"]) {
       const brightness = CONFIG.visual["background-brightness"] / 100;
       // 앨범 커버 이미지 가져오기
       const albumArtUrl =
@@ -3547,6 +3658,7 @@ class LyricsContainer extends react.Component {
       "--lyrics-translation-opacity":
         CONFIG.visual["translation-opacity"] / 100,
       "--animation-tempo": this.state.tempo,
+      "--lyrics-fullscreen-right-padding": `${CONFIG.visual["fullscreen-lyrics-right-padding"] || 40}px`,
     };
 
     let mode = this.getCurrentMode();
@@ -3717,26 +3829,62 @@ class LyricsContainer extends react.Component {
       })
       : null;
 
+    const hasLyrics = !!(this.state.karaoke || this.state.synced || this.state.unsynced);
+    const isTwoColumn = CONFIG.visual["fullscreen-two-column"] !== false;
+    const isLayoutReversed = CONFIG.visual["fullscreen-layout-reverse"] === true;
+    const centerWhenNoLyrics = CONFIG.visual["fullscreen-center-when-no-lyrics"] !== false;
+    
+    // Build fullscreen class names
+    let fullscreenClasses = "";
+    if (this.state.isFullscreen) {
+      fullscreenClasses = " fullscreen-active";
+      if (!isTwoColumn) {
+        fullscreenClasses += " fullscreen-single-column";
+      }
+      if (isLayoutReversed && isTwoColumn) {
+        fullscreenClasses += " layout-reversed";
+      }
+      if (!hasLyrics && centerWhenNoLyrics) {
+        fullscreenClasses += " fullscreen-no-lyrics";
+      }
+    }
+    
     const out = react.createElement(
       "div",
       {
         className: `lyrics-lyricsContainer-LyricsContainer${CONFIG.visual["fade-blur"] ? " blur-enabled" : ""
-          }${fadLyricsContainer ? " fad-enabled" : ""}`,
+          }${fadLyricsContainer ? " fad-enabled" : ""}${fullscreenClasses}`,
         style: this.styleVariables,
         ref: (el) => {
           if (!el) return;
           el.onmousewheel = this.onFontSizeChange;
         },
       },
+      // Left panel for fullscreen mode
+      this.state.isFullscreen && window.FullscreenOverlay && react.createElement(window.FullscreenOverlay, {
+        coverUrl: this.state.coverUrl,
+        title: this.state.title,
+        artist: this.state.artist,
+        isFullscreen: this.state.isFullscreen,
+        currentLyricIndex: this.state.currentLyricIndex || 0,
+        totalLyrics: Array.isArray(this.state.currentLyrics) ? this.state.currentLyrics.length : 0
+      }),
       // Tab bar for mode switching
       topBarContent,
       // Update notification banner
       updateBanner,
-      react.createElement("div", {
+      (!CONFIG.visual["video-background"] || this.state.isFADMode) && react.createElement("div", {
         id: "lyrics-plus-gradient-background",
         style: backgroundStyle,
       }),
-      react.createElement("div", {
+      !this.state.isFADMode && CONFIG.visual["video-background"] && window.VideoBackground && react.createElement(window.VideoBackground, {
+        trackUri: this.state.uri,
+        firstLyricTime: this.state.currentLyrics && this.state.currentLyrics.length > 0 ? this.state.currentLyrics[0].startTime : 0,
+        brightness: CONFIG.visual["background-brightness"],
+        blurAmount: CONFIG.visual["video-blur"],
+        coverMode: CONFIG.visual["video-cover"]
+      }),
+      (!CONFIG.visual["video-background"] || this.state.isFADMode) && react.createElement("div", {
         className: "lyrics-lyricsContainer-LyricsBackground",
       }),
       // Phonetic loading indicator
@@ -3929,6 +4077,34 @@ class LyricsContainer extends react.Component {
                   Spicetify.SVGIcons["cross"] ||
                   // Simple X icon as fallback for reset
                   '<path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>',
+              },
+            })
+          )
+        ),
+        // Fullscreen toggle button
+        react.createElement(
+          Spicetify.ReactComponent.TooltipWrapper,
+          {
+            label: "전체화면",
+          },
+          react.createElement(
+            "button",
+            {
+              className: "lyrics-config-button",
+              onClick: () => {
+                this.toggleFullscreen();
+              },
+            },
+            react.createElement("svg", {
+              width: 16,
+              height: 16,
+              viewBox: "0 0 16 16",
+              fill: "currentColor",
+              dangerouslySetInnerHTML: {
+                __html:
+                  Spicetify.SVGIcons["fullscreen"] ||
+                  // Fullscreen icon fallback
+                  '<path d="M6.064 10.229l-2.418 2.418L2 11v4h4l-1.647-1.646 2.418-2.418-.707-.707zM11 2l1.647 1.647-2.418 2.418.707.707 2.418-2.418L15 6V2h-4z"/>',
               },
             })
           )

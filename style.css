@@ -11,6 +11,7 @@
 
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
 
+
 /* Translation Loading Indicator */
 /* Translation Loading Indicator */
 .lyrics-translation-loading-indicator {
@@ -913,6 +914,7 @@ div.lyrics-tabBar-headerItemLink {
 	cursor: default;
 	left: 0;
 	top: 0;
+	z-index: 9999;
 }
 
 #lyrics-fullscreen-container .lyrics-lyricsContainer-LyricsContainer {
@@ -1577,13 +1579,11 @@ ruby .lyrics-karaoke-char.sung {
 
 .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active .lyrics-lyricsContainer-SyncedLyrics {
 	height: auto !important;
-	padding: 5vh clamp(16px, 4vw, 64px) 7vh;
+	padding: 50vh clamp(16px, 4vw, 64px) 50vh;
 	display: flex;
 	flex-direction: column;
-	--scroll-gap: max(
-		calc(var(--lyrics-line-spacing, 8px) * 3),
-		calc(var(--lyrics-font-size, 26px) * 0.8)
-	);
+	--scroll-gap: max(calc(var(--lyrics-line-spacing, 8px) * 3),
+			calc(var(--lyrics-font-size, 26px) * 0.8));
 	gap: var(--scroll-gap);
 	align-items: stretch;
 }
@@ -1605,4 +1605,1006 @@ ruby .lyrics-karaoke-char.sung {
 /* Hover 효과는 기존 스타일(.lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine:hover)을 따름 */
 /* Active 효과도 기존 스타일(.lyrics-lyricsContainer-LyricsLine-active)을 따름 */
 
+/* Fullscreen Mode Styles */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	align-items: stretch;
+	padding: 0;
+	box-sizing: border-box;
+	background-color: var(--spice-main);
+	overflow: hidden;
+	width: 100%;
+	height: 100vh;
+	transition: grid-template-columns 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
+/* Reversed layout - Album on right, Lyrics on left */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.layout-reversed {
+	direction: rtl;
+}
+
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.layout-reversed > * {
+	direction: ltr;
+}
+
+/* Left Panel (Album Art & Info) */
+.lyrics-fullscreen-left-panel {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	padding: 40px;
+	box-sizing: border-box;
+	z-index: 10;
+	transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lyrics-fullscreen-left-content {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	/* Center align content */
+	text-align: center;
+	max-width: 90%;
+	width: 100%;
+}
+
+.lyrics-fullscreen-album-art {
+	aspect-ratio: 1/1;
+	border-radius: 12px;
+	margin-bottom: 32px;
+	object-fit: cover;
+	flex-shrink: 0;
+}
+
+.lyrics-fullscreen-album-art.with-shadow {
+	box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+.lyrics-fullscreen-track-info {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	width: 100%;
+}
+
+.lyrics-fullscreen-title {
+	font-size: 48px;
+	font-weight: 800;
+	color: var(--spice-text);
+	line-height: 1.1;
+	word-break: keep-all;
+	text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.lyrics-fullscreen-artist {
+	font-size: 24px;
+	font-weight: 500;
+	color: var(--spice-subtext);
+	opacity: 0.9;
+}
+
+/* Right Panel (Lyrics) Adjustments */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage,
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-UnsyncedLyricsPage {
+	grid-area: auto;
+	height: 100vh;
+	width: 100%;
+	padding: 0 var(--lyrics-fullscreen-right-padding, 40px) 0 40px;
+	box-sizing: border-box;
+	display: grid;
+	grid-template-rows: 1fr 30px;
+	overflow: hidden;
+	text-align: var(--lyrics-align-text);
+	transition: opacity 0.4s ease, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reversed layout: Left padding instead of right */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.layout-reversed .lyrics-lyricsContainer-SyncedLyricsPage,
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.layout-reversed .lyrics-lyricsContainer-UnsyncedLyricsPage {
+	padding: 0 40px 0 var(--lyrics-fullscreen-right-padding, 40px);
+}
+
+/* Adjust lyrics text size and alignment in fullscreen */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-LyricsLine {
+	text-align: var(--lyrics-align-text);
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+	transform-origin: var(--lyrics-align-text) center;
+}
+
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine {
+	transform-origin: var(--lyrics-align-text) center;
+}
+
+/* Fullscreen scrolling mode fixes */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active {
+	overflow-y: auto !important;
+	overflow-x: hidden;
+	padding: 0 var(--lyrics-fullscreen-right-padding, 40px) 0 40px;
+	margin: 0;
+	width: 100%;
+	max-width: none;
+	display: block;
+	box-sizing: border-box;
+}
+
+/* Reversed layout: Scrolling mode left padding */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.layout-reversed .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active {
+	padding: 0 40px 0 var(--lyrics-fullscreen-right-padding, 40px);
+}
+
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active .lyrics-lyricsContainer-SyncedLyrics {
+	height: auto !important;
+	padding: 50vh 0 50vh;
+	display: flex;
+	flex-direction: column;
+	gap: var(--scroll-gap, calc(var(--lyrics-line-spacing, 8px) * 3));
+	align-items: stretch;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+/* Hide other elements in fullscreen */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-tabBar-header {
+	display: none;
+	/* Hide tab bar in fullscreen for clean look */
+}
+
+/* Menu buttons in fullscreen - hidden by default, show on hover */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-config-button-container {
+	opacity: 0;
+	transform: translateX(20px);
+	transition: opacity 0.3s ease, transform 0.3s ease;
+	pointer-events: none;
+	position: fixed;
+	bottom: 32px;
+	right: 32px;
+	margin: 0;
+	z-index: 100;
+}
+
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-config-button-container > * {
+	pointer-events: auto;
+}
+
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active:hover .lyrics-config-button-container,
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-config-button-container:focus-within {
+	opacity: 1;
+	transform: translateX(0);
+	pointer-events: auto;
+}
+
+/* Ensure menus/dropdowns in fullscreen are visible and accessible */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-config-button-container .main-contextMenu-menu {
+	z-index: 101;
+	position: fixed;
+	bottom: auto;
+	top: auto;
+}
+
+/* Add a way to exit fullscreen (ESC hint or button could be added later) */
+
+/* Fullscreen - single column mode (no left panel) */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-single-column {
+	grid-template-columns: 1fr;
+}
+
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-single-column .lyrics-lyricsContainer-SyncedLyricsPage,
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-single-column .lyrics-lyricsContainer-UnsyncedLyricsPage {
+	padding: 0 10%;
+}
+
+/* Fullscreen - no lyrics state */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics {
+	grid-template-columns: 1fr;
+}
+
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-fullscreen-left-panel {
+	grid-column: 1;
+	justify-content: center;
+	align-items: center;
+}
+
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-lyricsContainer-SyncedLyricsPage,
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-lyricsContainer-UnsyncedLyricsPage,
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-lyricsContainer-LyricsUnavailablePage {
+	display: none !important;
+}
+
+/* ==========================================
+   Fullscreen Enhanced UI Components
+   ========================================== */
+
+/* Bottom-left corner - Context info */
+.fullscreen-bottom-left {
+	position: fixed;
+	bottom: 24px;
+	left: 24px;
+	z-index: 50;
+	transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fullscreen-bottom-left.hidden {
+	opacity: 0;
+	transform: translateY(10px);
+	pointer-events: none;
+}
+
+/* Top-right corner - Clock & Next track */
+.fullscreen-top-right {
+	position: fixed;
+	top: 24px;
+	right: 24px;
+	z-index: 50;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 16px;
+	transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fullscreen-top-right.hidden {
+	opacity: 0;
+	transform: translateY(-10px);
+	pointer-events: none;
+}
+
+/* Clock */
+.fullscreen-clock {
+	font-size: 48px;
+	font-weight: 300;
+	color: var(--spice-text);
+	text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+	letter-spacing: 2px;
+	opacity: 0.9;
+}
+
+/* Context info (playlist/album name) */
+.fullscreen-context-info {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 16px;
+	background: rgba(0, 0, 0, 0.4);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	border-radius: 12px;
+	max-width: 350px;
+}
+
+.fullscreen-context-image {
+	width: 48px;
+	height: 48px;
+	border-radius: 6px;
+	object-fit: cover;
+	flex-shrink: 0;
+}
+
+.fullscreen-context-text {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	overflow: hidden;
+}
+
+.fullscreen-context-type {
+	font-size: 11px;
+	color: var(--spice-subtext);
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	opacity: 0.8;
+}
+
+.fullscreen-context-name {
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--spice-text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Next track preview */
+.fullscreen-next-track {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 16px;
+	background: rgba(0, 0, 0, 0.5);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	border-radius: 12px;
+	animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+	max-width: 300px;
+}
+
+@keyframes slideInRight {
+	from {
+		opacity: 0;
+		transform: translateX(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+.fullscreen-next-track-label {
+	font-size: 11px;
+	color: var(--spice-subtext);
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	opacity: 0.8;
+}
+
+.fullscreen-next-track-content {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.fullscreen-next-track-image {
+	width: 56px;
+	height: 56px;
+	border-radius: 8px;
+	object-fit: cover;
+	flex-shrink: 0;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.fullscreen-next-track-info {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	overflow: hidden;
+}
+
+.fullscreen-next-track-title {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--spice-text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.fullscreen-next-track-artist {
+	font-size: 12px;
+	color: var(--spice-subtext);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Bottom - Player controls */
+.fullscreen-bottom {
+	position: fixed;
+	bottom: 24px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 50;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 16px;
+	transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fullscreen-bottom.hidden {
+	opacity: 0;
+	transform: translateX(-50%) translateY(20px);
+	pointer-events: none;
+}
+
+/* Player controls container */
+.fullscreen-player-controls {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	padding: 16px 24px;
+	min-width: 350px;
+}
+
+/* Compact mode for left panel */
+.fullscreen-player-controls.compact {
+	min-width: unset;
+	width: 100%;
+	max-width: 400px;
+	padding: 16px 0;
+	gap: 12px;
+}
+
+/* Controls in left panel (under album) */
+.fullscreen-left-controls {
+	margin-top: 24px;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0;
+	transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fullscreen-left-controls.hidden {
+	opacity: 0;
+	transform: translateY(10px);
+	pointer-events: none;
+}
+
+/* Lyrics progress container (bottom right) */
+.fullscreen-lyrics-progress-container {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+	z-index: 50;
+	transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fullscreen-lyrics-progress-container.hidden {
+	opacity: 0;
+	transform: translateY(10px);
+	pointer-events: none;
+}
+
+/* Progress bar container */
+.fullscreen-progress-container,
+.fullscreen-progress-standalone {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	width: 100%;
+	max-width: 400px;
+	margin-bottom: 12px;
+}
+
+.fullscreen-time {
+	font-size: 13px;
+	color: var(--spice-subtext);
+	font-variant-numeric: tabular-nums;
+	min-width: 45px;
+	text-align: center;
+}
+
+.fullscreen-progress-bar {
+	flex: 1;
+	height: 6px;
+	background: rgba(255, 255, 255, 0.2);
+	border-radius: 3px;
+	cursor: pointer;
+	position: relative;
+	transition: height 0.15s ease;
+}
+
+.fullscreen-progress-bar:hover {
+	height: 8px;
+}
+
+.fullscreen-progress-fill {
+	height: 100%;
+	background: var(--spice-text);
+	border-radius: 3px;
+	transition: width 0.1s linear;
+}
+
+.fullscreen-progress-handle {
+	position: absolute;
+	top: 50%;
+	width: 14px;
+	height: 14px;
+	background: var(--spice-text);
+	border-radius: 50%;
+	transform: translate(-50%, -50%);
+	opacity: 0;
+	transition: opacity 0.15s ease;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.fullscreen-progress-bar:hover .fullscreen-progress-handle {
+	opacity: 1;
+}
+
+/* Player controls - 개선된 레이아웃 */
+.fullscreen-player-controls {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	width: 100%;
+}
+
+.fullscreen-player-controls.with-background {
+	background: rgba(0, 0, 0, 0.4);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	padding: 16px 20px;
+	border-radius: 16px;
+}
+
+/* Control rows */
+.fullscreen-control-row {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: 100%;
+}
+
+.fullscreen-control-main-row {
+	gap: 6px;
+}
+
+.fullscreen-control-volume-row {
+	margin-top: 8px;
+	padding-top: 8px;
+	border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Control buttons */
+.fullscreen-control-btn {
+	background: transparent;
+	border: none;
+	color: var(--spice-text);
+	cursor: pointer;
+	padding: 8px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.15s ease;
+	opacity: 0.7;
+}
+
+.fullscreen-control-btn:hover {
+	opacity: 1;
+	background: rgba(255, 255, 255, 0.1);
+	transform: scale(1.1);
+}
+
+.fullscreen-control-btn:active {
+	transform: scale(0.95);
+}
+
+.fullscreen-control-btn svg {
+	width: 100%;
+	height: 100%;
+}
+
+.fullscreen-control-btn.active {
+	opacity: 1;
+	color: var(--spice-button-active, #1db954);
+}
+
+/* Play button - 메인 버튼 강조 */
+.fullscreen-control-btn.fullscreen-control-play {
+	background: var(--spice-text);
+	color: var(--spice-main);
+	opacity: 1;
+	padding: 10px;
+}
+
+.fullscreen-control-btn.fullscreen-control-play:hover {
+	transform: scale(1.1);
+	box-shadow: 0 4px 20px rgba(255, 255, 255, 0.25);
+	background: var(--spice-text);
+}
+
+/* Like button */
+.fullscreen-like-btn.liked {
+	color: #1db954;
+	opacity: 1;
+}
+
+.fullscreen-like-btn.liked svg {
+	filter: drop-shadow(0 0 4px rgba(29, 185, 84, 0.5));
+}
+
+/* Volume wrapper */
+.fullscreen-volume-wrapper {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.fullscreen-volume-slider {
+	width: 80px;
+	height: 4px;
+	-webkit-appearance: none;
+	appearance: none;
+	background: rgba(255, 255, 255, 0.2);
+	border-radius: 2px;
+	outline: none;
+	cursor: pointer;
+	transition: width 0.2s ease;
+}
+
+.fullscreen-volume-wrapper:hover .fullscreen-volume-slider {
+	width: 100px;
+}
+
+.fullscreen-volume-slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background: var(--spice-text);
+	cursor: pointer;
+	transition: transform 0.15s ease;
+}
+
+.fullscreen-volume-slider::-webkit-slider-thumb:hover {
+	transform: scale(1.3);
+}
+
+.fullscreen-volume-slider::-moz-range-thumb {
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background: var(--spice-text);
+	cursor: pointer;
+	border: none;
+}
+
+/* Player controls with background */
+.fullscreen-player-controls.with-background {
+	background: rgba(0, 0, 0, 0.4);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	padding: 16px 20px;
+	border-radius: 16px;
+}
+
+/* Lyrics progress indicator */
+.fullscreen-lyrics-progress {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px 16px;
+	background: rgba(0, 0, 0, 0.3);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	border-radius: 20px;
+}
+
+.fullscreen-lyrics-progress-bar {
+	width: 120px;
+	height: 4px;
+	background: rgba(255, 255, 255, 0.2);
+	border-radius: 2px;
+	overflow: hidden;
+}
+
+.fullscreen-lyrics-progress-fill {
+	height: 100%;
+	background: var(--spice-text);
+	border-radius: 2px;
+	transition: width 0.3s ease;
+}
+
+.fullscreen-lyrics-progress-text {
+	font-size: 12px;
+	color: var(--spice-subtext);
+	font-variant-numeric: tabular-nums;
+}
+
+/* Left panel controls hidden state */
+.lyrics-fullscreen-left-panel.controls-hidden .fullscreen-left-controls {
+	opacity: 0;
+	transform: translateY(10px);
+	pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+	.lyrics-fullscreen-title {
+		font-size: 36px;
+	}
+
+	.fullscreen-clock {
+		font-size: 36px;
+	}
+
+	.fullscreen-control-row {
+		gap: 8px;
+	}
+
+	.fullscreen-control-main-row {
+		gap: 10px;
+	}
+}
+
+@media (max-width: 768px) {
+	.fullscreen-clock {
+		font-size: 28px;
+	}
+
+	.fullscreen-control-row {
+		gap: 6px;
+	}
+
+	.fullscreen-control-main-row {
+		gap: 8px;
+	}
+
+	.fullscreen-volume-slider {
+		width: 60px;
+	}
+
+	.fullscreen-volume-wrapper:hover .fullscreen-volume-slider {
+		width: 80px;
+	}
+}
+
+/* ==========================================
+   Portrait Mode (세로 모니터 모드)
+   When viewport height > width
+   ========================================== */
+@media (orientation: portrait) {
+	/* Change grid to vertical layout - 50:50 split */
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-active {
+		grid-template-columns: 1fr;
+		grid-template-rows: 1fr 1fr;
+	}
+
+	/* Portrait mode: Reversed layout - Album on bottom, Lyrics on top */
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.layout-reversed {
+		direction: ltr;
+	}
+
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.layout-reversed .lyrics-fullscreen-left-panel {
+		order: 2;
+	}
+
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.layout-reversed .lyrics-lyricsContainer-SyncedLyricsPage,
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.layout-reversed .lyrics-lyricsContainer-UnsyncedLyricsPage {
+		order: 1;
+	}
+
+	/* Top Panel (Album Art & Info) - Takes 50% height */
+	.lyrics-fullscreen-left-panel {
+		height: 100%;
+		padding: 24px;
+		justify-content: center;
+		overflow: hidden;
+	}
+
+	.lyrics-fullscreen-left-content {
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		gap: 16px;
+		max-width: 100%;
+		height: 100%;
+		justify-content: center;
+	}
+
+	/* Album art sized to fit in portrait mode */
+	.lyrics-fullscreen-album-art {
+		width: min(35vh, 280px);
+		height: min(35vh, 280px);
+		min-width: unset;
+		margin-bottom: 0;
+		border-radius: 10px;
+		flex-shrink: 0;
+	}
+
+	.lyrics-fullscreen-track-info {
+		flex: 0 0 auto;
+		gap: 8px;
+		text-align: center;
+		overflow: hidden;
+		width: 100%;
+	}
+
+	.lyrics-fullscreen-title {
+		font-size: 24px;
+		line-height: 1.2;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+	}
+
+	.lyrics-fullscreen-artist {
+		font-size: 16px;
+	}
+
+	/* Controls below track info in portrait mode */
+	.fullscreen-left-controls {
+		width: 100%;
+		padding: 16px 0 0;
+	}
+
+	.fullscreen-controls-wrapper {
+		gap: 12px;
+	}
+
+	.fullscreen-control-row {
+		gap: 12px;
+	}
+
+	.fullscreen-control-main-row {
+		gap: 14px;
+	}
+
+	/* Progress bar full width in portrait */
+	.fullscreen-progress-wrapper {
+		width: 100%;
+		max-width: 100%;
+	}
+
+	.fullscreen-progress-bar {
+		flex: 1;
+	}
+
+	/* Bottom Panel (Lyrics) - Takes remaining space, no right padding needed */
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage,
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-UnsyncedLyricsPage {
+		height: 100%;
+		padding: 0 24px;
+	}
+
+	/* Scrolling mode in portrait */
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active {
+		padding: 0 24px;
+	}
+
+	/* Corners repositioned for portrait */
+	.fullscreen-bottom-left {
+		bottom: 16px;
+		left: 16px;
+	}
+
+	.fullscreen-top-right {
+		top: 16px;
+		right: 16px;
+	}
+
+	.fullscreen-clock {
+		font-size: 32px;
+	}
+
+	.fullscreen-context-info {
+		max-width: 280px;
+		padding: 10px 12px;
+	}
+
+	.fullscreen-context-image {
+		width: 40px;
+		height: 40px;
+	}
+
+	.fullscreen-context-name {
+		font-size: 13px;
+	}
+
+	/* Next track preview repositioned */
+	.fullscreen-next-track {
+		padding: 12px;
+		max-width: 280px;
+	}
+
+	.fullscreen-next-track-image {
+		width: 40px;
+		height: 40px;
+	}
+
+	.fullscreen-next-track-title {
+		font-size: 13px;
+	}
+
+	.fullscreen-next-track-artist {
+		font-size: 11px;
+	}
+
+	/* Config buttons repositioned for portrait */
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-config-button-container {
+		bottom: 16px;
+		right: 16px;
+	}
+
+	/* No lyrics state in portrait */
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics {
+		grid-template-rows: 1fr;
+	}
+
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-fullscreen-left-panel {
+		height: 100%;
+		flex-direction: column;
+		justify-content: center;
+		padding: 40px;
+	}
+
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-fullscreen-left-content {
+		flex-direction: column;
+		text-align: center;
+	}
+
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-fullscreen-album-art {
+		width: min(60vw, 400px);
+		height: min(60vw, 400px);
+		margin-bottom: 32px;
+	}
+
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-fullscreen-track-info {
+		text-align: center;
+	}
+
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-fullscreen-title {
+		font-size: 36px;
+		-webkit-line-clamp: unset;
+	}
+
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-no-lyrics .lyrics-fullscreen-artist {
+		font-size: 22px;
+	}
+
+	/* Lyrics progress repositioned for portrait */
+	.fullscreen-lyrics-progress {
+		bottom: 60px;
+		left: 16px;
+	}
+
+	/* Single column mode in portrait stays the same */
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-single-column .lyrics-lyricsContainer-SyncedLyricsPage,
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-single-column .lyrics-lyricsContainer-UnsyncedLyricsPage {
+		padding: 0 24px;
+	}
+}
+
+/* Larger portrait screens (tablets in portrait) */
+@media (orientation: portrait) and (min-height: 900px) {
+	.lyrics-fullscreen-album-art {
+		width: 180px;
+		height: 180px;
+		min-width: 180px;
+	}
+
+	.lyrics-fullscreen-title {
+		font-size: 32px;
+	}
+
+	.lyrics-fullscreen-artist {
+		font-size: 20px;
+	}
+
+	.fullscreen-clock {
+		font-size: 40px;
+	}
+}
+
+/* Very tall portrait screens */
+@media (orientation: portrait) and (min-height: 1200px) {
+	.lyrics-fullscreen-left-panel {
+		padding: 32px 32px 24px;
+	}
+
+	.lyrics-fullscreen-album-art {
+		width: 220px;
+		height: 220px;
+		min-width: 220px;
+	}
+
+	.lyrics-fullscreen-title {
+		font-size: 36px;
+		-webkit-line-clamp: 3;
+	}
+
+	.lyrics-fullscreen-artist {
+		font-size: 22px;
+	}
+
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage,
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-UnsyncedLyricsPage {
+		padding: 0 40px;
+	}
+
+	.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage.scrolling-active {
+		padding: 0 40px;
+	}
+}

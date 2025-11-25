@@ -77,7 +77,11 @@
 		"OptionsMenu.js",
 		"TabBar.js",
 		"Utils.js",
-		"Translator.js"
+		"Translator.js",
+		"VideoBackground.js",
+		"FullscreenOverlay.js"
 	],
-	"subfiles_extension": ["PlaybarButton.js"]
+	"subfiles_extension": [
+		"PlaybarButton.js"
+	]
 }
