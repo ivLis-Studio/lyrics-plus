@@ -624,6 +624,18 @@ window.LANG_ZH_TW = {
         "desc": "在卡拉OK模式下對目前字元套用彈跳動畫"
       }
     },
+    "prefetch": {
+      "title": "預先載入下一首",
+      "subtitle": "預先載入下一首歌曲的元素以減少切換延遲",
+      "enabled": {
+        "label": "預先載入翻譯/發音",
+        "desc": "預先請求下一首歌曲的翻譯和發音轉換"
+      },
+      "videoEnabled": {
+        "label": "預先載入影片背景",
+        "desc": "預先取得下一首歌曲的影片背景資訊"
+      }
+    },
     "cacheManagement": {
       "title": "快取管理",
       "subtitle": "管理儲存的資料",

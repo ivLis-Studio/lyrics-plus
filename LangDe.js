@@ -624,6 +624,18 @@ window.LANG_DE = {
         "desc": "Wendet eine Bounce-Animation auf den aktuell gesungenen Text im Karaoke-Modus an"
       }
     },
+    "prefetch": {
+      "title": "Nächsten Track vorladen",
+      "subtitle": "Elemente für den nächsten Track vorladen, um Übergangsverzögerungen zu reduzieren",
+      "enabled": {
+        "label": "Übersetzung/Phonetik vorladen",
+        "desc": "Übersetzung und phonetische Konvertierung für den nächsten Track vorladen"
+      },
+      "videoEnabled": {
+        "label": "Videohintergrund vorladen",
+        "desc": "Videohintergrund-Informationen für den nächsten Track vorladen"
+      }
+    },
     "cacheManagement": {
       "title": "Cache-Verwaltung",
       "subtitle": "Gespeicherte Daten verwalten",

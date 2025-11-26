@@ -50,25 +50,37 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
 
         let isMounted = true;
 
-        fetch(`https://api.ivl.is/lyrics_youtube/?trackId=${trackId}`)
-            .then((res) => res.json())
-            .then((data) => {
-                if (!isMounted) return;
-                setIsLoading(false);
-                if (data.success) {
-                    setVideoInfo(data.data);
-                    setStatusMessage("");
-                } else {
-                    setStatusMessage(I18n.t("videoBackground.notFound"));
+        // 프리페치된 비디오 정보가 있는지 먼저 확인
+        const prefetchedInfo = typeof Prefetcher !== 'undefined' ? Prefetcher.getVideoInfo(trackUri) : null;
+        
+        if (prefetchedInfo) {
+            // 프리페치된 데이터 사용
+            console.log(`[VideoBackground] Using prefetched video info for trackId: ${trackId}`);
+            setIsLoading(false);
+            setVideoInfo(prefetchedInfo);
+            setStatusMessage("");
+        } else {
+            // 프리페치된 데이터가 없으면 직접 fetch
+            fetch(`https://api.ivl.is/lyrics_youtube/?trackId=${trackId}`)
+                .then((res) => res.json())
+                .then((data) => {
+                    if (!isMounted) return;
+                    setIsLoading(false);
+                    if (data.success) {
+                        setVideoInfo(data.data);
+                        setStatusMessage("");
+                    } else {
+                        setStatusMessage(I18n.t("videoBackground.notFound"));
+                        setVideoInfo(null);
+                    }
+                })
+                .catch((e) => {
+                    if (!isMounted) return;
+                    setIsLoading(false);
+                    setStatusMessage(I18n.t("videoBackground.error"));
                     setVideoInfo(null);
-                }
-            })
-            .catch((e) => {
-                if (!isMounted) return;
-                setIsLoading(false);
-                setStatusMessage(I18n.t("videoBackground.error"));
-                setVideoInfo(null);
-            });
+                });
+        }
 
         return () => {
             isMounted = false;

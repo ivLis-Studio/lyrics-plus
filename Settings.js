@@ -3434,6 +3434,30 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
+          title: I18n.t("settingsAdvanced.prefetch.title"),
+          subtitle: I18n.t("settingsAdvanced.prefetch.subtitle"),
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: I18n.t("settingsAdvanced.prefetch.enabled.label"),
+              info: I18n.t("settingsAdvanced.prefetch.enabled.desc"),
+              key: "prefetch-enabled",
+              type: ConfigSlider,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.prefetch.videoEnabled.label"),
+              info: I18n.t("settingsAdvanced.prefetch.videoEnabled.desc"),
+              key: "prefetch-video-enabled",
+              type: ConfigSlider,
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+          },
+        }),
+        react.createElement(SectionTitle, {
           title: I18n.t("settingsAdvanced.cacheManagement.title"),
           subtitle: I18n.t("settingsAdvanced.cacheManagement.subtitle"),
         }),

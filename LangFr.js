@@ -624,6 +624,18 @@ window.LANG_FR = {
         "desc": "Applique une animation de rebond au texte chanté actuellement en mode karaoké"
       }
     },
+    "prefetch": {
+      "title": "Préchargement de la piste suivante",
+      "subtitle": "Précharger les éléments pour la piste suivante afin de réduire les délais de transition",
+      "enabled": {
+        "label": "Précharger traduction/phonétique",
+        "desc": "Précharger la traduction et la conversion phonétique pour la piste suivante"
+      },
+      "videoEnabled": {
+        "label": "Précharger l'arrière-plan vidéo",
+        "desc": "Précharger les informations de l'arrière-plan vidéo pour la piste suivante"
+      }
+    },
     "cacheManagement": {
       "title": "Gestion du cache",
       "subtitle": "Gérer les données enregistrées",

@@ -624,6 +624,18 @@ window.LANG_EN = {
         "desc": "Apply bouncing animation to the current character in karaoke mode"
       }
     },
+    "prefetch": {
+      "title": "Prefetch Next Track",
+      "subtitle": "Preload elements for the next track to reduce transition delays",
+      "enabled": {
+        "label": "Prefetch Translation/Phonetic",
+        "desc": "Preload translation and phonetic conversion for the next track"
+      },
+      "videoEnabled": {
+        "label": "Prefetch Video Background",
+        "desc": "Preload video background information for the next track"
+      }
+    },
     "cacheManagement": {
       "title": "Cache Management",
       "subtitle": "Manage stored data",

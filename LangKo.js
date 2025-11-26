@@ -624,6 +624,18 @@ window.LANG_KO = {
         "desc": "노래방 모드에서 현재 부르는 글자에 통통 튀는 애니메이션을 적용합니다"
       }
     },
+    "prefetch": {
+      "title": "다음 곡 미리 로드",
+      "subtitle": "다음 곡의 요소들을 미리 로드하여 전환 시 지연을 줄입니다",
+      "enabled": {
+        "label": "번역/발음 미리 로드",
+        "desc": "다음 곡의 번역과 발음 변환을 미리 요청합니다"
+      },
+      "videoEnabled": {
+        "label": "영상 배경 미리 로드",
+        "desc": "다음 곡의 영상 배경 정보를 미리 가져옵니다"
+      }
+    },
     "cacheManagement": {
       "title": "캐시 관리",
       "subtitle": "저장된 데이터 관리",

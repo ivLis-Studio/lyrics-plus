@@ -624,6 +624,18 @@ window.LANG_PT = {
         "desc": "Aplicar animação de pulo ao texto sendo cantado atualmente no modo karaokê"
       }
     },
+    "prefetch": {
+      "title": "Pré-carregar Próxima Faixa",
+      "subtitle": "Pré-carregar elementos para a próxima faixa para reduzir atrasos de transição",
+      "enabled": {
+        "label": "Pré-carregar Tradução/Fonética",
+        "desc": "Pré-carregar tradução e conversão fonética para a próxima faixa"
+      },
+      "videoEnabled": {
+        "label": "Pré-carregar Fundo de Vídeo",
+        "desc": "Pré-carregar informações de fundo de vídeo para a próxima faixa"
+      }
+    },
     "cacheManagement": {
       "title": "Gerenciamento de Cache",
       "subtitle": "Gerenciar dados salvos",

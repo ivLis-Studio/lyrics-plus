@@ -624,6 +624,18 @@ window.LANG_ES = {
         "desc": "Aplica animación de rebote al texto que se canta actualmente en modo karaoke"
       }
     },
+    "prefetch": {
+      "title": "Precarga de la Siguiente Pista",
+      "subtitle": "Precargar elementos para la siguiente pista para reducir los retrasos de transición",
+      "enabled": {
+        "label": "Precargar Traducción/Fonética",
+        "desc": "Precargar traducción y conversión fonética para la siguiente pista"
+      },
+      "videoEnabled": {
+        "label": "Precargar Fondo de Video",
+        "desc": "Precargar información del fondo de video para la siguiente pista"
+      }
+    },
     "cacheManagement": {
       "title": "Gestión de caché",
       "subtitle": "Gestionar datos guardados",

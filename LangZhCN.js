@@ -624,6 +624,18 @@ window.LANG_ZH_CN = {
         "desc": "在卡拉OK模式下对当前字符应用弹跳动画"
       }
     },
+    "prefetch": {
+      "title": "预加载下一曲",
+      "subtitle": "预加载下一曲的元素以减少切换延迟",
+      "enabled": {
+        "label": "预加载翻译/发音",
+        "desc": "预先请求下一曲的翻译和发音转换"
+      },
+      "videoEnabled": {
+        "label": "预加载视频背景",
+        "desc": "预先获取下一曲的视频背景信息"
+      }
+    },
     "cacheManagement": {
       "title": "缓存管理",
       "subtitle": "管理存储的数据",

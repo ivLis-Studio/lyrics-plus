@@ -624,6 +624,18 @@ window.LANG_IT = {
         "desc": "Applica animazione di rimbalzo al testo cantato attualmente in modalità karaoke"
       }
     },
+    "prefetch": {
+      "title": "Precarica Traccia Successiva",
+      "subtitle": "Precarica elementi per la traccia successiva per ridurre i ritardi di transizione",
+      "enabled": {
+        "label": "Precarica Traduzione/Fonetica",
+        "desc": "Precarica traduzione e conversione fonetica per la traccia successiva"
+      },
+      "videoEnabled": {
+        "label": "Precarica Sfondo Video",
+        "desc": "Precarica informazioni sullo sfondo video per la traccia successiva"
+      }
+    },
     "cacheManagement": {
       "title": "Gestione Cache",
       "subtitle": "Gestisci dati salvati",
