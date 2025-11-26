@@ -1037,6 +1037,26 @@ const OptionList = ({ type, items, onChange }) => {
         ? item.disabled()
         : item.disabled || false;
 
+    // type이 "info"인 경우 - 정보 표시만 (토글 없음)
+    if (item.type === "info") {
+      return react.createElement(
+        "div",
+        {
+          key: index,
+          className: "setting-row",
+        },
+        react.createElement(
+          "div",
+          { className: "setting-row-content" },
+          react.createElement(
+            "div",
+            { className: "setting-row-left" },
+            react.createElement("div", { className: "setting-name" }, item.desc)
+          )
+        )
+      );
+    }
+
     // ConfigButton, ConfigInput, ConfigHotkey는 자체적으로 setting-row를 만들므로 wrapper 불필요
     if (
       item.type === ConfigButton ||

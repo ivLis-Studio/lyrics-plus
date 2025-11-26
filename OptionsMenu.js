@@ -710,7 +710,36 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
     const STATIC_OPTIONS = getStaticOptions();
     let modeOptions = STATIC_OPTIONS.geminiModes;
 
+    // 감지된 언어를 사용자 친화적인 이름으로 변환
+    const getDisplayLanguageName = (lang) => {
+      if (!lang) return I18n.t("menu.unknownLanguage");
+      try {
+        // 현재 UI 언어로 언어 이름 표시
+        const uiLang = I18n.getCurrentLanguage();
+        const displayName = new Intl.DisplayNames([uiLang], { type: "language" }).of(lang);
+        return displayName || lang;
+      } catch {
+        return lang;
+      }
+    };
+
+    const displayLanguageName = getDisplayLanguageName(friendlyLanguage);
+
     const items = [
+      {
+        section: I18n.t("menu.detectedLanguage"),
+        subtitle: I18n.t("menu.detectedLanguageInfo"),
+        items: [
+          {
+            desc: react.createElement(SettingRowDescription, {
+              icon: ICONS.language,
+              text: displayLanguageName,
+            }),
+            key: "detected-language-display",
+            type: "info",
+          },
+        ],
+      },
       {
         section: I18n.t("menu.translationOptions"),
         subtitle: I18n.t("menu.translationOptionsSubtitle"),

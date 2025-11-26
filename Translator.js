@@ -111,6 +111,9 @@ class Translator {
       "https://api.ivl.is/lyrics_tran/index.php",
     ];
 
+    // 사용자의 현재 언어 가져오기
+    const userLang = I18n.getCurrentLanguage();
+
     const body = {
       artist,
       title,
@@ -119,6 +122,7 @@ class Translator {
       provider,
       apiKey,
       ignore_cache: ignoreCache,
+      lang: userLang,
     };
 
     const tryFetch = async (url) => {
