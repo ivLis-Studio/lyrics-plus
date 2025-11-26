@@ -20,7 +20,7 @@ Spicetify용 **Lyrics Plus** 커스텀 앱을 모두 수정한 버전입니다. 
 <a href="https://www.buymeacoffee.com/ivlis" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 
-https://github.com/user-attachments/assets/c865affb-1a7b-405c-86ac-e1421f426c58
+![preview](https://github.com/user-attachments/assets/0596a769-76aa-49c5-970c-85897fe8d260)
 
 ---
 
