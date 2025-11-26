@@ -4087,7 +4087,7 @@ class LyricsContainer extends react.Component {
           )
         ),
         // Fullscreen toggle button
-        react.createElement(
+        (() => !document.getElementById("fad-lyrics-plus-container"))() && react.createElement(
           Spicetify.ReactComponent.TooltipWrapper,
           {
             label: I18n.t("menu.fullscreen"),
