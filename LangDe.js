@@ -761,7 +761,7 @@ window.LANG_DE = {
       },
       "showContext": {
         "desc": "Wiedergabekontext anzeigen",
-        "info": "Zeigt Informationen zur aktuellen Playlist/Album in der oberen linken Ecke an"
+        "info": "Zeigt Informationen zur aktuellen Playlist/Album in der unteren linken Ecke an"
       },
       "showContextImage": {
         "desc": "Kontextbild anzeigen",

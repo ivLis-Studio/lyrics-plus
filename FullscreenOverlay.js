@@ -569,7 +569,8 @@ const FullscreenOverlay = (() => {
         const showAlbum = CONFIG?.visual?.["fullscreen-show-album"] !== false;
         const showInfo = CONFIG?.visual?.["fullscreen-show-info"] !== false;
         const albumSize = Number(CONFIG?.visual?.["fullscreen-album-size"]) || 400;
-        const albumRadius = Number(CONFIG?.visual?.["fullscreen-album-radius"]) || 12;
+        const albumRadiusValue = Number(CONFIG?.visual?.["fullscreen-album-radius"]);
+        const albumRadius = isNaN(albumRadiusValue) ? 12 : albumRadiusValue;
         const titleSize = Number(CONFIG?.visual?.["fullscreen-title-size"]) || 48;
         const artistSize = Number(CONFIG?.visual?.["fullscreen-artist-size"]) || 24;
 

@@ -761,7 +761,7 @@ window.LANG_EN = {
       },
       "showContext": {
         "desc": "Show Playback Context",
-        "info": "Display currently playing playlist/album info in upper left"
+        "info": "Display currently playing playlist/album info in lower left"
       },
       "showContextImage": {
         "desc": "Show Context Image",

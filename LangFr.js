@@ -761,7 +761,7 @@ window.LANG_FR = {
       },
       "showContext": {
         "desc": "Afficher le contexte de lecture",
-        "info": "Affiche les informations de la playlist/album actuel dans le coin supérieur gauche"
+        "info": "Affiche les informations de la playlist/album actuel dans le coin inférieur gauche"
       },
       "showContextImage": {
         "desc": "Afficher l'image de contexte",

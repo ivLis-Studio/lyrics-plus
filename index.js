@@ -1731,30 +1731,15 @@ const Prefetcher = {
 
     if (!text.trim()) return;
 
-    const wantSmartPhonetic = displayMode1 === "gemini_romaji" || displayMode2 === "gemini_romaji";
+    // 발음이 필요한지, 번역이 필요한지 확인
+    const needPhonetic = displayMode1 === "gemini_romaji" || displayMode2 === "gemini_romaji";
+    const needTranslation = (displayMode1 && displayMode1 !== "none" && displayMode1 !== "gemini_romaji") ||
+                            (displayMode2 && displayMode2 !== "none" && displayMode2 !== "gemini_romaji");
 
     const prefetchPromise = (async () => {
       try {
-        console.log(`[Prefetcher] Fetching translation for: ${trackInfo.title}`);
+        console.log(`[Prefetcher] Fetching translation for: ${trackInfo.title} (phonetic: ${needPhonetic}, translation: ${needTranslation})`);
         
-        const response = await Translator.callGemini({
-          artist: trackInfo.artist,
-          title: trackInfo.title,
-          text,
-          wantSmartPhonetic,
-          provider: lyrics.provider,
-          ignoreCache: false, // 캐시 사용
-        });
-
-        // 결과를 프리페치 캐시에 저장
-        this._prefetchCache.set(cacheKeyBase, {
-          response,
-          lyricsArray,
-          displayMode1,
-          displayMode2,
-          timestamp: Date.now(),
-        });
-
         // CacheManager에도 저장 (getGeminiTranslation에서 사용)
         const processTranslationResult = (outText) => {
           if (!outText) return null;
@@ -1796,34 +1781,70 @@ const Prefetcher = {
           return mapped;
         };
 
-        // mode1, mode2 각각 캐시에 저장
-        if (displayMode1 === "gemini_romaji" && response.phonetic) {
-          const mapped = processTranslationResult(response.phonetic);
-          if (mapped) {
-            CacheManager.set(`${uri}:gemini_romaji`, mapped);
-          }
-        }
-        if (displayMode1 === "gemini_ko" && response.vi) {
-          const mapped = processTranslationResult(response.vi);
-          if (mapped) {
-            CacheManager.set(`${uri}:gemini_ko`, mapped);
-          }
-        }
-        if (displayMode2 === "gemini_romaji" && response.phonetic) {
-          const mapped = processTranslationResult(response.phonetic);
-          if (mapped) {
-            CacheManager.set(`${uri}:gemini_romaji`, mapped);
-          }
-        }
-        if (displayMode2 === "gemini_ko" && response.vi) {
-          const mapped = processTranslationResult(response.vi);
-          if (mapped) {
-            CacheManager.set(`${uri}:gemini_ko`, mapped);
+        // 발음 요청 (wantSmartPhonetic = true)
+        if (needPhonetic) {
+          try {
+            const phoneticResponse = await Translator.callGemini({
+              artist: trackInfo.artist,
+              title: trackInfo.title,
+              text,
+              wantSmartPhonetic: true,
+              provider: lyrics.provider,
+              ignoreCache: false,
+            });
+
+            if (phoneticResponse.phonetic) {
+              const mapped = processTranslationResult(phoneticResponse.phonetic);
+              if (mapped) {
+                CacheManager.set(`${uri}:gemini_romaji`, mapped);
+                console.log(`[Prefetcher] Phonetic cached for: ${trackInfo.title}`);
+              }
+            }
+          } catch (error) {
+            console.warn(`[Prefetcher] Phonetic prefetch failed:`, error.message);
           }
         }
 
-        console.log(`[Prefetcher] Translation cached for: ${trackInfo.title}`);
-        return response;
+        // 번역 요청 (wantSmartPhonetic = false)
+        if (needTranslation) {
+          try {
+            const translationResponse = await Translator.callGemini({
+              artist: trackInfo.artist,
+              title: trackInfo.title,
+              text,
+              wantSmartPhonetic: false,
+              provider: lyrics.provider,
+              ignoreCache: false,
+            });
+
+            if (translationResponse.vi) {
+              const mapped = processTranslationResult(translationResponse.vi);
+              if (mapped) {
+                // mode1, mode2 중 번역이 필요한 것에 캐시 저장
+                if (displayMode1 && displayMode1 !== "none" && displayMode1 !== "gemini_romaji") {
+                  CacheManager.set(`${uri}:${displayMode1}`, mapped);
+                }
+                if (displayMode2 && displayMode2 !== "none" && displayMode2 !== "gemini_romaji") {
+                  CacheManager.set(`${uri}:${displayMode2}`, mapped);
+                }
+                console.log(`[Prefetcher] Translation cached for: ${trackInfo.title}`);
+              }
+            }
+          } catch (error) {
+            console.warn(`[Prefetcher] Translation prefetch failed:`, error.message);
+          }
+        }
+
+        // 결과를 프리페치 캐시에 저장 (완료 표시용)
+        this._prefetchCache.set(cacheKeyBase, {
+          lyricsArray,
+          displayMode1,
+          displayMode2,
+          timestamp: Date.now(),
+        });
+
+        console.log(`[Prefetcher] Prefetch completed for: ${trackInfo.title}`);
+        return true;
       } catch (error) {
         console.warn(`[Prefetcher] Translation prefetch failed:`, error.message);
         return null;
@@ -3731,12 +3752,26 @@ class LyricsContainer extends react.Component {
       if (isEnabled) {
         document.body.append(this.fullscreenContainer);
         this.mousetrap.bind("esc", this.toggleFullscreen);
+        // ESC 키 직접 리스너 추가 (Mousetrap이 캡처하지 못할 경우 대비)
+        this._escHandler = (e) => {
+          if (e.key === "Escape" && this.state.isFullscreen) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.toggleFullscreen();
+          }
+        };
+        document.addEventListener("keydown", this._escHandler);
       } else {
         this.fullscreenContainer.remove();
         if (document.fullscreenElement) {
           document.exitFullscreen().catch(() => { });
         }
         this.mousetrap.unbind("esc");
+        // ESC 키 리스너 제거
+        if (this._escHandler) {
+          document.removeEventListener("keydown", this._escHandler);
+          this._escHandler = null;
+        }
       }
 
       this.setState({
@@ -3774,6 +3809,12 @@ class LyricsContainer extends react.Component {
     window.removeEventListener("fad-request", lyricContainerUpdate);
     window.removeEventListener("lyrics-plus", this.handleConfigChange);
     window.removeEventListener("lyrics-plus:lyric-index-changed", this.handleLyricIndexChange);
+
+    // ESC 키 리스너 정리
+    if (this._escHandler) {
+      document.removeEventListener("keydown", this._escHandler);
+      this._escHandler = null;
+    }
 
     // Clean up translation loading timer
     this.clearTranslationLoading();

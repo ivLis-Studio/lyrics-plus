@@ -761,7 +761,7 @@ window.LANG_ZH_TW = {
       },
       "showContext": {
         "desc": "顯示播放上下文",
-        "info": "在左上角顯示目前播放的播放清單/專輯資訊"
+        "info": "在左下角顯示目前播放的播放清單/專輯資訊"
       },
       "showContextImage": {
         "desc": "顯示上下文圖片",

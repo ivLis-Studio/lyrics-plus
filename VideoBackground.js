@@ -230,7 +230,17 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
             const offset = captionStartTime - lyricsStartTime;
             const globalDelayMs = typeof CONFIG !== "undefined" && CONFIG.visual ? Number(CONFIG.visual.delay || 0) : 0;
             const additionalDelaySeconds = (trackOffsetMs + globalDelayMs) / 1000;
-            const targetVideoTime = spotifyTime + offset + additionalDelaySeconds;
+            let targetVideoTime = spotifyTime + offset + additionalDelaySeconds;
+
+            // 영상 길이보다 음악이 길 경우, 영상을 처음부터 반복 재생
+            // getDuration()은 영상의 총 길이(초)를 반환
+            if (targetVideoTime >= 0 && typeof player.getDuration === 'function') {
+                const videoDuration = player.getDuration();
+                // 영상 길이가 0보다 크고, 목표 시간이 영상 길이를 초과하면 모듈로 연산
+                if (videoDuration > 0 && targetVideoTime >= videoDuration) {
+                    targetVideoTime = targetVideoTime % videoDuration;
+                }
+            }
 
             if (targetVideoTime >= 0) {
                 const currentVideoTime = player.getCurrentTime();

@@ -761,7 +761,7 @@ window.LANG_PT = {
       },
       "showContext": {
         "desc": "Mostrar Contexto de Reprodução",
-        "info": "Mostrar informações da playlist/álbum atual no canto superior esquerdo"
+        "info": "Mostrar informações da playlist/álbum atual no canto inferior esquerdo"
       },
       "showContextImage": {
         "desc": "Mostrar Imagem de Contexto",
