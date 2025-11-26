@@ -582,90 +582,90 @@ function openOptionsModal(title, items, onChange, eventType = null) {
 // Debounce handle for adjustments modal
 let adjustmentsDebounceTimeout = null;
 
-// Define static options outside component to avoid recreation
-const STATIC_OPTIONS = {
+// Define static options as a function to support i18n (called at render time)
+const getStaticOptions = () => ({
   modeBase: {
-    none: "없음",
+    none: I18n.t("translationMenu.none"),
   },
   geminiModes: {
-    gemini_romaji: "발음",
-    gemini_ko: "번역",
+    gemini_romaji: I18n.t("translationMenu.geminiRomaji"),
+    gemini_ko: I18n.t("translationMenu.geminiKo"),
   },
   languageModes: {
     japanese: {
-      furigana: "후리가나",
-      romaji: "로마지",
-      hiragana: "히라가나",
-      katakana: "가타카나",
+      furigana: I18n.t("translationMenu.furigana"),
+      romaji: I18n.t("translationMenu.romaji"),
+      hiragana: I18n.t("translationMenu.hiragana"),
+      katakana: I18n.t("translationMenu.katakana"),
     },
     korean: {
-      romaja: "로마자",
+      romaja: I18n.t("translationMenu.romaji"),
     },
     chinese: {
-      cn: "간체 중국어",
-      hk: "번체 중국어 (홍콩)",
-      tw: "번체 중국어 (대만)",
-      pinyin: "병음",
+      cn: I18n.t("translationMenu.simplifiedChinese"),
+      hk: I18n.t("translationMenu.traditionalChineseHK"),
+      tw: I18n.t("translationMenu.traditionalChineseTW"),
+      pinyin: I18n.t("translationMenu.pinyin"),
     },
     // Gemini-powered languages
     russian: {
-      gemini_romaji: "로마자 (제미니)",
-      gemini_ko: "한국어 (제미니)",
+      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
+      gemini_ko: I18n.t("translationMenu.koGemini"),
     },
     vietnamese: {
-      gemini_romaji: "로마자 (제미니)",
-      gemini_ko: "한국어 (제미니)",
+      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
+      gemini_ko: I18n.t("translationMenu.koGemini"),
     },
     german: {
-      gemini_romaji: "로마자 (제미니)",
-      gemini_ko: "한국어 (제미니)",
+      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
+      gemini_ko: I18n.t("translationMenu.koGemini"),
     },
     spanish: {
-      gemini_romaji: "로마자 (제미니)",
-      gemini_ko: "한국어 (제미니)",
+      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
+      gemini_ko: I18n.t("translationMenu.koGemini"),
     },
     french: {
-      gemini_romaji: "로마자 (제미니)",
-      gemini_ko: "한국어 (제미니)",
+      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
+      gemini_ko: I18n.t("translationMenu.koGemini"),
     },
     italian: {
-      gemini_romaji: "로마자 (제미니)",
-      gemini_ko: "한국어 (제미니)",
+      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
+      gemini_ko: I18n.t("translationMenu.koGemini"),
     },
     portuguese: {
-      gemini_romaji: "로마자 (제미니)",
-      gemini_ko: "한국어 (제미니)",
+      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
+      gemini_ko: I18n.t("translationMenu.koGemini"),
     },
     dutch: {
-      gemini_romaji: "로마자 (제미니)",
-      gemini_ko: "한국어 (제미니)",
+      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
+      gemini_ko: I18n.t("translationMenu.koGemini"),
     },
     polish: {
-      gemini_romaji: "로마자 (제미니)",
-      gemini_ko: "한국어 (제미니)",
+      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
+      gemini_ko: I18n.t("translationMenu.koGemini"),
     },
     turkish: {
-      gemini_romaji: "로마자 (제미니)",
-      gemini_ko: "한국어 (제미니)",
+      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
+      gemini_ko: I18n.t("translationMenu.koGemini"),
     },
     arabic: {
-      gemini_romaji: "로마자 (제미니)",
-      gemini_ko: "한국어 (제미니)",
+      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
+      gemini_ko: I18n.t("translationMenu.koGemini"),
     },
     hindi: {
-      gemini_romaji: "로마자 (제미니)",
-      gemini_ko: "한국어 (제미니)",
+      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
+      gemini_ko: I18n.t("translationMenu.koGemini"),
     },
     thai: {
-      gemini_romaji: "로마자 (제미니)",
-      gemini_ko: "한국어 (제미니)",
+      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
+      gemini_ko: I18n.t("translationMenu.koGemini"),
     },
     indonesian: {
-      gemini_romaji: "로마자 (제미니)",
-      gemini_ko: "한국어 (제미니)",
+      gemini_romaji: I18n.t("translationMenu.romajiGemini"),
+      gemini_ko: I18n.t("translationMenu.koGemini"),
     },
   },
-};
+});
 
 const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
   // Open modal on click instead of ContextMenu to avoid xpui hook errors
@@ -707,51 +707,52 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
       CONFIG.visual[`translation-mode-2:${modeKey}`]
     );
 
+    const STATIC_OPTIONS = getStaticOptions();
     let modeOptions = STATIC_OPTIONS.geminiModes;
 
     const items = [
       {
-        section: "변환 옵션",
-        subtitle: "가사의 발음과 번역 표시를 설정하세요",
+        section: I18n.t("menu.translationOptions"),
+        subtitle: I18n.t("menu.translationOptionsSubtitle"),
         items: [
           {
             desc: react.createElement(SettingRowDescription, {
               icon: ICONS.mode,
-              text: "발음",
+              text: I18n.t("menu.pronunciation"),
             }),
             key: `translation-mode:${modeKey}`,
             type: ConfigSlider,
             defaultValue:
               CONFIG.visual[`translation-mode:${modeKey}`] !== "none",
             renderInline: true,
-            info: "원문 가사의 발음(로마자)을 표시합니다",
+            info: I18n.t("menu.pronunciationInfo"),
           },
           {
             desc: react.createElement(SettingRowDescription, {
               icon: ICONS.mode,
-              text: "번역",
+              text: I18n.t("menu.translationLabel"),
             }),
             key: `translation-mode-2:${modeKey}`,
             type: ConfigSlider,
             defaultValue:
               CONFIG.visual[`translation-mode-2:${modeKey}`] !== "none",
             renderInline: true,
-            info: "원문 가사를 한국어로 번역하여 표시합니다",
+            info: I18n.t("menu.translationInfo"),
           },
         ],
       },
       {
-        section: "API 설정",
-        subtitle: "Gemini API를 구성하세요",
+        section: I18n.t("menu.apiSettings"),
+        subtitle: I18n.t("menu.apiSettingsSubtitle"),
         items: [
           {
             desc: react.createElement(SettingRowDescription, {
               icon: ICONS.provider,
-              text: "API 키 설정",
+              text: I18n.t("menu.apiKeySettings"),
             }),
             key: "open-api-settings",
             type: ConfigButton,
-            text: "설정 열기",
+            text: I18n.t("menu.openSettings"),
             onChange: () => {
               // Close the current modal and open settings at API tab
               const overlay = document.getElementById(
@@ -774,13 +775,13 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
                 }, 100);
               }, 100);
             },
-            info: "Gemini API 키를 설정하려면 여기를 클릭하세요",
+            info: I18n.t("menu.apiKeySettingsInfo"),
           },
         ],
       },
     ];
 
-    openOptionsModal("변환 설정", items, (name, value) => {
+    openOptionsModal(I18n.t("menu.translationSettings"), items, (name, value) => {
       // Skip processing for button items
       if (name === "open-api-settings") {
         return;
@@ -817,7 +818,7 @@ const TranslationMenu = react.memo(({ friendlyLanguage, hasTranslation }) => {
 
   return react.createElement(
     Spicetify.ReactComponent.TooltipWrapper,
-    { label: "변환" },
+    { label: I18n.t("menu.translation") },
     react.createElement(
       "button",
       { className: "lyrics-config-button", onClick: open },
@@ -839,7 +840,7 @@ const RegenerateTranslationButton = react.memo(
   ({ onRegenerate, isEnabled, isLoading }) => {
     return react.createElement(
       Spicetify.ReactComponent.TooltipWrapper,
-      { label: "번역 재생성" },
+      { label: I18n.t("menu.regenerateTranslation") },
       react.createElement(
         "button",
         {
@@ -933,7 +934,7 @@ const SyncAdjustButton = react.memo(
       null,
       react.createElement(
         Spicetify.ReactComponent.TooltipWrapper,
-        { label: "싱크 조절" },
+        { label: I18n.t("menu.syncAdjust") },
         react.createElement(
           "button",
           {
@@ -1079,7 +1080,7 @@ const SyncAdjustButton = react.memo(
                   letterSpacing: "-0.01em",
                 },
               },
-              "가사 싱크 조절"
+              I18n.t("menu.syncAdjustTitle")
             ),
             react.createElement(
               "button",
@@ -1122,7 +1123,7 @@ const SyncAdjustButton = react.memo(
                 letterSpacing: "-0.01em",
               },
             },
-            "슬라이더를 우측으로 이동하면, 가사가 빠르게 지나갑니다."
+            I18n.t("syncAdjust.info")
           ),
           react.createElement(
             "div",
@@ -1243,7 +1244,7 @@ const SyncAdjustButton = react.memo(
                   e.target.style.transform = "translateY(0)";
                 },
               },
-              "초기화"
+              I18n.t("syncAdjust.reset")
             )
           )
         );
@@ -1259,7 +1260,7 @@ const SettingsMenu = react.memo(() => {
 
   return react.createElement(
     Spicetify.ReactComponent.TooltipWrapper,
-    { label: "설정" },
+    { label: I18n.t("menu.settings") },
     react.createElement(
       "button",
       { className: "lyrics-config-button", onClick: openSettings },

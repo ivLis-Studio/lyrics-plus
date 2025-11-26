@@ -43,7 +43,7 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
         }
 
         const trackId = trackUri.split(":")[2];
-        setStatusMessage("동영상 정보를 불러오는 중...");
+        setStatusMessage(I18n.t("videoBackground.loading"));
         setVideoInfo(null);
         setIsPlayerReady(false);
         setIsLoading(true);
@@ -59,14 +59,14 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
                     setVideoInfo(data.data);
                     setStatusMessage("");
                 } else {
-                    setStatusMessage("동영상을 찾을 수 없습니다.");
+                    setStatusMessage(I18n.t("videoBackground.notFound"));
                     setVideoInfo(null);
                 }
             })
             .catch((e) => {
                 if (!isMounted) return;
                 setIsLoading(false);
-                setStatusMessage("오류가 발생했습니다.");
+                setStatusMessage(I18n.t("videoBackground.error"));
                 setVideoInfo(null);
             });
 
@@ -319,7 +319,7 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
                     fontWeight: "500",
                     fontFamily: "Pretendard Variable, -apple-system, sans-serif",
                 }
-            }, "영상 배경 로딩 중... 30초 정도 소요됩니다.")
+            }, I18n.t("videoBackground.loadingMessage"))
         ),
         // CSS animation keyframes
         isLoading && react.createElement("style", {

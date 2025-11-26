@@ -114,11 +114,11 @@ const FullscreenOverlay = (() => {
                         
                         // Determine context type
                         const uri = context.uri || "";
-                        if (uri.includes("playlist")) setContextType("플레이리스트");
-                        else if (uri.includes("album")) setContextType("앨범");
-                        else if (uri.includes("artist")) setContextType("아티스트");
-                        else if (uri.includes("collection")) setContextType("좋아요 표시한 곡");
-                        else if (uri.includes("station")) setContextType("라디오");
+                        if (uri.includes("playlist")) setContextType(I18n.t("fullscreen.contextType.playlist"));
+                        else if (uri.includes("album")) setContextType(I18n.t("fullscreen.contextType.album"));
+                        else if (uri.includes("artist")) setContextType(I18n.t("fullscreen.contextType.artist"));
+                        else if (uri.includes("collection")) setContextType(I18n.t("fullscreen.contextType.collection"));
+                        else if (uri.includes("station")) setContextType(I18n.t("fullscreen.contextType.station"));
                         else setContextType("");
                     }
                 } catch (e) {
@@ -189,7 +189,7 @@ const FullscreenOverlay = (() => {
         if (!show || !visible || !nextTrack) return null;
 
         return react.createElement("div", { className: "fullscreen-next-track" },
-            react.createElement("div", { className: "fullscreen-next-track-label" }, "다음 곡"),
+            react.createElement("div", { className: "fullscreen-next-track-label" }, I18n.t("fullscreen.controls.nextTrackLabel")),
             react.createElement("div", { className: "fullscreen-next-track-content" },
                 nextTrack.image && react.createElement("img", {
                     src: nextTrack.image,
@@ -392,7 +392,7 @@ const FullscreenOverlay = (() => {
                     className: `fullscreen-control-btn fullscreen-like-btn ${isLiked ? 'liked' : ''}`,
                     style: smallButtonStyle,
                     onClick: toggleLike,
-                    title: isLiked ? "좋아요 취소" : "좋아요"
+                    title: isLiked ? I18n.t("fullscreen.controls.unlike") : I18n.t("fullscreen.controls.like")
                 },
                     react.createElement("svg", {
                         viewBox: "0 0 16 16",
@@ -410,7 +410,7 @@ const FullscreenOverlay = (() => {
                         Spicetify.Player.setShuffle(!isShuffle);
                         setIsShuffle(!isShuffle);
                     },
-                    title: "셔플"
+                    title: I18n.t("fullscreen.controls.shuffle")
                 },
                     react.createElement("svg", {
                         viewBox: "0 0 16 16",
@@ -423,7 +423,7 @@ const FullscreenOverlay = (() => {
                     className: "fullscreen-control-btn",
                     style: buttonStyle,
                     onClick: () => Spicetify.Player.back(),
-                    title: "이전 곡"
+                    title: I18n.t("fullscreen.controls.previous")
                 },
                     react.createElement("svg", {
                         viewBox: "0 0 16 16",
@@ -436,7 +436,7 @@ const FullscreenOverlay = (() => {
                     className: "fullscreen-control-btn fullscreen-control-play",
                     style: mainButtonStyle,
                     onClick: () => Spicetify.Player.togglePlay(),
-                    title: isPlaying ? "일시정지" : "재생"
+                    title: isPlaying ? I18n.t("fullscreen.controls.pause") : I18n.t("fullscreen.controls.play")
                 },
                     react.createElement("svg", {
                         viewBox: "0 0 16 16",
@@ -449,7 +449,7 @@ const FullscreenOverlay = (() => {
                     className: "fullscreen-control-btn",
                     style: buttonStyle,
                     onClick: () => Spicetify.Player.next(),
-                    title: "다음 곡"
+                    title: I18n.t("fullscreen.controls.next")
                 },
                     react.createElement("svg", {
                         viewBox: "0 0 16 16",
@@ -462,7 +462,7 @@ const FullscreenOverlay = (() => {
                     className: `fullscreen-control-btn ${repeatMode > 0 ? 'active' : ''}`,
                     style: smallButtonStyle,
                     onClick: cycleRepeat,
-                    title: repeatMode === 0 ? "반복 끔" : repeatMode === 1 ? "전체 반복" : "한 곡 반복"
+                    title: repeatMode === 0 ? I18n.t("fullscreen.controls.repeatOff") : repeatMode === 1 ? I18n.t("fullscreen.controls.repeatAll") : I18n.t("fullscreen.controls.repeatOne")
                 },
                     react.createElement("svg", {
                         viewBox: "0 0 16 16",
@@ -480,17 +480,17 @@ const FullscreenOverlay = (() => {
                             const shareUrl = `https://open.spotify.com/track/${trackId}`;
                             try {
                                 await navigator.clipboard.writeText(shareUrl);
-                                Spicetify.showNotification("🔗 공유 링크가 복사되었습니다");
+                                Spicetify.showNotification(I18n.t("fullscreen.controls.shareCopied"));
                             } catch (e) {
                                 // Fallback
                                 if (Spicetify.Platform?.ClipboardAPI) {
                                     Spicetify.Platform.ClipboardAPI.copy(shareUrl);
-                                    Spicetify.showNotification("🔗 공유 링크가 복사되었습니다");
+                                    Spicetify.showNotification(I18n.t("fullscreen.controls.shareCopied"));
                                 }
                             }
                         }
                     },
-                    title: "공유 링크 복사"
+                    title: I18n.t("fullscreen.controls.share")
                 },
                     react.createElement("svg", {
                         viewBox: "0 0 16 16",
@@ -506,7 +506,7 @@ const FullscreenOverlay = (() => {
                         className: "fullscreen-control-btn",
                         style: smallButtonStyle,
                         onClick: toggleMute,
-                        title: isMuted ? "음소거 해제" : "음소거"
+                        title: isMuted ? I18n.t("fullscreen.controls.unmute") : I18n.t("fullscreen.controls.mute")
                     },
                         react.createElement("svg", {
                             viewBox: "0 0 16 16",

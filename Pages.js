@@ -884,8 +884,8 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 							onContextMenu: (event) => {
 								event.preventDefault();
 								Spicetify.Platform.ClipboardAPI.copy(Utils.convertParsedToLRC(lyrics).original)
-									.then(() => Spicetify.showNotification("✓ 가사가 클립보드에 복사되었습니다", false, 2000))
-									.catch(() => Spicetify.showNotification("가사 클립보드 복사 실패", true, 2000));
+									.then(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopied"), false, 2000))
+									.catch(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopyFailed"), true, 2000));
 							},
 							// For Furigana/Hiragana HTML strings - React 310 방지를 위한 안전한 검증
 							...(typeof mainText === "string" && !isKara && mainText ? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(mainText) } } : {}),
@@ -1380,8 +1380,8 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 						onContextMenu: (event) => {
 							event.preventDefault();
 							Spicetify.Platform.ClipboardAPI.copy(Utils.convertParsedToLRC(lyrics).original)
-								.then(() => Spicetify.showNotification("✓ 가사가 클립보드에 복사되었습니다", false, 2000))
-								.catch(() => Spicetify.showNotification("가사 클립보드 복사 실패", true, 2000));
+								.then(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopied"), false, 2000))
+								.catch(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopyFailed"), true, 2000));
 						},
 						// For Furigana/Hiragana HTML strings - React 310 방지를 위한 안전한 검증
 						...(typeof mainText === "string" && !isKara && mainText ? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(mainText) } } : {}),
@@ -1469,7 +1469,7 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 				react.createElement(
 					"span",
 					{ className: "lyrics-lyricsContainer-LyricsUnavailableMessage" },
-					"사용 가능한 가사가 없음"
+					I18n.t("messages.noLyrics")
 				)
 			)
 		);
@@ -1510,8 +1510,8 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 						onContextMenu: (event) => {
 							event.preventDefault();
 							Spicetify.Platform.ClipboardAPI.copy(Utils.convertParsedToUnsynced(lyrics, belowMode).original)
-								.then(() => Spicetify.showNotification("✓ 가사가 클립보드에 복사되었습니다", false, 2000))
-								.catch(() => Spicetify.showNotification("가사 클립보드 복사 실패", true, 2000));
+								.then(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopied"), false, 2000))
+								.catch(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopyFailed"), true, 2000));
 						},
 						// React 310 방지: 문자열이고 비어있지 않을 때만 dangerouslySetInnerHTML 사용
 						...(typeof lineText === "string" && lineText
@@ -1532,7 +1532,7 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 							event.preventDefault();
 							Spicetify.Platform.ClipboardAPI.copy(Utils.convertParsedToUnsynced(lyrics, belowMode).conver)
 								.then(() => Spicetify.showNotification("✓ Translation copied to clipboard", false, 2000))
-								.catch(() => Spicetify.showNotification("번역 클립보드 복사 실패", true, 2000));
+								.catch(() => Spicetify.showNotification(I18n.t("notifications.translationCopyFailed"), true, 2000));
 						},
 						// React 310 방지: 문자열이고 비어있지 않을 때만 dangerouslySetInnerHTML 사용
 						...(typeof subText === "string" && subText
@@ -1553,7 +1553,7 @@ const UnsyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright }) => 
 							event.preventDefault();
 							Spicetify.Platform.ClipboardAPI.copy(showMode2Translation)
 								.then(() => Spicetify.showNotification("✓ Second translation copied to clipboard", false, 2000))
-								.catch(() => Spicetify.showNotification("두 번째 번역 클립보드 복사 실패", true, 2000));
+								.catch(() => Spicetify.showNotification(I18n.t("notifications.secondTranslationCopyFailed"), true, 2000));
 						},
 						// React 310 방지: 문자열이고 비어있지 않을 때만 dangerouslySetInnerHTML 사용
 						...(typeof showMode2Translation === "string" && showMode2Translation

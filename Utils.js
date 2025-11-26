@@ -888,13 +888,13 @@ const Utils = {
 
       if (!latestVersion) {
         throw (
-          lastError || new Error("모든 URL에서 버전 정보를 가져오지 못했습니다")
+          lastError || new Error(I18n.t("utils.allUrlsFailed"))
         );
       }
 
       // Validate version format (should be like "1.2.3")
       if (!/^\d+\.\d+\.\d+$/.test(latestVersion)) {
-        throw new Error(`잘못된 버전 형식: ${latestVersion}`);
+        throw new Error(`${I18n.t("utils.invalidVersionFormat")}: ${latestVersion}`);
       }
 
       const hasUpdate =
@@ -906,19 +906,19 @@ const Utils = {
         latestVersion,
       };
     } catch (error) {
-      let errorMessage = "알 수 없는 오류";
+      let errorMessage = I18n.t("utils.unknownError");
       if (error.name === "AbortError") {
-        errorMessage = "요청 시간 초과";
+        errorMessage = I18n.t("utils.requestTimeout");
       } else if (
         error.message.includes("fetch") ||
         error.message.includes("NetworkError")
       ) {
-        errorMessage = "네트워크 연결 실패";
+        errorMessage = I18n.t("utils.networkError");
       } else if (error.message.includes("CORS")) {
-        errorMessage = "브라우저 보안 정책으로 인한 제한";
+        errorMessage = I18n.t("utils.securityRestriction");
       } else if (error.message.includes("HTTP")) {
-        errorMessage = "서버 응답 오류";
-      } else if (error.message.includes("모든 URL")) {
+        errorMessage = I18n.t("utils.serverError");
+      } else if (error.message.includes("URL") || error.message.includes("version")) {
         errorMessage = error.message;
       } else {
         errorMessage = error.message;
@@ -1087,7 +1087,7 @@ const Utils = {
   getPlatformName() {
     const names = {
       windows: "Windows PowerShell",
-      mac: "Terminal (터미널)",
+      mac: I18n.t("utils.terminalMac"),
       linux: "Terminal",
     };
     return names[this.detectPlatform()];

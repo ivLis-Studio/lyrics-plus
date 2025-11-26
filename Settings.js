@@ -61,7 +61,7 @@ const CacheButton = () => {
   }
 
   const [count, setCount] = useState(Object.keys(lyrics).length);
-  const text = count ? "캐시된 모든 가사 삭제" : "캐시된 가사 없음";
+  const text = count ? I18n.t("settings.cache.deleteAll") : I18n.t("settings.cache.noCache");
 
   return react.createElement(
     "button",
@@ -262,35 +262,35 @@ const ColorPresetSelector = ({ name, defaultValue, onChange = () => { } }) => {
 
   // 엄선된 인기 색상 (24개)
   const colorPresets = [
-    { name: "블랙", color: "#000000" },
-    { name: "차콜", color: "#1a1a1a" },
-    { name: "다크 슬레이트", color: "#334155" },
-    { name: "그레이", color: "#64748b" },
+    { name: I18n.t("settings.colors.black"), color: "#000000" },
+    { name: I18n.t("settings.colors.charcoal"), color: "#1a1a1a" },
+    { name: I18n.t("settings.colors.darkSlate"), color: "#334155" },
+    { name: I18n.t("settings.colors.gray"), color: "#64748b" },
 
-    { name: "다크 네이비", color: "#0f172a" },
-    { name: "네이비", color: "#1e3a8a" },
-    { name: "로얄 블루", color: "#2563eb" },
-    { name: "스카이", color: "#0ea5e9" },
+    { name: I18n.t("settings.colors.darkNavy"), color: "#0f172a" },
+    { name: I18n.t("settings.colors.navy"), color: "#1e3a8a" },
+    { name: I18n.t("settings.colors.royalBlue"), color: "#2563eb" },
+    { name: I18n.t("settings.colors.sky"), color: "#0ea5e9" },
 
-    { name: "인디고", color: "#4f46e5" },
-    { name: "퍼플", color: "#8b5cf6" },
-    { name: "푸시아", color: "#d946ef" },
-    { name: "핑크", color: "#ec4899" },
+    { name: I18n.t("settings.colors.indigo"), color: "#4f46e5" },
+    { name: I18n.t("settings.colors.purple"), color: "#8b5cf6" },
+    { name: I18n.t("settings.colors.fuchsia"), color: "#d946ef" },
+    { name: I18n.t("settings.colors.pink"), color: "#ec4899" },
 
-    { name: "와인", color: "#7f1d1d" },
-    { name: "레드", color: "#dc2626" },
-    { name: "오렌지", color: "#f97316" },
-    { name: "앰버", color: "#f59e0b" },
+    { name: I18n.t("settings.colors.wine"), color: "#7f1d1d" },
+    { name: I18n.t("settings.colors.red"), color: "#dc2626" },
+    { name: I18n.t("settings.colors.orange"), color: "#f97316" },
+    { name: I18n.t("settings.colors.amber"), color: "#f59e0b" },
 
-    { name: "골드", color: "#ca8a04" },
-    { name: "라임", color: "#84cc16" },
-    { name: "그린", color: "#22c55e" },
-    { name: "에메랄드", color: "#10b981" },
+    { name: I18n.t("settings.colors.gold"), color: "#ca8a04" },
+    { name: I18n.t("settings.colors.lime"), color: "#84cc16" },
+    { name: I18n.t("settings.colors.green"), color: "#22c55e" },
+    { name: I18n.t("settings.colors.emerald"), color: "#10b981" },
 
-    { name: "틸", color: "#14b8a6" },
-    { name: "청록", color: "#06b6d4" },
-    { name: "브라운", color: "#92400e" },
-    { name: "초콜릿", color: "#78350f" },
+    { name: I18n.t("settings.colors.teal"), color: "#14b8a6" },
+    { name: I18n.t("settings.colors.cyan"), color: "#06b6d4" },
+    { name: I18n.t("settings.colors.brown"), color: "#92400e" },
+    { name: I18n.t("settings.colors.chocolate"), color: "#78350f" },
   ];
 
   const handleColorClick = (color) => {
@@ -360,7 +360,7 @@ const ColorPresetSelector = ({ name, defaultValue, onChange = () => { } }) => {
               textOverflow: "ellipsis",
             },
           },
-          selectedPreset ? selectedPreset.name : "사용자 지정"
+          selectedPreset ? selectedPreset.name : I18n.t("settings.colors.customColor")
         ),
         react.createElement(
           "span",
@@ -400,7 +400,7 @@ const ColorPresetSelector = ({ name, defaultValue, onChange = () => { } }) => {
             e.target.style.color = "var(--spice-text)";
           },
         },
-        showAll ? "접기 ▲" : "더보기 ▼"
+        showAll ? I18n.t("settings.colors.showLess") : I18n.t("settings.colors.showMore")
       )
     ),
     // 색상 팔레트
@@ -479,7 +479,7 @@ const ConfigWarning = ({ message }) => {
             className: "setting-name",
             style: { color: "var(--spice-text)", fontWeight: "600" },
           },
-          "ℹ️ 단색 배경 사용 중"
+          I18n.t("settings.solidBackgroundInUse")
         ),
         react.createElement(
           "div",
@@ -684,7 +684,7 @@ const ConfigFontSelector = ({
         type: "text",
         value: customFont,
         onChange: handleCustomFontChange,
-        placeholder: "폰트명 입력 (예: Arial, 맑은 고딕)",
+        placeholder: I18n.t("settings.fontPlaceholder"),
         style: commonStyle,
       })
       : react.createElement(
@@ -1304,7 +1304,7 @@ const ConfigModal = () => {
             : "Unknown";
 
           // Markdown을 HTML로 변환
-          let body = data.body || "패치 노트가 없습니다.";
+          let body = data.body || I18n.t("settingsAdvanced.patchNotes.empty");
 
           // 마크다운 변환 (순서 중요)
           body = body
@@ -1384,7 +1384,7 @@ const ConfigModal = () => {
                   font-weight: 600;
                   transition: all 0.2s;
                 " onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-                  GitHub에서 보기
+                  ${I18n.t("settingsAdvanced.aboutTab.viewOnGithub")}
                   <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
                     <path d="M3.75 2A1.75 1.75 0 002 3.75v8.5c0 .966.784 1.75 1.75 1.75h8.5A1.75 1.75 0 0014 12.25v-3.5a.75.75 0 00-1.5 0v3.5a.25.25 0 01-.25.25h-8.5a.25.25 0 01-.25-.25v-8.5a.25.25 0 01.25-.25h3.5a.75.75 0 000-1.5h-3.5z"/>
                     <path d="M10.75 1a.75.75 0 000 1.5h1.69L8.22 6.72a.75.75 0 001.06 1.06l4.22-4.22v1.69a.75.75 0 001.5 0V1h-4.25z"/>
@@ -1408,8 +1408,8 @@ const ConfigModal = () => {
                 <line x1="12" y1="8" x2="12" y2="12" stroke-width="2" stroke-linecap="round"/>
                 <line x1="12" y1="16" x2="12.01" y2="16" stroke-width="2" stroke-linecap="round"/>
               </svg>
-              <p style="margin: 0; font-size: 14px;">패치 노트를 불러올 수 없습니다</p>
-              <p style="margin: 4px 0 0; font-size: 12px; opacity: 0.7;">GitHub 릴리스 페이지를 확인해주세요</p>
+              <p style="margin: 0; font-size: 14px;">${I18n.t("settingsAdvanced.aboutTab.patchNotesLoadFailed")}</p>
+              <p style="margin: 4px 0 0; font-size: 12px; opacity: 0.7;">${I18n.t("settingsAdvanced.aboutTab.checkGithubReleases")}</p>
             </div>
           `;
         }
@@ -1449,7 +1449,7 @@ const ConfigModal = () => {
                   "https://github.com/ivLis-Studio/lyrics-plus",
                   "_blank"
                 ),
-              title: "GitHub 저장소 방문",
+              title: I18n.t("settingsAdvanced.aboutTab.visitGithub"),
             },
             react.createElement("svg", {
               width: 16,
@@ -1472,7 +1472,7 @@ const ConfigModal = () => {
                   "https://ivlis.kr/lyrics-plus/discord.php",
                   "_blank"
                 ),
-              title: "Discord 서버 참여",
+              title: I18n.t("settingsAdvanced.aboutTab.joinDiscord"),
             },
             react.createElement("svg", {
               width: 16,
@@ -1495,7 +1495,7 @@ const ConfigModal = () => {
                   "https://buymeacoffee.com/ivlis",
                   "_blank"
                 ),
-              title: "개발자에게 커피 한잔 사주기",
+              title: I18n.t("settingsAdvanced.donate.title"),
             },
             react.createElement("svg", {
               width: 16,
@@ -1507,7 +1507,7 @@ const ConfigModal = () => {
                   '<path d="M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.11 0 2-.89 2-2V5c0-1.11-.89-2-2-2zm0 5h-2V5h2v3zM4 19h16v2H4z"/>',
               },
             }),
-            react.createElement("span", null, "후원")
+            react.createElement("span", null, I18n.t("settingsAdvanced.donate.button"))
           )
         )
       )
@@ -2376,49 +2376,49 @@ const ConfigModal = () => {
       { className: "settings-tabs" },
       react.createElement(TabButton, {
         id: "general",
-        label: "일반",
+        label: I18n.t("tabs.general"),
         icon: "",
         isActive: activeTab === "general",
         onClick: setActiveTab,
       }),
       react.createElement(TabButton, {
         id: "appearance",
-        label: "외관",
+        label: I18n.t("tabs.appearance"),
         icon: "",
         isActive: activeTab === "appearance",
         onClick: setActiveTab,
       }),
       react.createElement(TabButton, {
         id: "lyrics",
-        label: "동작",
+        label: I18n.t("tabs.behavior"),
         icon: "",
         isActive: activeTab === "lyrics",
         onClick: setActiveTab,
       }),
       react.createElement(TabButton, {
         id: "translation",
-        label: "제공자",
+        label: I18n.t("tabs.providers"),
         icon: "",
         isActive: activeTab === "translation",
         onClick: setActiveTab,
       }),
       react.createElement(TabButton, {
         id: "advanced",
-        label: "고급",
+        label: I18n.t("tabs.advanced"),
         icon: "",
         isActive: activeTab === "advanced",
         onClick: setActiveTab,
       }),
       react.createElement(TabButton, {
         id: "fullscreen",
-        label: "전체화면",
+        label: I18n.t("tabs.fullscreen"),
         icon: "",
         isActive: activeTab === "fullscreen",
         onClick: setActiveTab,
       }),
       react.createElement(TabButton, {
         id: "about",
-        label: "정보",
+        label: I18n.t("tabs.about"),
         icon: "",
         isActive: activeTab === "about",
         onClick: setActiveTab,
@@ -2433,9 +2433,40 @@ const ConfigModal = () => {
         {
           className: `tab-content ${activeTab === "general" ? "active" : ""}`,
         },
+        // 언어 설정 섹션
         react.createElement(SectionTitle, {
-          title: "시각 효과",
-          subtitle: "가사 화면의 시각적 요소를 커스터마이징하세요",
+          title: I18n.t("sections.language"),
+          subtitle: I18n.t("settings.language.desc"),
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: I18n.t("settings.language.label") + " (Language)",
+              key: "language",
+              info: I18n.t("settings.language.desc"),
+              type: ConfigSelection,
+              options: {
+                ko: "한국어",
+                en: "English",
+              },
+            },
+          ],
+          onChange: (name, value) => {
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+            // I18n 시스템에도 언어 변경 알림
+            if (window.I18n && window.I18n.setLanguage) {
+              window.I18n.setLanguage(value);
+            }
+            // 설정 페이지로 돌아오기 위해 플래그 저장
+            localStorage.setItem("lyrics-plus:return-to-settings", "true");
+            // 자동 새로고침
+            location.reload();
+          },
+        }),
+        react.createElement(SectionTitle, {
+          title: I18n.t("sections.visualEffects"),
+          subtitle: I18n.t("sections.visualEffectsSubtitle"),
         }),
         // FAD 경고 메시지
         isFadActive &&
@@ -2459,7 +2490,7 @@ const ConfigModal = () => {
                   className: "setting-name",
                   style: { color: "var(--spice-text)", fontWeight: "600" },
                 },
-                "⚠️ Full Screen 확장 프로그램 사용 중"
+                I18n.t("sections.fadWarningTitle")
               ),
               react.createElement(
                 "div",
@@ -2467,9 +2498,9 @@ const ConfigModal = () => {
                   className: "setting-description",
                   style: { color: "var(--spice-subtext)" },
                 },
-                "Full Screen 확장 프로그램 사용 중에는 지원하지 않습니다.",
+                I18n.t("sections.fadWarningDesc"),
                 react.createElement("br"),
-                "정렬 방식은 Full Screen 자체 설정에서 변경하십시오."
+                I18n.t("sections.fadWarningTip")
               )
             )
           )
@@ -2477,63 +2508,63 @@ const ConfigModal = () => {
         react.createElement(OptionList, {
           items: [
             {
-              desc: "정렬 방식",
+              desc: I18n.t("settings.alignment.label"),
               key: "alignment",
-              info: "가사 텍스트의 정렬 위치를 선택하세요",
+              info: I18n.t("settings.alignment.desc"),
               type: ConfigSelection,
               disabled: isFadActive,
               options: {
-                left: "왼쪽",
-                center: "가운데",
-                right: "오른쪽",
+                left: I18n.t("settings.alignment.options.left"),
+                center: I18n.t("settings.alignment.options.center"),
+                right: I18n.t("settings.alignment.options.right"),
               },
             },
             {
-              desc: "노이즈 오버레이",
+              desc: I18n.t("settings.noise.label"),
               key: "noise",
-              info: "배경에 필름 그레인 효과를 추가합니다",
+              info: I18n.t("settings.noise.desc"),
               type: ConfigSlider,
               disabled: isFadActive,
             },
             {
-              desc: "컬러풀 배경",
+              desc: I18n.t("settings.colorful.label"),
               key: "colorful",
-              info: "앨범 색상 기반의 동적 배경을 활성화합니다",
+              info: I18n.t("settings.colorful.desc"),
               type: ConfigSlider,
               disabled: isFadActive,
             },
             {
-              desc: "앨범 커버 배경",
-              info: "현재 재생 중인 앨범 커버를 배경으로 사용합니다 (풀스크린 모드에서는 제대로 동작하지 않을 수 있습니다)",
+              desc: I18n.t("settings.gradientBackground.label"),
+              info: I18n.t("settings.gradientBackground.desc"),
               key: "gradient-background",
               type: ConfigSlider,
               disabled: isFadActive,
             },
             {
-              desc: "단색 배경",
-              info: "사용자 지정 단색을 배경으로 사용합니다",
+              desc: I18n.t("settings.solidBackground.label"),
+              info: I18n.t("settings.solidBackground.desc"),
               key: "solid-background",
               type: ConfigSlider,
               disabled: isFadActive,
             },
             {
-              desc: "단색 배경 색상",
+              desc: I18n.t("settings.solidBackgroundColor.label"),
               key: "solid-background-color",
-              info: "단색 배경에 사용할 색상을 선택하세요",
+              info: I18n.t("settings.solidBackgroundColor.desc"),
               type: ColorPresetSelector,
               disabled: isFadActive,
               when: () => CONFIG.visual["solid-background"],
             },
             {
-              desc: "동영상 배경",
-              info: "YouTube 동영상을 배경으로 사용합니다 (베타)",
+              desc: I18n.t("settings.videoBackground.label"),
+              info: I18n.t("settings.videoBackground.desc"),
               key: "video-background",
               type: ConfigSlider,
               disabled: isFadActive,
             },
             {
-              desc: "동영상 블러",
-              info: "영상 배경에 적용할 흐림 강도를 조절합니다 (0-40px)",
+              desc: I18n.t("settings.videoBlur.label"),
+              info: I18n.t("settings.videoBlur.desc"),
               key: "video-blur",
               type: ConfigSliderRange,
               disabled: isFadActive,
@@ -2544,8 +2575,8 @@ const ConfigModal = () => {
               unit: "px",
             },
             {
-              desc: "영상 화면 채우기",
-              info: "영상을 화면에 꽉 차게 확대합니다 (상하 또는 좌우가 잨릴 수 있습니다)",
+              desc: I18n.t("settings.videoCover.label"),
+              info: I18n.t("settings.videoCover.desc"),
               key: "video-cover",
               type: ConfigSlider,
               disabled: isFadActive,
@@ -2555,14 +2586,13 @@ const ConfigModal = () => {
               desc: "",
               key: "solid-background-warning",
               type: ConfigWarning,
-              message:
-                "단색 배경을 사용할 때는 배경 밝기 조절이 적용되지 않습니다.",
+              message: I18n.t("settings.solidBackgroundWarning"),
               when: () => CONFIG.visual["solid-background"],
             },
             {
-              desc: "배경 밝기",
+              desc: I18n.t("settings.backgroundBrightness.label"),
               key: "background-brightness",
-              info: "배경의 밝기 수준을 조절합니다 (0-100%)",
+              info: I18n.t("settings.backgroundBrightness.desc"),
               type: ConfigSliderRange,
               disabled: () => isFadActive || CONFIG.visual["solid-background"],
               min: 0,
@@ -2617,29 +2647,29 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
-          title: "동기화 모드",
-          subtitle: "컴팩트 동기화 모드의 표시 옵션",
+          title: I18n.t("settingsAdvanced.syncMode.title"),
+          subtitle: I18n.t("settingsAdvanced.syncMode.subtitle"),
         }),
         react.createElement(OptionList, {
           items: [
             {
-              desc: "표시 줄 수 (이전)",
+              desc: I18n.t("settingsAdvanced.syncMode.linesBefore.label"),
               key: "lines-before",
-              info: "현재 재생 중인 가사 이전에 표시할 줄 수",
+              info: I18n.t("settingsAdvanced.syncMode.linesBefore.desc"),
               type: ConfigSelection,
               options: [0, 1, 2, 3, 4],
             },
             {
-              desc: "표시 줄 수 (이후)",
+              desc: I18n.t("settingsAdvanced.syncMode.linesAfter.label"),
               key: "lines-after",
-              info: "현재 재생 중인 가사 이후에 표시할 줄 수",
+              info: I18n.t("settingsAdvanced.syncMode.linesAfter.desc"),
               type: ConfigSelection,
               options: [0, 1, 2, 3, 4],
             },
             {
-              desc: "페이드아웃 블러 효과",
+              desc: I18n.t("settingsAdvanced.syncMode.fadeoutBlur.label"),
               key: "fade-blur",
-              info: "비활성 가사에 블러 효과를 적용합니다",
+              info: I18n.t("settingsAdvanced.syncMode.fadeoutBlur.desc"),
               type: ConfigSlider,
             },
           ],
@@ -2666,8 +2696,8 @@ const ConfigModal = () => {
             }`,
         },
         react.createElement(SectionTitle, {
-          title: "실시간 미리보기",
-          subtitle: "설정한 스타일을 즉시 확인하세요",
+          title: I18n.t("settingsAdvanced.livePreview.title"),
+          subtitle: I18n.t("settingsAdvanced.livePreview.subtitle"),
         }),
         react.createElement(
           "div",
@@ -2701,7 +2731,7 @@ const ConfigModal = () => {
                     : "none",
                 },
               },
-              "가사가 here에 見えます"
+              I18n.t("settingsAdvanced.livePreview.sampleTextMixed")
             ),
             react.createElement(
               "div",
@@ -2757,13 +2787,13 @@ const ConfigModal = () => {
                     : "none",
                 },
               },
-              "가사가 여기 있습니다"
+              I18n.t("settingsAdvanced.livePreview.sampleText")
             )
           )
         ),
         react.createElement(SectionTitle, {
-          title: "원문 스타일",
-          subtitle: "가사 원문의 글꼴 설정",
+          title: I18n.t("settingsAdvanced.originalStyle.title"),
+          subtitle: I18n.t("settingsAdvanced.originalStyle.subtitle"),
         }),
         react.createElement(
           "div",
@@ -2777,12 +2807,12 @@ const ConfigModal = () => {
               react.createElement(
                 "div",
                 { className: "setting-name" },
-                "폰트 패밀리"
+                I18n.t("settingsAdvanced.originalStyle.fontFamily")
               ),
               react.createElement(
                 "div",
                 { className: "setting-description" },
-                "원문 가사에 적용할 폰트를 선택하세요. 쉼표(,)로 구분하여 여러 폰트를 입력하면 순서대로 적용됩니다."
+                I18n.t("settingsAdvanced.originalStyle.fontFamilyDesc")
               )
             ),
             react.createElement(
@@ -2851,8 +2881,8 @@ const ConfigModal = () => {
         react.createElement(OptionList, {
           items: [
             {
-              desc: "글꼴 크기",
-              info: "원문 가사의 글꼴 크기 (픽셀)",
+              desc: I18n.t("settingsAdvanced.originalStyle.fontSize.label"),
+              info: I18n.t("settingsAdvanced.originalStyle.fontSize.desc"),
               key: "original-font-size",
               type: ConfigSliderRange,
               min: 12,
@@ -2861,8 +2891,8 @@ const ConfigModal = () => {
               unit: "px",
             },
             {
-              desc: "글꼴 두께",
-              info: "원문 가사의 글꼴 굵기",
+              desc: I18n.t("settingsAdvanced.originalStyle.fontWeight.label"),
+              info: I18n.t("settingsAdvanced.originalStyle.fontWeight.desc"),
               key: "original-font-weight",
               type: ConfigSelection,
               options: {
@@ -2878,8 +2908,8 @@ const ConfigModal = () => {
               },
             },
             {
-              desc: "투명도",
-              info: "원문 가사의 불투명도 (0-100%)",
+              desc: I18n.t("settingsAdvanced.originalStyle.opacity.label"),
+              info: I18n.t("settingsAdvanced.originalStyle.opacity.desc"),
               key: "original-opacity",
               type: ConfigSliderRange,
               min: 0,
@@ -2909,8 +2939,8 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
-          title: "발음 스타일",
-          subtitle: "로마자 발음 표기(Romaji, Romaja, Pinyin)의 글꼴 설정",
+          title: I18n.t("settingsAdvanced.pronunciationStyle.title"),
+          subtitle: I18n.t("settingsAdvanced.pronunciationStyle.subtitle"),
         }),
         react.createElement(
           "div",
@@ -2924,12 +2954,12 @@ const ConfigModal = () => {
               react.createElement(
                 "div",
                 { className: "setting-name" },
-                "폰트 패밀리"
+                I18n.t("settingsAdvanced.originalStyle.fontFamily")
               ),
               react.createElement(
                 "div",
                 { className: "setting-description" },
-                "로마자 발음 표기에 적용할 폰트를 선택하세요. 쉼표(,)로 구분하여 여러 폰트를 입력하면 순서대로 적용됩니다."
+                I18n.t("settingsAdvanced.pronunciationStyle.fontFamilyDesc")
               )
             ),
             react.createElement(
@@ -2998,8 +3028,8 @@ const ConfigModal = () => {
         react.createElement(OptionList, {
           items: [
             {
-              desc: "글꼴 크기",
-              info: "로마자 발음 표기의 글꼴 크기 (픽셀)",
+              desc: I18n.t("settingsAdvanced.originalStyle.fontSize.label"),
+              info: I18n.t("settingsAdvanced.pronunciationStyle.fontSize.desc"),
               key: "phonetic-font-size",
               type: ConfigSliderRange,
               min: 10,
@@ -3008,8 +3038,8 @@ const ConfigModal = () => {
               unit: "px",
             },
             {
-              desc: "글꼴 두께",
-              info: "로마자 발음 표기의 글꼴 굵기",
+              desc: I18n.t("settingsAdvanced.originalStyle.fontWeight.label"),
+              info: I18n.t("settingsAdvanced.pronunciationStyle.fontWeight.desc"),
               key: "phonetic-font-weight",
               type: ConfigSelection,
               options: {
@@ -3025,8 +3055,8 @@ const ConfigModal = () => {
               },
             },
             {
-              desc: "투명도",
-              info: "로마자 발음 표기의 불투명도 (0-100%)",
+              desc: I18n.t("settingsAdvanced.originalStyle.opacity.label"),
+              info: I18n.t("settingsAdvanced.pronunciationStyle.opacity.desc"),
               key: "phonetic-opacity",
               type: ConfigSliderRange,
               min: 0,
@@ -3035,8 +3065,8 @@ const ConfigModal = () => {
               unit: "%",
             },
             {
-              desc: "원문과의 간격",
-              info: "원문과 발음 표기 사이의 여백",
+              desc: I18n.t("settingsAdvanced.pronunciationStyle.gap.label"),
+              info: I18n.t("settingsAdvanced.pronunciationStyle.gap.desc"),
               key: "phonetic-spacing",
               type: ConfigSliderRange,
               min: -30,
@@ -3068,8 +3098,8 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
-          title: "번역문 스타일",
-          subtitle: "번역된 가사의 글꼴 설정",
+          title: I18n.t("settingsAdvanced.translationStyle.title"),
+          subtitle: I18n.t("settingsAdvanced.translationStyle.subtitle"),
         }),
         react.createElement(
           "div",
@@ -3083,12 +3113,12 @@ const ConfigModal = () => {
               react.createElement(
                 "div",
                 { className: "setting-name" },
-                "폰트 패밀리"
+                I18n.t("settingsAdvanced.originalStyle.fontFamily")
               ),
               react.createElement(
                 "div",
                 { className: "setting-description" },
-                "번역된 가사에 적용할 폰트를 선택하세요. 쉼표(,)로 구분하여 여러 폰트를 입력하면 순서대로 적용됩니다."
+                I18n.t("settingsAdvanced.translationStyle.fontFamilyDesc")
               )
             ),
             react.createElement(
@@ -3158,8 +3188,8 @@ const ConfigModal = () => {
         react.createElement(OptionList, {
           items: [
             {
-              desc: "글꼴 크기",
-              info: "번역 가사의 글꼴 크기 (픽셀)",
+              desc: I18n.t("settingsAdvanced.originalStyle.fontSize.label"),
+              info: I18n.t("settingsAdvanced.translationStyle.fontSize.desc"),
               key: "translation-font-size",
               type: ConfigSliderRange,
               min: 12,
@@ -3168,8 +3198,8 @@ const ConfigModal = () => {
               unit: "px",
             },
             {
-              desc: "글꼴 두께",
-              info: "번역 가사의 글꼴 굵기",
+              desc: I18n.t("settingsAdvanced.originalStyle.fontWeight.label"),
+              info: I18n.t("settingsAdvanced.translationStyle.fontWeight.desc"),
               key: "translation-font-weight",
               type: ConfigSelection,
               options: {
@@ -3185,8 +3215,8 @@ const ConfigModal = () => {
               },
             },
             {
-              desc: "투명도",
-              info: "번역 가사의 불투명도 (0-100%)",
+              desc: I18n.t("settingsAdvanced.originalStyle.opacity.label"),
+              info: I18n.t("settingsAdvanced.translationStyle.opacity.desc"),
               key: "translation-opacity",
               type: ConfigSliderRange,
               min: 0,
@@ -3195,8 +3225,8 @@ const ConfigModal = () => {
               unit: "%",
             },
             {
-              desc: "발음과의 간격",
-              info: "발음 표기와 번역문 사이의 여백 (픽셀)",
+              desc: I18n.t("settingsAdvanced.translationStyle.gap.label"),
+              info: I18n.t("settingsAdvanced.translationStyle.gap.desc"),
               key: "translation-spacing",
               type: ConfigSliderRange,
               min: -20,
@@ -3231,26 +3261,26 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
-          title: "텍스트 그림자",
-          subtitle: "가독성을 높이는 그림자 효과",
+          title: I18n.t("settingsAdvanced.textShadow.title"),
+          subtitle: I18n.t("settingsAdvanced.textShadow.subtitle"),
         }),
         react.createElement(OptionList, {
           items: [
             {
-              desc: "그림자 효과",
-              info: "가사 텍스트에 그림자 효과를 적용합니다",
+              desc: I18n.t("settingsAdvanced.textShadow.enabled.label"),
+              info: I18n.t("settingsAdvanced.textShadow.enabled.desc"),
               key: "text-shadow-enabled",
               type: ConfigSlider,
             },
             {
-              desc: "그림자 색상",
-              info: "그림자의 색상 (HEX 코드)",
+              desc: I18n.t("settingsAdvanced.textShadow.color.label"),
+              info: I18n.t("settingsAdvanced.textShadow.color.desc"),
               key: "text-shadow-color",
               type: ConfigColorPicker,
             },
             {
-              desc: "그림자 투명도",
-              info: "그림자의 불투명도 (0-100%)",
+              desc: I18n.t("settingsAdvanced.textShadow.opacity.label"),
+              info: I18n.t("settingsAdvanced.textShadow.opacity.desc"),
               key: "text-shadow-opacity",
               type: ConfigSliderRange,
               min: 0,
@@ -3259,8 +3289,8 @@ const ConfigModal = () => {
               unit: "%",
             },
             {
-              desc: "블러 강도",
-              info: "그림자의 흐림 정도",
+              desc: I18n.t("settingsAdvanced.textShadow.blur.label"),
+              info: I18n.t("settingsAdvanced.textShadow.blur.desc"),
               key: "text-shadow-blur",
               type: ConfigSliderRange,
               min: 0,
@@ -3311,22 +3341,22 @@ const ConfigModal = () => {
           className: `tab-content ${activeTab === "lyrics" ? "active" : ""}`,
         },
         react.createElement(SectionTitle, {
-          title: "재생 동작",
-          subtitle: "재생 관련 기능 설정",
+          title: I18n.t("settingsAdvanced.playback.title"),
+          subtitle: I18n.t("settingsAdvanced.playback.subtitle"),
         }),
         react.createElement(OptionList, {
           items: [
             {
-              desc: "재생바 버튼 대체",
+              desc: I18n.t("settingsAdvanced.playback.replaceButton.label"),
               key: "playbar-button",
-              info: "Spotify의 기본 가사 버튼을 Lyrics Plus로 교체합니다",
+              info: I18n.t("settingsAdvanced.playback.replaceButton.info") || "Replaces Spotify's default lyrics button with Lyrics Plus",
               type: ConfigSlider,
             },
 
             {
-              desc: "전체화면 단축키",
+              desc: I18n.t("settingsAdvanced.playback.fullscreenShortcut.label"),
               key: "fullscreen-key",
-              info: "가사 전체화면 모드를 위한 키보드 단축키",
+              info: I18n.t("settingsAdvanced.playback.fullscreenShortcut.desc"),
               type: ConfigHotkey,
             },
           ],
@@ -3342,20 +3372,20 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
-          title: "노래방 모드",
-          subtitle: "노래방 스타일 가사 표시",
+          title: I18n.t("settingsAdvanced.karaokeMode.title"),
+          subtitle: I18n.t("settingsAdvanced.karaokeMode.subtitle"),
         }),
         react.createElement(OptionList, {
           items: [
             {
-              desc: "노래방 모드 사용",
-              info: "노래방 가사를 지원하는 곡에서 노래방 탭을 사용합니다. 비활성화 시 동기화 탭으로 고정됩니다",
+              desc: I18n.t("settingsAdvanced.karaokeMode.enabled.label"),
+              info: I18n.t("settingsAdvanced.karaokeMode.enabled.desc"),
               key: "karaoke-mode-enabled",
               type: ConfigSlider,
             },
             {
-              desc: "글자 바운스 효과",
-              info: "노래방 모드에서 현재 부르는 글자에 통통 튀는 애니메이션을 적용합니다",
+              desc: I18n.t("settingsAdvanced.karaokeMode.bounce.label"),
+              info: I18n.t("settingsAdvanced.karaokeMode.bounce.desc"),
               key: "karaoke-bounce",
               type: ConfigSlider,
             },
@@ -3372,21 +3402,21 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
-          title: "캐시 관리",
-          subtitle: "저장된 데이터 관리",
+          title: I18n.t("settingsAdvanced.cacheManagement.title"),
+          subtitle: I18n.t("settingsAdvanced.cacheManagement.subtitle"),
         }),
         react.createElement(OptionList, {
           items: [
             {
-              desc: "메모리 캐시 초기화",
-              info: "로드된 가사는 빠른 재로드를 위해 메모리에 임시 저장됩니다. Spotify를 재시작하지 않고 메모리 캐시를 비웁니다",
+              desc: I18n.t("settingsAdvanced.cacheManagement.memoryCache.label"),
+              info: I18n.t("settingsAdvanced.cacheManagement.memoryCache.desc"),
               key: "clear-memory-cache",
-              text: "캐시 비우기",
+              text: I18n.t("settingsAdvanced.cacheManagement.memoryCache.button"),
               type: ConfigButton,
               onChange: () => {
                 reloadLyrics?.();
                 Spicetify.showNotification(
-                  "✓ 메모리 캐시가 초기화되었습니다",
+                  I18n.t("notifications.memoryCacheCleared"),
                   false,
                   2000
                 );
@@ -3404,8 +3434,8 @@ const ConfigModal = () => {
             }`,
         },
         react.createElement(SectionTitle, {
-          title: "가사 제공자",
-          subtitle: "가사 소스의 우선순위와 설정을 관리하세요",
+          title: I18n.t("settingsAdvanced.lyricsProviders.title"),
+          subtitle: I18n.t("settingsAdvanced.lyricsProviders.subtitle"),
         }),
         react.createElement(ServiceList, {
           itemsList: CONFIG.providersOrder,
@@ -3436,20 +3466,20 @@ const ConfigModal = () => {
           className: `tab-content ${activeTab === "advanced" ? "active" : ""}`,
         },
         react.createElement(SectionTitle, {
-          title: "언어 감지",
-          subtitle: "텍스트 변환을 위한 언어 감지 설정",
+          title: I18n.t("settingsAdvanced.languageDetection.title"),
+          subtitle: I18n.t("settingsAdvanced.languageDetection.subtitle"),
         }),
         react.createElement(OptionList, {
           items: [
             {
-              desc: "일본어 한자에 후리가나 표시",
-              info: "일본어 가사의 한자(칸지) 위에 히라가나 읽기를 표시합니다",
+              desc: I18n.t("settingsAdvanced.languageDetection.furigana.label"),
+              info: I18n.t("settingsAdvanced.languageDetection.furigana.desc"),
               key: "furigana-enabled",
               type: ConfigSlider,
             },
             {
-              desc: "일본어 감지 임계값",
-              info: "가사에서 가나 문자의 비율로 일본어를 감지합니다. 값이 높을수록 더 엄격하게 감지합니다 (백분율)",
+              desc: I18n.t("settingsAdvanced.languageDetection.japaneseThreshold.label"),
+              info: I18n.t("settingsAdvanced.languageDetection.japaneseThreshold.desc"),
               key: "ja-detect-threshold",
               type: ConfigSliderRange,
               min: thresholdSizeLimit.min,
@@ -3458,8 +3488,8 @@ const ConfigModal = () => {
               unit: "%",
             },
             {
-              desc: "중국어 감지 임계값",
-              info: "번체자와 간체자의 비율로 중국어 종류를 감지합니다. 값이 높을수록 더 엄격하게 감지합니다 (백분율)",
+              desc: I18n.t("settingsAdvanced.languageDetection.chineseThreshold.label"),
+              info: I18n.t("settingsAdvanced.languageDetection.chineseThreshold.desc"),
               key: "hans-detect-threshold",
               type: ConfigSliderRange,
               min: thresholdSizeLimit.min,
@@ -3480,14 +3510,14 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
-          title: "API 설정",
-          subtitle: "외부 서비스 연동을 위한 API 키",
+          title: I18n.t("settingsAdvanced.api.title"),
+          subtitle: I18n.t("settingsAdvanced.apiKeys.subtitle"),
         }),
         react.createElement(OptionList, {
           items: [
             {
-              desc: "Gemini API 키",
-              info: "Google Gemini AI를 활용한 가사 번역 기능을 사용하려면 API 키가 필요합니다",
+              desc: I18n.t("settingsAdvanced.api.geminiKey.desc"),
+              info: I18n.t("settingsAdvanced.api.geminiKey.info"),
               key: "gemini-api-key",
               type: ConfigInput,
             },
@@ -3504,22 +3534,22 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
-          title: "설정 내보내기/가져오기",
-          subtitle: "다른 기기로 설정을 옮기세요",
+          title: I18n.t("settingsAdvanced.exportImport.title"),
+          subtitle: I18n.t("settingsAdvanced.exportImport.subtitle"),
         }),
         react.createElement(OptionList, {
           items: [
             {
-              desc: "설정 내보내기",
-              info: `현재 설정을 파일로 내보냅니다.`,
+              desc: I18n.t("settingsAdvanced.exportImport.export.label"),
+              info: I18n.t("settingsAdvanced.exportImport.export.label"),
               key: "export-settings",
-              text: "내보내기",
+              text: I18n.t("settingsAdvanced.exportImport.export.button"),
               type: ConfigButton,
               onChange: async (_, event) => {
                 const button = event?.target;
                 if (!button) return;
                 const originalText = button.textContent;
-                button.textContent = "내보내는 중...";
+                button.textContent = I18n.t("settingsAdvanced.exportImport.export.processing");
                 button.disabled = true;
 
                 try {
@@ -3579,8 +3609,8 @@ const ConfigModal = () => {
 															<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
 														</svg>
 														<div>
-															<div style="font-weight: 600; margin-bottom: 2px;">내보내기에 성공했습니다</div>
-															<div style="opacity: 0.8; font-size: 12px;">설정파일을 다운로드 폴더에 저장합니다.</div>
+															<div style="font-weight: 600; margin-bottom: 2px;">${I18n.t("notifications.exportSuccess")}</div>
+															<div style="opacity: 0.8; font-size: 12px;">${I18n.t("notifications.exportSuccessDesc")}</div>
 														</div>
 													</div>
 												</div>`;
@@ -3625,7 +3655,7 @@ const ConfigModal = () => {
 														<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
 													</svg>
 													<div>
-														<div style="font-weight: 600; margin-bottom: 2px;">설정 내보내기 실패</div>
+														<div style="font-weight: 600; margin-bottom: 2px;">${I18n.t("notifications.exportFailed")}</div>
 														<div style="opacity: 0.8; font-size: 12px;">${e.message || e.reason || e.toString()
                     }</div>
 													</div>
@@ -3640,16 +3670,16 @@ const ConfigModal = () => {
             },
 
             {
-              desc: "설정 불러오기",
-              info: `설정 파일을 불러옵니다`,
+              desc: I18n.t("settingsAdvanced.exportImport.import.label"),
+              info: I18n.t("settingsAdvanced.exportImport.import.label"),
               key: "import-settings",
-              text: "불러오기",
+              text: I18n.t("settingsAdvanced.exportImport.import.button"),
               type: ConfigButton,
               onChange: async (_, event) => {
                 const button = event?.target;
                 if (!button) return;
                 const originalText = button.textContent;
-                button.textContent = "불러오는 중...";
+                button.textContent = I18n.t("settingsAdvanced.exportImport.import.processing");
                 button.disabled = true;
 
                 try {
@@ -3730,8 +3760,8 @@ const ConfigModal = () => {
 															<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
 														</svg>
 														<div>
-															<div style="font-weight: 600; margin-bottom: 2px;">불러오기에 성공했습니다</div>
-															<div style="opacity: 0.8; font-size: 12px;">잠시 후 페이지가 새로고침됩니다...</div>
+															<div style="font-weight: 600; margin-bottom: 2px;">${I18n.t("notifications.importSuccess")}</div>
+															<div style="opacity: 0.8; font-size: 12px;">${I18n.t("notifications.importSuccessDesc")}</div>
 														</div>
 													</div>
 												</div>`;
@@ -3783,7 +3813,7 @@ const ConfigModal = () => {
 														<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
 													</svg>
 													<div>
-														<div style="font-weight: 600; margin-bottom: 2px;">설정 불러오기 실패</div>
+														<div style="font-weight: 600; margin-bottom: 2px;">${I18n.t("notifications.importFailed")}</div>
 														<div style="opacity: 0.8; font-size: 12px;">${e.message || e.reason || e.toString()
                           }</div>
 													</div>
@@ -3810,16 +3840,16 @@ const ConfigModal = () => {
           onChange: () => { },
         }),
         react.createElement(SectionTitle, {
-          title: "설정 초기화",
-          subtitle: "모든 설정을 기본값으로 되돌립니다",
+          title: I18n.t("settingsAdvanced.resetSettings.title"),
+          subtitle: I18n.t("settingsAdvanced.resetSettings.subtitle"),
         }),
         react.createElement(OptionList, {
           items: [
             {
-              desc: "모든 설정 초기화",
-              info: "모든 설정을 기본값으로 되돌립니다. 이 작업은 되돌릴 수 없습니다",
+              desc: I18n.t("settingsAdvanced.resetSettings.reset.label"),
+              info: I18n.t("settingsAdvanced.resetSettings.reset.desc"),
               key: "reset-settings",
-              text: "초기화",
+              text: I18n.t("settingsAdvanced.resetSettings.reset.button"),
               type: ConfigButton,
               onChange: async (_, event) => {
                 const button = event?.target;
@@ -3827,13 +3857,13 @@ const ConfigModal = () => {
 
                 // 확인 대화상자
                 const confirmed = confirm(
-                  "정말로 모든 설정을 초기화하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 모든 설정이 기본값으로 재설정됩니다.\n\n계속하시려면 '확인'을 클릭하세요."
+                  I18n.t("settingsAdvanced.resetSettings.reset.confirm")
                 );
 
                 if (!confirmed) return;
 
                 const originalText = button.textContent;
-                button.textContent = "초기화 중...";
+                button.textContent = I18n.t("settingsAdvanced.resetSettings.reset.processing");
                 button.disabled = true;
 
                 const settingRow = button.closest(".setting-row");
@@ -3890,8 +3920,8 @@ const ConfigModal = () => {
 															<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
 														</svg>
 														<div>
-															<div style="font-weight: 600; margin-bottom: 2px;">초기화가 완료되었습니다</div>
-															<div style="opacity: 0.8; font-size: 12px;">잠시 후 페이지가 새로고침됩니다...</div>
+															<div style="font-weight: 600; margin-bottom: 2px;">${I18n.t("notifications.resetSuccess")}</div>
+															<div style="opacity: 0.8; font-size: 12px;">${I18n.t("notifications.importSuccessDesc")}</div>
 														</div>
 													</div>
 												</div>`;
@@ -3926,7 +3956,7 @@ const ConfigModal = () => {
 														<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
 													</svg>
 													<div>
-														<div style="font-weight: 600; margin-bottom: 2px;">초기화 실패</div>
+														<div style="font-weight: 600; margin-bottom: 2px;">${I18n.t("notifications.resetFailed")}</div>
 														<div style="opacity: 0.8; font-size: 12px;">${e.message || e.reason || e.toString()
                     }</div>
 													</div>
@@ -3950,51 +3980,51 @@ const ConfigModal = () => {
           className: `tab-content ${activeTab === "fullscreen" ? "active" : ""}`,
         },
         react.createElement(SectionTitle, {
-          title: "전체화면 모드",
-          subtitle: "전체화면 모드의 레이아웃과 표시 설정",
+          title: I18n.t("settingsAdvanced.fullscreenMode.title"),
+          subtitle: I18n.t("settingsAdvanced.fullscreenMode.subtitle"),
         }),
         react.createElement(OptionList, {
           items: [
             {
-              desc: "전체화면 단축키",
-              info: "전체화면 모드를 토글하는 키보드 단축키를 설정합니다",
+              desc: I18n.t("settingsAdvanced.playback.fullscreenShortcut.label"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.shortcut.info"),
               key: "fullscreen-key",
               type: ConfigHotkey,
             },
             {
-              desc: "2열 레이아웃 사용",
-              info: "전체화면에서 왼쪽에 앨범 아트, 오른쪽에 가사를 표시합니다",
+              desc: I18n.t("settingsAdvanced.fullscreenMode.twoColumnLayout.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.splitView.info"),
               key: "fullscreen-two-column",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-two-column"] ?? true,
             },
             {
-              desc: "앨범/가사 위치 반전",
-              info: "앨범과 가사의 위치를 바꿉니다 (좌우 ↔ 우좌, 세로모드에선 상하 ↔ 하상)",
+              desc: I18n.t("settingsAdvanced.fullscreenMode.invertPosition.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.invertPosition.info"),
               key: "fullscreen-layout-reverse",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-layout-reverse"] ?? false,
               when: () => CONFIG.visual["fullscreen-two-column"] !== false,
             },
             {
-              desc: "앨범 아트 표시",
-              info: "전체화면 왼쪽 패널에 앨범 아트를 표시합니다",
+              desc: I18n.t("settingsAdvanced.fullscreenMode.showAlbumArt.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.showAlbumArt.info"),
               key: "fullscreen-show-album",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-show-album"] ?? true,
               when: () => CONFIG.visual["fullscreen-two-column"] !== false,
             },
             {
-              desc: "트랙 정보 표시",
-              info: "전체화면에서 곡 제목과 아티스트를 표시합니다",
+              desc: I18n.t("settingsAdvanced.fullscreenMode.showTrackInfo.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.showTrackInfo.info"),
               key: "fullscreen-show-info",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-show-info"] ?? true,
               when: () => CONFIG.visual["fullscreen-two-column"] !== false,
             },
             {
-              desc: "가사 없을 때 앨범 중앙 배치",
-              info: "가사가 없거나 로딩 중일 때 앨범 아트를 화면 중앙에 배치합니다",
+              desc: I18n.t("settingsAdvanced.fullscreenMode.centerWhenNoLyrics.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.centerWhenNoLyrics.info"),
               key: "fullscreen-center-when-no-lyrics",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-center-when-no-lyrics"] ?? true,
@@ -4012,14 +4042,14 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
-          title: "전체화면 스타일",
-          subtitle: "전체화면 모드의 시각적 요소 설정",
+          title: I18n.t("settingsAdvanced.fullscreenStyle.title"),
+          subtitle: I18n.t("settingsAdvanced.fullscreenStyle.subtitle"),
         }),
         react.createElement(OptionList, {
           items: [
             {
-              desc: "앨범 아트 크기",
-              info: "전체화면에서 앨범 아트의 최대 크기를 설정합니다 (100-500px)",
+              desc: I18n.t("settingsAdvanced.fullscreenStyle.albumSize.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenStyle.albumSize.info"),
               key: "fullscreen-album-size",
               type: ConfigSliderRange,
               min: 100,
@@ -4029,8 +4059,8 @@ const ConfigModal = () => {
               defaultValue: CONFIG.visual["fullscreen-album-size"] || 400,
             },
             {
-              desc: "앨범 아트 둥글기",
-              info: "앨범 아트의 모서리 둥글기를 설정합니다 (0-50px)",
+              desc: I18n.t("settingsAdvanced.fullscreenStyle.albumRadius.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenStyle.albumRadius.info"),
               key: "fullscreen-album-radius",
               type: ConfigSliderRange,
               min: 0,
@@ -4040,8 +4070,8 @@ const ConfigModal = () => {
               defaultValue: CONFIG.visual["fullscreen-album-radius"] || 12,
             },
             {
-              desc: "제목 글자 크기",
-              info: "전체화면에서 곡 제목의 글자 크기를 설정합니다 (24-72px)",
+              desc: I18n.t("settingsAdvanced.fullscreenStyle.titleFontSize.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenStyle.titleFontSize.info"),
               key: "fullscreen-title-size",
               type: ConfigSliderRange,
               min: 24,
@@ -4051,8 +4081,8 @@ const ConfigModal = () => {
               defaultValue: CONFIG.visual["fullscreen-title-size"] || 48,
             },
             {
-              desc: "아티스트 글자 크기",
-              info: "전체화면에서 아티스트 이름의 글자 크기를 설정합니다 (14-36px)",
+              desc: I18n.t("settingsAdvanced.fullscreenStyle.artistFontSize.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenStyle.artistFontSize.info"),
               key: "fullscreen-artist-size",
               type: ConfigSliderRange,
               min: 14,
@@ -4062,8 +4092,8 @@ const ConfigModal = () => {
               defaultValue: CONFIG.visual["fullscreen-artist-size"] || 24,
             },
             {
-              desc: "가사 오른쪽 여백",
-              info: "전체화면에서 가사 영역의 오른쪽 여백을 설정합니다. 가운데 정렬 시 가사가 오른쪽에 치우쳐 보이는 것을 방지합니다 (0-300px)",
+              desc: I18n.t("settingsAdvanced.fullscreenStyle.lyricsRightMargin.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenStyle.lyricsRightMargin.info"),
               key: "fullscreen-lyrics-right-padding",
               type: ConfigSliderRange,
               min: 0,
@@ -4085,21 +4115,21 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
-          title: "전체화면 UI 요소",
-          subtitle: "전체화면에 표시되는 추가 UI 요소들을 설정합니다",
+          title: I18n.t("settingsAdvanced.fullscreenUI.title"),
+          subtitle: I18n.t("settingsAdvanced.fullscreenUI.subtitle"),
         }),
         react.createElement(OptionList, {
           items: [
             {
-              desc: "시계 표시",
-              info: "화면 우측 상단에 현재 시간을 표시합니다",
+              desc: I18n.t("settingsAdvanced.fullscreenUI.showClock.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenUI.showClock.info"),
               key: "fullscreen-show-clock",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-show-clock"] ?? true,
             },
             {
-              desc: "시계 크기",
-              info: "시계 텍스트의 크기를 설정합니다 (24-72px)",
+              desc: I18n.t("settingsAdvanced.fullscreenUI.clockSize.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenUI.clockSize.info"),
               key: "fullscreen-clock-size",
               type: ConfigSliderRange,
               min: 24,
@@ -4110,65 +4140,65 @@ const ConfigModal = () => {
               when: () => CONFIG.visual["fullscreen-show-clock"] !== false,
             },
             {
-              desc: "재생 컨텍스트 표시",
-              info: "현재 재생 중인 플레이리스트/앨범 정보를 좌측 상단에 표시합니다",
+              desc: I18n.t("settingsAdvanced.fullscreenUI.showContext.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenUI.showContext.info"),
               key: "fullscreen-show-context",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-show-context"] ?? true,
             },
             {
-              desc: "컨텍스트 이미지 표시",
-              info: "플레이리스트/앨범 썸네일 이미지를 함께 표시합니다",
+              desc: I18n.t("settingsAdvanced.fullscreenUI.showContextImage.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenUI.showContextImage.info"),
               key: "fullscreen-show-context-image",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-show-context-image"] ?? true,
               when: () => CONFIG.visual["fullscreen-show-context"] !== false,
             },
             {
-              desc: "다음 곡 미리보기",
-              info: "곡이 끝나기 전 다음 곡 정보를 우측 상단에 표시합니다 (음악 방송 스타일)",
+              desc: I18n.t("settingsAdvanced.fullscreenUI.showNextTrack.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenUI.showNextTrack.info"),
               key: "fullscreen-show-next-track",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-show-next-track"] ?? true,
             },
             {
-              desc: "다음 곡 표시 시간",
-              info: "곡 종료 몇 초 전부터 다음 곡을 표시할지 설정합니다 (5-30초)",
+              desc: I18n.t("settingsAdvanced.fullscreenUI.nextTrackTime.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenUI.nextTrackTime.info"),
               key: "fullscreen-next-track-seconds",
               type: ConfigSliderRange,
               min: 5,
               max: 30,
               step: 1,
-              unit: "초",
+              unit: I18n.t("settingsAdvanced.fullscreenUI.nextTrackTime.unit"),
               defaultValue: CONFIG.visual["fullscreen-next-track-seconds"] || 15,
               when: () => CONFIG.visual["fullscreen-show-next-track"] !== false,
             },
             {
-              desc: "플레이어 컨트롤 표시",
-              info: "재생/일시정지, 이전/다음곡, 셔플, 반복, 좋아요 버튼을 표시합니다",
+              desc: I18n.t("settingsAdvanced.fullscreenUI.showControls.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenUI.showControls.info"),
               key: "fullscreen-show-controls",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-show-controls"] ?? true,
             },
             {
-              desc: "볼륨 컨트롤 표시",
-              info: "플레이어 컨트롤에 볼륨 조절 슬라이더를 표시합니다",
+              desc: I18n.t("settingsAdvanced.fullscreenUI.showVolume.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenUI.showVolume.info"),
               key: "fullscreen-show-volume",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-show-volume"] ?? true,
               when: () => CONFIG.visual["fullscreen-show-controls"] !== false,
             },
             {
-              desc: "재생 진행바 표시",
-              info: "곡의 현재 재생 위치와 전체 시간을 표시하는 진행바를 표시합니다",
+              desc: I18n.t("settingsAdvanced.fullscreenUI.showProgressBar.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenUI.showProgressBar.info"),
               key: "fullscreen-show-progress",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-show-progress"] ?? true,
               when: () => CONFIG.visual["fullscreen-show-controls"] !== false,
             },
             {
-              desc: "가사 진행률 표시",
-              info: "현재 가사 줄 번호와 전체 가사 줄 수를 표시합니다",
+              desc: I18n.t("settingsAdvanced.fullscreenUI.showLyricsProgress.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenUI.showLyricsProgress.info"),
               key: "fullscreen-show-lyrics-progress",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-show-lyrics-progress"] ?? false,
@@ -4186,14 +4216,14 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
-          title: "컨트롤러 스타일",
-          subtitle: "플레이어 컨트롤러의 외형을 설정합니다",
+          title: I18n.t("settingsAdvanced.controllerStyle.title"),
+          subtitle: I18n.t("settingsAdvanced.controllerStyle.subtitle"),
         }),
         react.createElement(OptionList, {
           items: [
             {
-              desc: "컨트롤 버튼 크기",
-              info: "재생, 이전/다음곡 등 버튼의 크기를 설정합니다 (28-48px)",
+              desc: I18n.t("settingsAdvanced.controllerStyle.buttonSize.desc"),
+              info: I18n.t("settingsAdvanced.controllerStyle.buttonSize.info"),
               key: "fullscreen-control-button-size",
               type: ConfigSliderRange,
               min: 28,
@@ -4203,8 +4233,8 @@ const ConfigModal = () => {
               defaultValue: CONFIG.visual["fullscreen-control-button-size"] || 36,
             },
             {
-              desc: "컨트롤러 배경",
-              info: "컨트롤러에 반투명 배경을 추가합니다",
+              desc: I18n.t("settingsAdvanced.controllerStyle.background.desc"),
+              info: I18n.t("settingsAdvanced.controllerStyle.background.info"),
               key: "fullscreen-controls-background",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-controls-background"] ?? false,
@@ -4222,27 +4252,27 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
-          title: "자동 숨김",
-          subtitle: "마우스 비활동 시 UI 자동 숨김 설정",
+          title: I18n.t("settingsAdvanced.autoHide.title"),
+          subtitle: I18n.t("settingsAdvanced.autoHide.subtitle"),
         }),
         react.createElement(OptionList, {
           items: [
             {
-              desc: "UI 자동 숨김",
-              info: "마우스를 움직이지 않으면 컨트롤러와 정보가 자동으로 숨겨집니다",
+              desc: I18n.t("settingsAdvanced.autoHide.enabled.desc"),
+              info: I18n.t("settingsAdvanced.autoHide.enabled.info"),
               key: "fullscreen-auto-hide-ui",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-auto-hide-ui"] ?? true,
             },
             {
-              desc: "자동 숨김 딜레이",
-              info: "마우스 비활동 후 UI가 숨겨지기까지의 시간 (1-10초)",
+              desc: I18n.t("settingsAdvanced.autoHide.delay.desc"),
+              info: I18n.t("settingsAdvanced.autoHide.delay.info"),
               key: "fullscreen-auto-hide-delay",
               type: ConfigSliderRange,
               min: 1,
               max: 10,
               step: 0.5,
-              unit: "초",
+              unit: I18n.t("settingsAdvanced.fullscreenUI.nextTrackTime.unit"),
               defaultValue: CONFIG.visual["fullscreen-auto-hide-delay"] || 3,
               when: () => CONFIG.visual["fullscreen-auto-hide-ui"] !== false,
             },
@@ -4266,8 +4296,8 @@ const ConfigModal = () => {
           className: `tab-content ${activeTab === "about" ? "active" : ""}`,
         },
         react.createElement(SectionTitle, {
-          title: "앱 정보",
-          subtitle: "Lyrics Plus에 대해",
+          title: I18n.t("settingsAdvanced.aboutTab.appInfo.title"),
+          subtitle: I18n.t("settingsAdvanced.aboutTab.subtitle"),
         }),
         react.createElement(
           "div",
@@ -4307,7 +4337,7 @@ const ConfigModal = () => {
                 lineHeight: "1.6",
               },
             },
-            "Spicetify를 위한 한국어 대응 가사 확장 프로그램."
+            I18n.t("settingsAdvanced.aboutTab.appDescription")
           ),
           react.createElement(
             "p",
@@ -4318,7 +4348,7 @@ const ConfigModal = () => {
                 fontSize: "14px",
               },
             },
-            `버전: ${Utils.currentVersion}`
+            `${I18n.t("settingsAdvanced.aboutTab.versionPrefix")}: ${Utils.currentVersion}`
           ),
           react.createElement("div", {
             style: {
@@ -4336,7 +4366,7 @@ const ConfigModal = () => {
                 lineHeight: "1.6",
               },
             },
-            react.createElement("strong", null, "개발:"),
+            react.createElement("strong", null, I18n.t("settingsAdvanced.aboutTab.developer")),
             " ivLis Studio"
           ),
           react.createElement(
@@ -4348,7 +4378,7 @@ const ConfigModal = () => {
                 lineHeight: "1.6",
               },
             },
-            react.createElement("strong", null, "원본 프로젝트:"),
+            react.createElement("strong", null, I18n.t("settingsAdvanced.aboutTab.originalProject")),
             " lyrics-plus by khanhas"
           ),
           react.createElement(
@@ -4361,12 +4391,12 @@ const ConfigModal = () => {
                 lineHeight: "1.6",
               },
             },
-            "오픈소스 프로젝트에 기여해주신 모든 분들께 감사드립니다."
+            I18n.t("settingsAdvanced.aboutTab.thanks")
           )
         ),
         react.createElement(SectionTitle, {
-          title: "클라이언트 정보",
-          subtitle: "이 클라이언트의 고유 식별자",
+          title: I18n.t("settingsAdvanced.aboutTab.clientInfo.title"),
+          subtitle: I18n.t("settingsAdvanced.aboutTab.clientInfo.subtitle"),
         }),
         react.createElement(
           "div",
@@ -4392,7 +4422,7 @@ const ConfigModal = () => {
                 lineHeight: "1.6",
               },
             },
-            "계정 연동을 위해 자동으로 생성된 고유 식별자입니다. 이 값은 수정할 수 없으며, 클라이언트마다 고유하게 할당됩니다. 이 값이 절대 노출되지 않도록 주의하세요.",
+            I18n.t("settingsAdvanced.aboutTab.clientInfo.description"),
           ),
           react.createElement(
             "div",
@@ -4429,9 +4459,9 @@ const ConfigModal = () => {
                 onClick: () => {
                   const clientId = StorageManager.getClientId();
                   navigator.clipboard.writeText(clientId).then(() => {
-                    Spicetify.showNotification("클라이언트 ID가 복사되었습니다", false, 2000);
+                    Spicetify.showNotification(I18n.t("settingsAdvanced.aboutTab.clientInfo.copied"), false, 2000);
                   }).catch(() => {
-                    Spicetify.showNotification("복사 실패", true, 2000);
+                    Spicetify.showNotification(I18n.t("settingsAdvanced.aboutTab.clientInfo.copyFailed"), true, 2000);
                   });
                 },
                 style: {
@@ -4454,27 +4484,27 @@ const ConfigModal = () => {
                   e.target.style.background = "rgba(255, 255, 255, 0.08)";
                 },
               },
-              "복사"
+              I18n.t("settingsAdvanced.aboutTab.clientInfo.copy")
             )
           )
         ),
         react.createElement(SectionTitle, {
-          title: "업데이트",
-          subtitle: "최신 버전 확인",
+          title: I18n.t("settingsAdvanced.aboutTab.update.title"),
+          subtitle: I18n.t("settingsAdvanced.aboutTab.update.subtitle"),
         }),
         react.createElement(OptionList, {
           items: [
             {
-              desc: "최신 버전 확인",
-              info: `현재 버전: v${Utils.currentVersion}. GitHub에서 새로운 업데이트가 있는지 확인합니다`,
+              desc: I18n.t("settingsAdvanced.aboutTab.update.checkUpdate.desc"),
+              info: I18n.t("settingsAdvanced.update.currentVersionInfo").replace("{version}", Utils.currentVersion),
               key: "check-update",
-              text: "업데이트 확인",
+              text: I18n.t("settingsAdvanced.aboutTab.update.checkUpdate.button"),
               type: ConfigButton,
               onChange: async (_, event) => {
                 const button = event?.target;
                 if (!button) return;
                 const originalText = button.textContent;
-                button.textContent = "확인 중...";
+                button.textContent = I18n.t("settingsAdvanced.aboutTab.update.checkUpdate.checking");
                 button.disabled = true;
 
                 // setting-row 다음에 결과 컨테이너 찾기/생성
@@ -4510,7 +4540,7 @@ const ConfigModal = () => {
                     const installCommand = Utils.getInstallCommand();
 
                     if (updateInfo.error) {
-                      message = `업데이트 확인 실패: ${updateInfo.error}`;
+                      message = I18n.t("settingsAdvanced.update.checkFailedWithError").replace("{error}", updateInfo.error);
                       resultContainer.innerHTML = `
 												<div style="
 													padding: 16px 20px;
@@ -4536,8 +4566,8 @@ const ConfigModal = () => {
 															<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
 														</svg>
 														<div>
-															<div style="font-weight: 600; margin-bottom: 2px;">업데이트 확인 실패</div>
-															<div style="opacity: 0.8; font-size: 12px;">네트워크 연결을 확인하세요</div>
+															<div style="font-weight: 600; margin-bottom: 2px;">${I18n.t("notifications.updateCheckFailed")}</div>
+															<div style="opacity: 0.8; font-size: 12px;">${I18n.t("notifications.checkNetworkConnection")}</div>
 														</div>
 													</div>
 												</div>
@@ -4577,11 +4607,11 @@ const ConfigModal = () => {
 																	color: rgba(255, 255, 255, 0.95);
 																	margin-bottom: 2px;
 																	letter-spacing: -0.01em;
-																">업데이트 사용 가능</div>
+																">${I18n.t("notifications.updateAvailable")}</div>
 																<div style="
 																	font-size: 12px;
 																	color: rgba(255, 255, 255, 0.5);
-																">버전 ${updateInfo.currentVersion} → ${updateInfo.latestVersion}</div>
+																">${I18n.t("update.versionChange")} ${updateInfo.currentVersion} → ${updateInfo.latestVersion}</div>
 															</div>
 														</div>
 													</div>
@@ -4622,7 +4652,7 @@ const ConfigModal = () => {
 															font-weight: 600;
 															transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 															letter-spacing: -0.01em;
-														">명령어 복사</button>
+														">${I18n.t("update.copyCommand")}</button>
 														<a href="https://github.com/ivLis-Studio/lyrics-plus/releases/tag/v${updateInfo.latestVersion}" 
 														   target="_blank"
 														   style="
@@ -4640,7 +4670,7 @@ const ConfigModal = () => {
 															align-items: center;
 															justify-content: center;
 															letter-spacing: -0.01em;
-														">릴리즈 노트</a>
+														">${I18n.t("update.releaseNotes")}</a>
 													</div>
 												</div>
 											`;
@@ -4655,7 +4685,7 @@ const ConfigModal = () => {
                             installCommand
                           );
                           if (success) {
-                            copyBtn.textContent = "복사됨";
+                            copyBtn.textContent = I18n.t("settingsAdvanced.aboutTab.update.copied");
                             copyBtn.style.background =
                               "rgba(16, 185, 129, 0.15)";
                             copyBtn.style.border =
@@ -4664,11 +4694,11 @@ const ConfigModal = () => {
                             copyBtn.style.cursor = "default";
                             copyBtn.disabled = true;
                             Spicetify.showNotification(
-                              "설치 명령어가 복사되었습니다"
+                              I18n.t("settingsAdvanced.aboutTab.update.installCopied")
                             );
                           } else {
                             Spicetify.showNotification(
-                              "복사에 실패했습니다",
+                              I18n.t("settingsAdvanced.aboutTab.update.copyFailed"),
                               true
                             );
                           }
@@ -4699,8 +4729,8 @@ const ConfigModal = () => {
 															<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
 														</svg>
 														<div>
-															<div style="font-weight: 600; margin-bottom: 2px;">최신 버전입니다</div>
-															<div style="opacity: 0.8; font-size: 12px;">버전 ${updateInfo.currentVersion}</div>
+															<div style="font-weight: 600; margin-bottom: 2px;">${I18n.t("notifications.latestVersion")}</div>
+															<div style="opacity: 0.8; font-size: 12px;">${I18n.t("update.versionChange")} ${updateInfo.currentVersion}</div>
 														</div>
 													</div>
 												</div>
@@ -4734,8 +4764,8 @@ const ConfigModal = () => {
 														<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
 													</svg>
 													<div>
-														<div style="font-weight: 600; margin-bottom: 2px;">업데이트 확인 실패</div>
-														<div style="opacity: 0.8; font-size: 12px;">네트워크 연결을 확인하세요</div>
+														<div style="font-weight: 600; margin-bottom: 2px;">${I18n.t("notifications.updateCheckFailed")}</div>
+														<div style="opacity: 0.8; font-size: 12px;">${I18n.t("notifications.checkNetworkConnection")}</div>
 													</div>
 												</div>
 											</div>
@@ -4752,8 +4782,8 @@ const ConfigModal = () => {
         }),
 
         react.createElement(SectionTitle, {
-          title: "패치 노트",
-          subtitle: "최신 업데이트 내역",
+          title: I18n.t("settingsAdvanced.aboutTab.patchNotes.title"),
+          subtitle: I18n.t("settingsAdvanced.aboutTab.patchNotes.subtitle"),
         }),
         react.createElement(
           "div",
@@ -4774,7 +4804,7 @@ const ConfigModal = () => {
               color: "rgba(255,255,255,0.5)",
             },
           },
-          "패치 노트를 불러오는 중..."
+          I18n.t("settingsAdvanced.aboutTab.patchNotes.loading")
         )
       )
     )
@@ -4846,3 +4876,23 @@ function openConfig() {
   }
   dom.render(configContainer, modalContainer);
 }
+
+// 언어 변경 후 자동으로 설정 페이지 열기
+(function checkReturnToSettings() {
+  const shouldReturn = localStorage.getItem("lyrics-plus:return-to-settings");
+  if (shouldReturn === "true") {
+    localStorage.removeItem("lyrics-plus:return-to-settings");
+    // DOM이 준비된 후 설정 열기
+    const tryOpenSettings = () => {
+      if (typeof openConfig === "function" && document.body) {
+        // 약간의 지연을 두고 설정 열기
+        setTimeout(() => {
+          openConfig();
+        }, 500);
+      } else {
+        setTimeout(tryOpenSettings, 100);
+      }
+    };
+    tryOpenSettings();
+  }
+})();

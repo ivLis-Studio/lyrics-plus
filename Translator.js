@@ -16,16 +16,16 @@ const dictPath = "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict";
 // 최적화 #7 - 에러 메시지 표준화
 const API_ERROR_MESSAGES = {
   400: {
-    MISSING_API_KEY: "Gemini API 키가 설정되지 않았습니다. 설정에서 API 키를 입력해주세요.",
-    INVALID_API_KEY_FORMAT: "올바르지 않은 API 키 형식입니다. Gemini API 키는 'AIza'로 시작해야 합니다.",
-    DEFAULT: "요청 형식이 올바르지 않습니다. API 키를 확인해주세요."
+    MISSING_API_KEY: I18n.t("translator.missingApiKey"),
+    INVALID_API_KEY_FORMAT: I18n.t("translator.invalidApiKeyFormat"),
+    DEFAULT: I18n.t("translator.invalidRequestFormat")
   },
-  401: "잘못된 API 키입니다. 설정에서 Gemini API 키를 확인해주세요.",
-  403: "API 접근이 금지되었습니다. API 키 권한을 확인해주세요.",
-  429: "요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.",
-  500: "번역 서비스를 일시적으로 사용할 수 없습니다. 나중에 다시 시도해주세요.",
-  502: "번역 서비스를 일시적으로 사용할 수 없습니다. 나중에 다시 시도해주세요.",
-  503: "번역 서비스를 일시적으로 사용할 수 없습니다. 나중에 다시 시도해주세요."
+  401: I18n.t("translator.invalidApiKey"),
+  403: I18n.t("translator.accessForbidden"),
+  429: I18n.t("translator.rateLimitExceeded"),
+  500: I18n.t("translator.serviceUnavailable"),
+  502: I18n.t("translator.serviceUnavailable"),
+  503: I18n.t("translator.serviceUnavailable")
 };
 
 // 최적화 #7 - 에러 처리 헬퍼 함수
@@ -39,7 +39,7 @@ function handleAPIError(status, errorData) {
   }
 
   // 기타 에러 - 직접 메시지 반환
-  return errorConfig || `API 요청이 실패했습니다 (${status})`;
+  return errorConfig || `${I18n.t("translator.requestFailed")} (${status})`;
 }
 
 class Translator {
@@ -102,7 +102,7 @@ class Translator {
     // Check if API key is provided
     if (!apiKey || apiKey.trim() === "") {
       throw new Error(
-        "Gemini API 키가 설정되지 않았습니다. 설정에서 API 키를 입력해주세요."
+        I18n.t("translator.missingApiKey")
       );
     }
 
@@ -191,9 +191,9 @@ class Translator {
         }
 
         // 기본 메시지
-        const errorMessage = data.message || "번역에 실패했습니다";
-        if (errorMessage.includes("API 키")) {
-          throw new Error("Gemini API 키 관련 오류가 발생했습니다. 설정에서 API 키를 확인해주세요.");
+        const errorMessage = data.message || I18n.t("translator.translationFailed");
+        if (errorMessage.includes("API") || errorMessage.includes("키")) {
+          throw new Error(I18n.t("translator.apiKeyError"));
         }
         throw new Error(errorMessage);
       }
@@ -201,9 +201,9 @@ class Translator {
       return data;
     } catch (error) {
       if (error.name === "AbortError") {
-        throw new Error("번역 요청이 시간 초과되었습니다. 다시 시도해주세요.");
+        throw new Error(I18n.t("translator.requestTimeout"));
       }
-      throw new Error(`번역 실패: ${error.message}`);
+      throw new Error(`${I18n.t("translator.failedPrefix")}: ${error.message}`);
     }
   }
 

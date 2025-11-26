@@ -288,10 +288,10 @@ const UpdateBanner = ({ updateInfo, onDismiss }) => {
     const success = await Utils.copyToClipboard(installCommand);
     if (success) {
       setCopied(true);
-      Spicetify.showNotification("설치 명령어가 복사되었습니다");
+      Spicetify.showNotification(I18n.t("notifications.installCommandCopied"));
       setTimeout(() => setCopied(false), 2500);
     } else {
-      Spicetify.showNotification("복사에 실패했습니다", true);
+      Spicetify.showNotification(I18n.t("notifications.copyFailed"), true);
     }
   };
 
@@ -340,7 +340,7 @@ const UpdateBanner = ({ updateInfo, onDismiss }) => {
               letterSpacing: "-0.01em",
             },
           },
-          "업데이트 사용 가능"
+          I18n.t("notifications.updateAvailable")
         ),
         react.createElement(
           "div",
@@ -351,7 +351,7 @@ const UpdateBanner = ({ updateInfo, onDismiss }) => {
               lineHeight: "1.5",
             },
           },
-          `버전 ${updateInfo.currentVersion} → ${updateInfo.latestVersion}`
+          `${I18n.t("update.versionChange")} ${updateInfo.currentVersion} → ${updateInfo.latestVersion}`
         )
       ),
       react.createElement(
@@ -376,7 +376,7 @@ const UpdateBanner = ({ updateInfo, onDismiss }) => {
               letterSpacing: "-0.01em",
             },
           },
-          isExpanded ? "간단히" : "자세히"
+          isExpanded ? I18n.t("update.collapse") : I18n.t("update.expand")
         ),
         react.createElement(
           "button",
@@ -476,7 +476,7 @@ const UpdateBanner = ({ updateInfo, onDismiss }) => {
               letterSpacing: "-0.01em",
             },
           },
-          copied ? "복사됨" : "명령어 복사"
+          copied ? I18n.t("update.copied") : I18n.t("update.copyCommand")
         ),
         react.createElement(
           "a",
@@ -501,7 +501,7 @@ const UpdateBanner = ({ updateInfo, onDismiss }) => {
               letterSpacing: "-0.01em",
             },
           },
-          "릴리즈 노트"
+          I18n.t("update.releaseNotes")
         )
       )
     )
@@ -785,6 +785,9 @@ const StorageManager = {
     if (name === "gemini-api-key" || name === "gemini-api-key-romaji") {
       // Save sensitive keys to both storages for persistence
       this.setPersisted(`${APP_NAME}:visual:${name}`, value);
+    } else if (name === "language") {
+      // Language setting needs to be saved to both storages for I18n system
+      this.setPersisted(`${APP_NAME}:visual:${name}`, value);
     } else {
       localStorage.setItem(`${APP_NAME}:visual:${name}`, value);
     }
@@ -900,6 +903,8 @@ const UNSYNCED = 2;
 
 const CONFIG = {
   visual: {
+    language:
+      StorageManager.getItem("lyrics-plus:visual:language") || "ko",
     "playbar-button": StorageManager.get(
       "lyrics-plus:visual:playbar-button",
       false
@@ -1258,27 +1263,27 @@ const CONFIG = {
   providers: {
     lrclib: {
       on: StorageManager.get("lyrics-plus:provider:lrclib:on"),
-      desc: "lrclib.net에서 제공되는 가사입니다. 동기화된 가사와 동기화되지 않은 가사를 모두 지원합니다. LRCLIB은 무료 오픈소스 가사 제공자입니다.",
+      get desc() { return window.I18n ? I18n.t("providerDescriptions.lrclib") : "Lyrics from lrclib.net"; },
       modes: [SYNCED, UNSYNCED],
     },
     ivlyrics: {
       on: StorageManager.get("lyrics-plus:provider:ivlyrics:on", true),
-      desc: "ivLyrics API에서 제공되는 가사입니다. 동기화된 가사, 동기화되지 않은 가사, 단어별 카라오케 가사를 지원합니다.",
+      get desc() { return window.I18n ? I18n.t("providerDescriptions.ivLyrics") : "Lyrics from ivLyrics API"; },
       modes: [KARAOKE, SYNCED, UNSYNCED],
     },
     spotify: {
       on: StorageManager.get("lyrics-plus:provider:spotify:on"),
-      desc: "공식 Spotify API에서 제공되는 가사입니다.",
+      get desc() { return window.I18n ? I18n.t("providerDescriptions.spotify") : "Lyrics from Spotify"; },
       modes: [SYNCED, UNSYNCED],
     },
     local: {
       on: StorageManager.get("lyrics-plus:provider:local:on"),
-      desc: "이전 Spotify 세션에서 로드된 캐시/로컬 파일의 가사를 제공합니다.",
+      get desc() { return window.I18n ? I18n.t("providerDescriptions.cache") : "Cached lyrics"; },
       modes: [SYNCED, UNSYNCED],
     },
   },
   providersOrder: StorageManager.getItem("lyrics-plus:services-order"),
-  modes: ["노래방", "동기화", "일반가사"],
+  get modes() { return window.I18n ? [I18n.t("modes.karaoke"), I18n.t("modes.synced"), I18n.t("modes.unsynced")] : ["Karaoke", "Synced", "Unsynced"]; },
   locked: StorageManager.getItem("lyrics-plus:lock-mode") || "-1",
 };
 
@@ -1676,7 +1681,7 @@ class LyricsContainer extends react.Component {
 
     // 현재 가사가 있는지 확인
     if (!this.state.currentLyrics || this.state.currentLyrics.length === 0) {
-      Spicetify.showNotification("가사가 로드되지 않았습니다.", true, 2000);
+      Spicetify.showNotification(I18n.t("notifications.noLyricsLoaded"), true, 2000);
       return;
     }
 
@@ -1699,7 +1704,7 @@ class LyricsContainer extends react.Component {
 
     if (!isGeminiMode) {
       Spicetify.showNotification(
-        "번역 재생성은 Gemini 번역에서만 사용할 수 있습니다.",
+        I18n.t("notifications.translationRegenerateGeminiOnly"),
         true,
         3000
       );
@@ -1709,7 +1714,7 @@ class LyricsContainer extends react.Component {
     try {
       this.startTranslationLoading();
 
-      Spicetify.showNotification("번역을 재생성하는 중...", false, 2000);
+      Spicetify.showNotification(I18n.t("notifications.regeneratingTranslation"), false, 2000);
 
       // 원본 가사 가져오기 (번역되지 않은 원문)
       const lyricsState = this.state;
@@ -1854,10 +1859,10 @@ class LyricsContainer extends react.Component {
       // 이렇게 하면 optimizeTranslations이 호출되어 사용자 설정에 따라 번역이 표시됨
       this.lyricsSource(this.state, currentMode);
       this.resetTranslationCache(this.currentTrackUri);
-      Spicetify.showNotification("✓ 번역이 재생성되었습니다", false, 2000);
+      Spicetify.showNotification(I18n.t("notifications.translationRegenerated"), false, 2000);
     } catch (error) {
       Spicetify.showNotification(
-        `번역 재생성 실패: ${error.message}`,
+        `${I18n.t("notifications.translationRegenerateFailed")}: ${error.message}`,
         true,
         3000
       );
@@ -2645,7 +2650,7 @@ class LyricsContainer extends react.Component {
           mode === "gemini_romaji" ? "Romaji, Romaja, Pinyin" : "Korean";
         return reject(
           new Error(
-            `${modeName} 번역 요청이 너무 많습니다. 1분 뒤, 다시시도해주세요.`
+            I18n.t("notifications.tooManyTranslationRequests")
           )
         );
       }
@@ -3140,7 +3145,7 @@ class LyricsContainer extends react.Component {
       );
     } else {
       Spicetify.showNotification(
-        "✓ 번역 캐시를 제거하고 다시 불러왔습니다!",
+        I18n.t("notifications.translationCacheRemoved"),
         false,
         2000
       );
@@ -3905,7 +3910,7 @@ class LyricsContainer extends react.Component {
           react.createElement(
             "span",
             null,
-            "발음을 요청하고 있습니다. 30초 정도 소요됩니다"
+            I18n.t("notifications.requestingPronunciation")
           )
         )
       ),
@@ -3928,7 +3933,7 @@ class LyricsContainer extends react.Component {
           react.createElement(
             "span",
             null,
-            "번역을 요청하고 있습니다. 30초 정도 소요됩니다"
+            I18n.t("notifications.requestingTranslation")
           )
         )
       ),
@@ -4085,7 +4090,7 @@ class LyricsContainer extends react.Component {
         react.createElement(
           Spicetify.ReactComponent.TooltipWrapper,
           {
-            label: "전체화면",
+            label: I18n.t("menu.fullscreen"),
           },
           react.createElement(
             "button",
