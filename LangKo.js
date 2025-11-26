@@ -860,6 +860,11 @@ window.LANG_KO = {
     },
     "api": {
       "title": "API 설정",
+      "getApiKey": {
+        "desc": "API 키 발급받기",
+        "info": "Google AI Studio에서 무료로 Gemini API 키를 발급받을 수 있습니다",
+        "button": "API 키 발급 페이지 열기"
+      },
       "geminiKey": {
         "desc": "Gemini API 키",
         "info": "Google Gemini AI를 활용한 가사 번역 기능을 사용하려면 API 키가 필요합니다"

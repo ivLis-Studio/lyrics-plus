@@ -126,6 +126,11 @@ const SettingKeys = [
   "lyrics-plus:visual:fullscreen-controls-background",
   "lyrics-plus:visual:fullscreen-auto-hide-ui",
   "lyrics-plus:visual:fullscreen-auto-hide-delay",
+  "lyrics-plus:visual:video-cover",
+  "lyrics-plus:visual:prefetch-enabled",
+  "lyrics-plus:visual:prefetch-video-enabled",
+  "lyrics-plus:visual:fullscreen-layout-reverse",
+  "lyrics-plus:visual:language",
 ];
 
 const BYTES_FOR_INDEX = Math.ceil(SettingKeys.length / 255);

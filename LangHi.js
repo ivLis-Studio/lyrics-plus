@@ -860,6 +860,11 @@ window.LANG_HI = {
     },
     "api": {
       "title": "API सेटिंग्स",
+      "getApiKey": {
+        "desc": "API कुंजी प्राप्त करें",
+        "info": "आप Google AI Studio से मुफ्त में Gemini API कुंजी प्राप्त कर सकते हैं",
+        "button": "API कुंजी पेज खोलें"
+      },
       "geminiKey": {
         "desc": "Gemini API कुंजी",
         "info": "Google Gemini AI का उपयोग करके लिरिक्स अनुवाद सुविधा का उपयोग करने के लिए एक API कुंजी की आवश्यकता है"

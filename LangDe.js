@@ -860,6 +860,11 @@ window.LANG_DE = {
     },
     "api": {
       "title": "API-Einstellungen",
+      "getApiKey": {
+        "desc": "API-Schlüssel erhalten",
+        "info": "Sie können einen kostenlosen Gemini API-Schlüssel von Google AI Studio erhalten",
+        "button": "API-Schlüssel-Seite öffnen"
+      },
       "geminiKey": {
         "desc": "Gemini API-Schlüssel",
         "info": "Ein API-Schlüssel ist erforderlich, um die Songtext-Übersetzungsfunktion mit Google Gemini AI zu nutzen"

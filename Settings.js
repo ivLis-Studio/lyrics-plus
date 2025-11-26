@@ -3572,6 +3572,16 @@ const ConfigModal = () => {
         react.createElement(OptionList, {
           items: [
             {
+              desc: I18n.t("settingsAdvanced.api.getApiKey.desc"),
+              info: I18n.t("settingsAdvanced.api.getApiKey.info"),
+              key: "get-api-key",
+              text: I18n.t("settingsAdvanced.api.getApiKey.button"),
+              type: ConfigButton,
+              onChange: () => {
+                window.open("https://aistudio.google.com/apikey", "_blank");
+              },
+            },
+            {
               desc: I18n.t("settingsAdvanced.api.geminiKey.desc"),
               info: I18n.t("settingsAdvanced.api.geminiKey.info"),
               key: "gemini-api-key",

@@ -860,6 +860,11 @@ window.LANG_JA = {
     },
     "api": {
       "title": "API設定",
+      "getApiKey": {
+        "desc": "APIキーを取得",
+        "info": "Google AI Studioで無料のGemini APIキーを取得できます",
+        "button": "APIキー取得ページを開く"
+      },
       "geminiKey": {
         "desc": "Gemini APIキー",
         "info": "Google Gemini AIを使用した歌詞翻訳機能にはAPIキーが必要です"

@@ -860,6 +860,11 @@ window.LANG_RU = {
     },
     "api": {
       "title": "Настройки API",
+      "getApiKey": {
+        "desc": "Получить ключ API",
+        "info": "Вы можете бесплатно получить ключ Gemini API в Google AI Studio",
+        "button": "Открыть страницу получения ключа"
+      },
       "geminiKey": {
         "desc": "Ключ Gemini API",
         "info": "Ключ API требуется для использования функции перевода текста с помощью Google Gemini AI"

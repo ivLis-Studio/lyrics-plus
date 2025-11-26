@@ -860,6 +860,11 @@ window.LANG_ZH_CN = {
     },
     "api": {
       "title": "API设置",
+      "getApiKey": {
+        "desc": "获取API密钥",
+        "info": "您可以在Google AI Studio免费获取Gemini API密钥",
+        "button": "打开API密钥页面"
+      },
       "geminiKey": {
         "desc": "Gemini API密钥",
         "info": "需要API密钥才能使用由Google Gemini AI驱动的歌词翻译功能"

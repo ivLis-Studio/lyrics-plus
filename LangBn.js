@@ -860,6 +860,11 @@ window.LANG_BN = {
     },
     "api": {
       "title": "API সেটিংস",
+      "getApiKey": {
+        "desc": "API কী পান",
+        "info": "আপনি Google AI Studio থেকে বিনামূল্যে Gemini API কী পেতে পারেন",
+        "button": "API কী পেজ খুলুন"
+      },
       "geminiKey": {
         "desc": "Gemini API কী",
         "info": "Google Gemini AI ব্যবহার করে লিরিক্স অনুবাদ ফাংশন ব্যবহার করতে একটি API কী প্রয়োজন"

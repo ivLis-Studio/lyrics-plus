@@ -860,6 +860,11 @@ window.LANG_AR = {
     },
     "api": {
       "title": "إعدادات API",
+      "getApiKey": {
+        "desc": "الحصول على مفتاح API",
+        "info": "يمكنك الحصول على مفتاح Gemini API مجانًا من Google AI Studio",
+        "button": "فتح صفحة مفتاح API"
+      },
       "geminiKey": {
         "desc": "مفتاح Gemini API",
         "info": "مفتاح API مطلوب لاستخدام وظيفة ترجمة الكلمات باستخدام Google Gemini AI"

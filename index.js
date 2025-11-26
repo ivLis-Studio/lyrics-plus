@@ -2196,22 +2196,23 @@ class LyricsContainer extends react.Component {
         return mapped;
       };
 
-      // mode1과 mode2 각각 처리
-      const mode1Text =
-        mode1 === "gemini_romaji" ? response.phonetic : response.vi;
-      const mode2Text =
-        mode2 === "gemini_romaji"
-          ? response.phonetic
-          : mode2 === "gemini_ko"
-            ? response.vi
-            : null;
+      // mode1과 mode2 각각 처리 - 둘 다 활성화된 경우 각각의 결과를 올바르게 할당
+      let translatedLyrics1 = null;
+      let translatedLyrics2 = null;
 
-      const translatedLyrics1 = mode1Text
-        ? processTranslationResult(mode1Text, originalLyrics)
-        : null;
-      const translatedLyrics2 = mode2Text
-        ? processTranslationResult(mode2Text, originalLyrics)
-        : null;
+      // mode1 처리
+      if (mode1 === "gemini_romaji" && response.phonetic) {
+        translatedLyrics1 = processTranslationResult(response.phonetic, originalLyrics);
+      } else if (mode1 === "gemini_ko" && response.vi) {
+        translatedLyrics1 = processTranslationResult(response.vi, originalLyrics);
+      }
+
+      // mode2 처리 (mode1과 독립적으로)
+      if (mode2 === "gemini_romaji" && response.phonetic) {
+        translatedLyrics2 = processTranslationResult(response.phonetic, originalLyrics);
+      } else if (mode2 === "gemini_ko" && response.vi) {
+        translatedLyrics2 = processTranslationResult(response.vi, originalLyrics);
+      }
 
       // _dmResults에 번역 결과 저장
       const currentUri = this.state.uri;
@@ -2225,11 +2226,20 @@ class LyricsContainer extends react.Component {
       // mode1과 mode2 결과 저장
       this._dmResults[currentUri].mode1 = translatedLyrics1;
       this._dmResults[currentUri].mode2 = translatedLyrics2;
+      this._dmResults[currentUri].lastMode1 = mode1;
+      this._dmResults[currentUri].lastMode2 = mode2;
+
+      // CacheManager에도 새 결과 저장 (getGeminiTranslation에서 캐시 히트하도록)
+      if (translatedLyrics1 && mode1) {
+        CacheManager.set(`${currentUri}:${mode1}`, translatedLyrics1);
+      }
+      if (translatedLyrics2 && mode2) {
+        CacheManager.set(`${currentUri}:${mode2}`, translatedLyrics2);
+      }
 
       // lyricsSource를 다시 호출하여 기존 로직으로 화면 업데이트
       // 이렇게 하면 optimizeTranslations이 호출되어 사용자 설정에 따라 번역이 표시됨
       this.lyricsSource(this.state, currentMode);
-      this.resetTranslationCache(this.currentTrackUri);
       Spicetify.showNotification(I18n.t("notifications.translationRegenerated"), false, 2000);
     } catch (error) {
       Spicetify.showNotification(

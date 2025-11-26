@@ -860,6 +860,11 @@ window.LANG_ES = {
     },
     "api": {
       "title": "Configuración de API",
+      "getApiKey": {
+        "desc": "Obtener clave API",
+        "info": "Puedes obtener una clave API de Gemini gratis desde Google AI Studio",
+        "button": "Abrir página de clave API"
+      },
       "geminiKey": {
         "desc": "Clave API de Gemini",
         "info": "Se requiere una clave API para usar la función de traducción de letras con Google Gemini AI"
