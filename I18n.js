@@ -10,16 +10,19 @@
     var fallbackData = {};
     var STORAGE_KEY = "lyrics-plus:visual:language";
     var DEFAULT_LANGUAGE = "ko";
-    var AVAILABLE_LANGUAGES = ["ko", "en"];
+    var AVAILABLE_LANGUAGES = ["ko", "en", "zh-CN", "zh-TW", "ja"];
 
     // Language display names
     var LANGUAGE_NAMES = {
         ko: "한국어",
-        en: "English"
+        en: "English",
+        "zh-CN": "简体中文",
+        "zh-TW": "繁體中文",
+        ja: "日本語"
     };
 
     /**
-     * Get language data from external JS files (LangKo.js, LangEn.js)
+     * Get language data from external JS files (LangKo.js, LangEn.js, etc.)
      */
     function getLanguageData(langCode) {
         if (langCode === 'ko' && typeof window.LANG_KO !== 'undefined' && window.LANG_KO) {
@@ -27,6 +30,15 @@
         }
         if (langCode === 'en' && typeof window.LANG_EN !== 'undefined' && window.LANG_EN) {
             return window.LANG_EN;
+        }
+        if (langCode === 'zh-CN' && typeof window.LANG_ZH_CN !== 'undefined' && window.LANG_ZH_CN) {
+            return window.LANG_ZH_CN;
+        }
+        if (langCode === 'zh-TW' && typeof window.LANG_ZH_TW !== 'undefined' && window.LANG_ZH_TW) {
+            return window.LANG_ZH_TW;
+        }
+        if (langCode === 'ja' && typeof window.LANG_JA !== 'undefined' && window.LANG_JA) {
+            return window.LANG_JA;
         }
         return null;
     }

@@ -600,6 +600,7 @@ window.LANG_EN = {
       "title": "Playback Behavior",
       "subtitle": "Playback-related feature settings",
       "replaceButton": {
+        "label": "Replace Lyrics Button",
         "info": "Replaces Spotify's default lyrics button with Lyrics Plus"
       },
       "fullscreenShortcut": {

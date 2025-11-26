@@ -600,6 +600,7 @@ window.LANG_KO = {
       "title": "재생 동작",
       "subtitle": "재생 관련 기능 설정",
       "replaceButton": {
+        "label": "가사 버튼 교체",
         "info": "Spotify의 기본 가사 버튼을 Lyrics Plus로 교체합니다"
       },
       "fullscreenShortcut": {
