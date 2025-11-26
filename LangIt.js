@@ -923,7 +923,11 @@ window.LANG_IT = {
     "loading": "Caricamento...",
     "feedbackGood": "L'offset è corretto",
     "feedbackBad": "L'offset è scorretto",
-    "cannotFeedbackOwnSubmission": "Non puoi valutare il tuo invio"
+    "cannotFeedbackOwnSubmission": "Non puoi valutare il tuo invio",
+    "feedbackPositiveSuccess": "Grazie per il feedback positivo!",
+    "feedbackNegativeSuccess": "Grazie per il tuo feedback. Miglioreremo!",
+    "feedbackFailed": "Invio feedback fallito",
+    "autoSubmitEnabled": "⚡ Invio automatico attivo"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

@@ -923,7 +923,11 @@ window.LANG_BN = {
     "loading": "লোড হচ্ছে...",
     "feedbackGood": "অফসেট সঠিক",
     "feedbackBad": "অফসেট ভুল",
-    "cannotFeedbackOwnSubmission": "আপনি নিজের জমা মূল্যায়ন করতে পারবেন না"
+    "cannotFeedbackOwnSubmission": "আপনি নিজের জমা মূল্যায়ন করতে পারবেন না",
+    "feedbackPositiveSuccess": "ইতিবাচক মতামতের জন্য ধন্যবাদ!",
+    "feedbackNegativeSuccess": "আপনার মতামতের জন্য ধন্যবাদ। আমরা উন্নতি করব!",
+    "feedbackFailed": "মতামত জমা দিতে ব্যর্থ হয়েছে",
+    "autoSubmitEnabled": "⚡ অটো সাবমিট সক্রিয়"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

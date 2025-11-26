@@ -923,7 +923,11 @@ window.LANG_ZH_TW = {
     "loading": "載入中...",
     "feedbackGood": "偏移量準確",
     "feedbackBad": "偏移量不準確",
-    "cannotFeedbackOwnSubmission": "無法評價自己提交的偏移量"
+    "cannotFeedbackOwnSubmission": "無法評價自己提交的偏移量",
+    "feedbackPositiveSuccess": "感謝您的肯定回饋！",
+    "feedbackNegativeSuccess": "感謝您的回饋。我們會改進！",
+    "feedbackFailed": "回饋提交失敗",
+    "autoSubmitEnabled": "⚡ 自動提交已啟用"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

@@ -923,7 +923,11 @@ window.LANG_FR = {
     "loading": "Chargement...",
     "feedbackGood": "Le décalage est correct",
     "feedbackBad": "Le décalage est incorrect",
-    "cannotFeedbackOwnSubmission": "Vous ne pouvez pas évaluer votre propre soumission"
+    "cannotFeedbackOwnSubmission": "Vous ne pouvez pas évaluer votre propre soumission",
+    "feedbackPositiveSuccess": "Merci pour votre retour positif !",
+    "feedbackNegativeSuccess": "Merci pour votre retour. Nous allons nous améliorer !",
+    "feedbackFailed": "Échec de l'envoi du retour",
+    "autoSubmitEnabled": "⚡ L'envoi automatique est activé"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

@@ -923,7 +923,11 @@ window.LANG_RU = {
     "loading": "Загрузка...",
     "feedbackGood": "Смещение точное",
     "feedbackBad": "Смещение неточное",
-    "cannotFeedbackOwnSubmission": "Вы не можете оценить свою собственную отправку"
+    "cannotFeedbackOwnSubmission": "Вы не можете оценить свою собственную отправку",
+    "feedbackPositiveSuccess": "Спасибо за положительный отзыв!",
+    "feedbackNegativeSuccess": "Спасибо за ваш отзыв. Мы улучшимся!",
+    "feedbackFailed": "Не удалось отправить отзыв",
+    "autoSubmitEnabled": "⚡ Автоотправка включена"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

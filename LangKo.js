@@ -923,7 +923,11 @@ window.LANG_KO = {
     "loading": "로딩 중...",
     "feedbackGood": "오프셋이 정확해요",
     "feedbackBad": "오프셋이 정확하지 않아요",
-    "cannotFeedbackOwnSubmission": "자신이 제출한 오프셋에는 평가할 수 없습니다"
+    "cannotFeedbackOwnSubmission": "자신이 제출한 오프셋에는 평가할 수 없습니다",
+    "feedbackPositiveSuccess": "긍정적인 피드백 감사합니다!",
+    "feedbackNegativeSuccess": "피드백 감사합니다. 개선하겠습니다!",
+    "feedbackFailed": "피드백 제출에 실패했습니다",
+    "autoSubmitEnabled": "⚡ 자동 제출이 활성화되어 있습니다"
   },
   "playbarButton": {
     "label": "가사 플러스"

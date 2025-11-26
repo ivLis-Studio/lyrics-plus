@@ -923,7 +923,11 @@ window.LANG_HI = {
     "loading": "लोड हो रहा है...",
     "feedbackGood": "ऑफसेट सही है",
     "feedbackBad": "ऑफसेट गलत है",
-    "cannotFeedbackOwnSubmission": "आप अपनी जमा का मूल्यांकन नहीं कर सकते"
+    "cannotFeedbackOwnSubmission": "आप अपनी जमा का मूल्यांकन नहीं कर सकते",
+    "feedbackPositiveSuccess": "सकारात्मक प्रतिक्रिया के लिए धन्यवाद!",
+    "feedbackNegativeSuccess": "आपकी प्रतिक्रिया के लिए धन्यवाद। हम सुधार करेंगे!",
+    "feedbackFailed": "प्रतिक्रिया जमा करने में विफल",
+    "autoSubmitEnabled": "⚡ ऑटो सबमिट सक्रिय है"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

@@ -923,7 +923,11 @@ window.LANG_AR = {
     "loading": "جاري التحميل...",
     "feedbackGood": "الإزاحة دقيقة",
     "feedbackBad": "الإزاحة غير دقيقة",
-    "cannotFeedbackOwnSubmission": "لا يمكنك تقييم إرسالك الخاص"
+    "cannotFeedbackOwnSubmission": "لا يمكنك تقييم إرسالك الخاص",
+    "feedbackPositiveSuccess": "شكراً على التقييم الإيجابي!",
+    "feedbackNegativeSuccess": "شكراً على ملاحظاتك. سنتحسن!",
+    "feedbackFailed": "فشل إرسال التقييم",
+    "autoSubmitEnabled": "⚡ الإرسال التلقائي مفعل"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

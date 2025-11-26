@@ -1033,11 +1033,22 @@ const SyncAdjustButton = react.memo(
     // 피드백 제출
     const submitFeedback = async (isPositive) => {
       if (!CONFIG.visual["community-sync-enabled"]) return;
+      // 자신이 제출한 오프셋에는 피드백 불가
+      if (communityData?.user?.hasSubmitted) {
+        Spicetify.showNotification(I18n.t("syncAdjust.cannotFeedbackOwnSubmission"), true, 2000);
+        return;
+      }
       try {
         await Utils.submitCommunityFeedback(trackUri, isPositive);
         setFeedbackStatus(isPositive ? 'positive' : 'negative');
+        Spicetify.showNotification(
+          isPositive ? I18n.t("syncAdjust.feedbackPositiveSuccess") : I18n.t("syncAdjust.feedbackNegativeSuccess"),
+          false,
+          2000
+        );
       } catch (error) {
         console.error("[Lyrics Plus] Failed to submit feedback:", error);
+        Spicetify.showNotification(I18n.t("syncAdjust.feedbackFailed"), true, 2000);
       }
     };
 
@@ -1683,8 +1694,24 @@ const SyncAdjustButton = react.memo(
                       isSubmitting ? I18n.t("syncAdjust.submitting") : I18n.t("syncAdjust.submitMine")
                     )
                   ),
-              // Submit button (when community data exists)
-              communityData && !CONFIG.visual["community-sync-auto-submit"] && react.createElement(
+              // Auto-submit status indicator
+              CONFIG.visual["community-sync-auto-submit"] && react.createElement(
+                "div",
+                {
+                  style: {
+                    marginTop: "12px",
+                    padding: "8px 12px",
+                    background: "rgba(52, 199, 89, 0.1)",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                    color: "#34c759",
+                    textAlign: "center",
+                  },
+                },
+                I18n.t("syncAdjust.autoSubmitEnabled")
+              ),
+              // Submit button (always show when community data exists)
+              communityData && react.createElement(
                 "div",
                 {
                   style: {

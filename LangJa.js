@@ -923,7 +923,11 @@ window.LANG_JA = {
     "loading": "読み込み中...",
     "feedbackGood": "オフセットは正確です",
     "feedbackBad": "オフセットは不正確です",
-    "cannotFeedbackOwnSubmission": "自分の提出したオフセットには評価できません"
+    "cannotFeedbackOwnSubmission": "自分の提出したオフセットには評価できません",
+    "feedbackPositiveSuccess": "肯定的なフィードバックありがとうございます！",
+    "feedbackNegativeSuccess": "フィードバックありがとうございます。改善します！",
+    "feedbackFailed": "フィードバックの提出に失敗しました",
+    "autoSubmitEnabled": "⚡ 自動提出が有効です"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

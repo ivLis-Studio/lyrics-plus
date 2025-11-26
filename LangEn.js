@@ -923,7 +923,11 @@ window.LANG_EN = {
     "loading": "Loading...",
     "feedbackGood": "Offset is accurate",
     "feedbackBad": "Offset is inaccurate",
-    "cannotFeedbackOwnSubmission": "You cannot rate your own submission"
+    "cannotFeedbackOwnSubmission": "You cannot rate your own submission",
+    "feedbackPositiveSuccess": "Thanks for the positive feedback!",
+    "feedbackNegativeSuccess": "Thanks for your feedback. We'll improve!",
+    "feedbackFailed": "Failed to submit feedback",
+    "autoSubmitEnabled": "⚡ Auto-submit is enabled"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

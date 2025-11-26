@@ -1189,7 +1189,7 @@ const CONFIG = {
       Number(StorageManager.getItem("lyrics-plus:visual:community-sync-min-confidence")) || 0.5,
     "community-sync-auto-submit": StorageManager.get(
       "lyrics-plus:visual:community-sync-auto-submit",
-      true
+      false
     ),
     "fullscreen-key":
       StorageManager.getItem("lyrics-plus:visual:fullscreen-key") || "f12",
