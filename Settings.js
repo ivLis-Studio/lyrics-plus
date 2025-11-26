@@ -2451,6 +2451,15 @@ const ConfigModal = () => {
                 "zh-CN": "简体中文",
                 "zh-TW": "繁體中文",
                 ja: "日本語",
+                hi: "हिन्दी",
+                es: "Español",
+                fr: "Français",
+                ar: "العربية",
+                de: "Deutsch",
+                ru: "Русский",
+                pt: "Português",
+                bn: "বাংলা",
+                it: "Italiano",
               },
             },
           ],
@@ -2762,7 +2771,7 @@ const ConfigModal = () => {
                     : "none",
                 },
               },
-              "gasaga hereye dekimasu"
+              I18n.t("settingsAdvanced.livePreview.sampleTextPhonetic")
             ),
             react.createElement(
               "div",

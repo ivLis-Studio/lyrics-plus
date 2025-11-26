@@ -511,8 +511,9 @@ window.LANG_EN = {
     "livePreview": {
       "title": "Live Preview",
       "subtitle": "Instantly see your style settings",
-      "sampleText": "Lyrics appear here",
-      "sampleTextMixed": "Lyrics appear here 見えます"
+      "sampleText": "Lyric is here",
+      "sampleTextMixed": "여기 Lyric あります",
+      "sampleTextPhonetic": "yeogi lyric arimasu"
     },
     "originalStyle": {
       "title": "Original Style",

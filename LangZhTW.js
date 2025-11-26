@@ -511,8 +511,9 @@ window.LANG_ZH_TW = {
     "livePreview": {
       "title": "即時預覽",
       "subtitle": "即時查看您的樣式設定",
-      "sampleText": "歌詞顯示在這裡",
-      "sampleTextMixed": "歌詞顯示 here に見えます"
+      "sampleText": "這裡有歌詞",
+      "sampleTextMixed": "여기 Lyric あります",
+      "sampleTextPhonetic": "yeogi lyric arimasu"
     },
     "originalStyle": {
       "title": "原文樣式",

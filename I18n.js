@@ -10,7 +10,7 @@
     var fallbackData = {};
     var STORAGE_KEY = "lyrics-plus:visual:language";
     var DEFAULT_LANGUAGE = "ko";
-    var AVAILABLE_LANGUAGES = ["ko", "en", "zh-CN", "zh-TW", "ja"];
+    var AVAILABLE_LANGUAGES = ["ko", "en", "zh-CN", "zh-TW", "ja", "es", "fr", "de", "it", "ru", "pt", "hi", "ar", "bn", "ur"];
 
     // Language display names
     var LANGUAGE_NAMES = {
@@ -18,7 +18,17 @@
         en: "English",
         "zh-CN": "简体中文",
         "zh-TW": "繁體中文",
-        ja: "日本語"
+        ja: "日本語",
+        es: "Español",
+        fr: "Français",
+        de: "Deutsch",
+        it: "Italiano",
+        ru: "Русский",
+        pt: "Português",
+        hi: "हिन्दी",
+        ar: "العربية",
+        bn: "বাংলা",
+        ur: "اردو"
     };
 
     /**
@@ -39,6 +49,36 @@
         }
         if (langCode === 'ja' && typeof window.LANG_JA !== 'undefined' && window.LANG_JA) {
             return window.LANG_JA;
+        }
+        if (langCode === 'es' && typeof window.LANG_ES !== 'undefined' && window.LANG_ES) {
+            return window.LANG_ES;
+        }
+        if (langCode === 'fr' && typeof window.LANG_FR !== 'undefined' && window.LANG_FR) {
+            return window.LANG_FR;
+        }
+        if (langCode === 'de' && typeof window.LANG_DE !== 'undefined' && window.LANG_DE) {
+            return window.LANG_DE;
+        }
+        if (langCode === 'it' && typeof window.LANG_IT !== 'undefined' && window.LANG_IT) {
+            return window.LANG_IT;
+        }
+        if (langCode === 'ru' && typeof window.LANG_RU !== 'undefined' && window.LANG_RU) {
+            return window.LANG_RU;
+        }
+        if (langCode === 'pt' && typeof window.LANG_PT !== 'undefined' && window.LANG_PT) {
+            return window.LANG_PT;
+        }
+        if (langCode === 'hi' && typeof window.LANG_HI !== 'undefined' && window.LANG_HI) {
+            return window.LANG_HI;
+        }
+        if (langCode === 'ar' && typeof window.LANG_AR !== 'undefined' && window.LANG_AR) {
+            return window.LANG_AR;
+        }
+        if (langCode === 'bn' && typeof window.LANG_BN !== 'undefined' && window.LANG_BN) {
+            return window.LANG_BN;
+        }
+        if (langCode === 'ur' && typeof window.LANG_UR !== 'undefined' && window.LANG_UR) {
+            return window.LANG_UR;
         }
         return null;
     }

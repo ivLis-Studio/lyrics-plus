@@ -511,8 +511,9 @@ window.LANG_KO = {
     "livePreview": {
       "title": "실시간 미리보기",
       "subtitle": "설정한 스타일을 즉시 확인하세요",
-      "sampleText": "가사가 여기 있습니다",
-      "sampleTextMixed": "가사가 here에 見えます"
+      "sampleText": "여기 가사가 있습니다",
+      "sampleTextMixed": "여기 Lyric あります",
+      "sampleTextPhonetic": "여기 리릭 아리마스"
     },
     "originalStyle": {
       "title": "원문 스타일",

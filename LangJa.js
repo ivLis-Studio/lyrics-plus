@@ -511,8 +511,9 @@ window.LANG_JA = {
     "livePreview": {
       "title": "ライブプレビュー",
       "subtitle": "スタイル設定をリアルタイムで確認",
-      "sampleText": "歌詞がここに表示されます",
-      "sampleTextMixed": "歌詞がここ here に見えます"
+      "sampleText": "ここに歌詞があります",
+      "sampleTextMixed": "여기 Lyric あります",
+      "sampleTextPhonetic": "ヨギ リリック アリマス"
     },
     "originalStyle": {
       "title": "原文スタイル",

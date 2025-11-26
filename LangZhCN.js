@@ -511,8 +511,9 @@ window.LANG_ZH_CN = {
     "livePreview": {
       "title": "实时预览",
       "subtitle": "即时查看您的样式设置",
-      "sampleText": "歌词显示在这里",
-      "sampleTextMixed": "歌词显示 here に見えます"
+      "sampleText": "这里有歌词",
+      "sampleTextMixed": "여기 Lyric あります",
+      "sampleTextPhonetic": "yeogi lyric arimasu"
     },
     "originalStyle": {
       "title": "原文样式",
