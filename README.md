@@ -1,4 +1,4 @@
-# Lyrics Plus (아마도)
+# Lyrics Plus (완전히 새로운)
 
 <p align="center">
   <a href="README.md">한국어</a> |
