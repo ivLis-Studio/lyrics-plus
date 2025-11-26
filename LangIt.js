@@ -633,7 +633,27 @@ window.LANG_IT = {
       },
       "videoEnabled": {
         "label": "Precarica Sfondo Video",
-        "desc": "Precarica informazioni sullo sfondo video per la traccia successiva"
+        "desc": "Precarica informazioni sfondo video per la traccia successiva"
+      }
+    },
+    "communitySync": {
+      "title": "Sincronizzazione Community",
+      "subtitle": "Condividi offset di sincronizzazione testi con altri utenti",
+      "enabled": {
+        "label": "Usa Sync Community",
+        "desc": "Usa offset di sincronizzazione condivisi dalla community"
+      },
+      "autoApply": {
+        "label": "Applica Auto",
+        "desc": "Applica automaticamente l'offset della community quando l'affidabilità è sufficiente"
+      },
+      "autoSubmit": {
+        "label": "Invia Auto",
+        "desc": "Condividi automaticamente le modifiche dell'offset con la community"
+      },
+      "minConfidence": {
+        "label": "Affidabilità Minima",
+        "desc": "Affidabilità minima richiesta per l'applicazione automatica (0.0 ~ 1.0). L'affidabilità viene calcolata in base al numero di invii e alla coerenza dei valori di offset. Valori più alti significano che più utenti hanno inviato offset simili"
       }
     },
     "cacheManagement": {
@@ -887,7 +907,23 @@ window.LANG_IT = {
   },
   "syncAdjust": {
     "info": "Se sposti il cursore a destra, il testo scorrerà più velocemente.",
-    "reset": "Reimposta"
+    "reset": "Reimposta",
+    "communityTitle": "Sincronizzazione Comunitaria",
+    "communityOffset": "Offset",
+    "submissions": "Invii",
+    "confidenceHigh": "Alta Affidabilità",
+    "confidenceMedium": "Media Affidabilità",
+    "confidenceLow": "Bassa Affidabilità",
+    "applyCommunity": "Applica",
+    "submitMine": "Invia Il Mio Offset",
+    "submitting": "Invio...",
+    "submitSuccess": "Inviato alla community",
+    "submitFailed": "Invio fallito",
+    "noData": "Nessun dato della community",
+    "loading": "Caricamento...",
+    "feedbackGood": "L'offset è corretto",
+    "feedbackBad": "L'offset è scorretto",
+    "cannotFeedbackOwnSubmission": "Non puoi valutare il tuo invio"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

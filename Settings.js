@@ -3458,6 +3458,50 @@ const ConfigModal = () => {
           },
         }),
         react.createElement(SectionTitle, {
+          title: I18n.t("settingsAdvanced.communitySync.title"),
+          subtitle: I18n.t("settingsAdvanced.communitySync.subtitle"),
+        }),
+        react.createElement(OptionList, {
+          items: [
+            {
+              desc: I18n.t("settingsAdvanced.communitySync.enabled.label"),
+              info: I18n.t("settingsAdvanced.communitySync.enabled.desc"),
+              key: "community-sync-enabled",
+              type: ConfigSlider,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.communitySync.autoApply.label"),
+              info: I18n.t("settingsAdvanced.communitySync.autoApply.desc"),
+              key: "community-sync-auto-apply",
+              type: ConfigSlider,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.communitySync.autoSubmit.label"),
+              info: I18n.t("settingsAdvanced.communitySync.autoSubmit.desc"),
+              key: "community-sync-auto-submit",
+              type: ConfigSlider,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.communitySync.minConfidence.label"),
+              info: I18n.t("settingsAdvanced.communitySync.minConfidence.desc"),
+              key: "community-sync-min-confidence",
+              type: ConfigInput,
+              inputType: "number",
+              min: 0,
+              max: 1,
+              step: 0.1,
+              defaultValue: CONFIG.visual["community-sync-min-confidence"] || 0.5,
+            },
+          ],
+          onChange: (name, value) => {
+            if (name === "community-sync-min-confidence") {
+              value = Math.min(1, Math.max(0, parseFloat(value) || 0.5));
+            }
+            CONFIG.visual[name] = value;
+            StorageManager.saveConfig(name, value);
+          },
+        }),
+        react.createElement(SectionTitle, {
           title: I18n.t("settingsAdvanced.cacheManagement.title"),
           subtitle: I18n.t("settingsAdvanced.cacheManagement.subtitle"),
         }),

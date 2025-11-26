@@ -636,6 +636,26 @@ window.LANG_FR = {
         "desc": "Précharger les informations de l'arrière-plan vidéo pour la piste suivante"
       }
     },
+    "communitySync": {
+      "title": "Synchronisation Communautaire",
+      "subtitle": "Partagez les décalages de synchronisation des paroles avec d'autres utilisateurs",
+      "enabled": {
+        "label": "Utiliser la Sync Communautaire",
+        "desc": "Utiliser les décalages de synchronisation partagés par la communauté"
+      },
+      "autoApply": {
+        "label": "Application Auto",
+        "desc": "Appliquer automatiquement le décalage communautaire si la confiance est suffisante"
+      },
+      "autoSubmit": {
+        "label": "Envoi Auto",
+        "desc": "Partager automatiquement vos modifications de décalage avec la communauté"
+      },
+      "minConfidence": {
+        "label": "Confiance Minimale",
+        "desc": "Confiance minimale requise pour l'application automatique (0.0 ~ 1.0). La confiance est calculée en fonction du nombre de soumissions et de la cohérence des valeurs de décalage. Des valeurs plus élevées signifient que plus d'utilisateurs ont soumis des décalages similaires"
+      }
+    },
     "cacheManagement": {
       "title": "Gestion du cache",
       "subtitle": "Gérer les données enregistrées",
@@ -887,7 +907,23 @@ window.LANG_FR = {
   },
   "syncAdjust": {
     "info": "Si vous déplacez le curseur vers la droite, les paroles passeront plus vite.",
-    "reset": "Réinitialiser"
+    "reset": "Réinitialiser",
+    "communityTitle": "Synchronisation Communautaire",
+    "communityOffset": "Décalage",
+    "submissions": "Soumissions",
+    "confidenceHigh": "Haute Confiance",
+    "confidenceMedium": "Moyenne Confiance",
+    "confidenceLow": "Faible Confiance",
+    "applyCommunity": "Appliquer",
+    "submitMine": "Soumettre Mon Décalage",
+    "submitting": "Envoi...",
+    "submitSuccess": "Envoyé à la communauté",
+    "submitFailed": "Échec de l'envoi",
+    "noData": "Pas de données communautaires",
+    "loading": "Chargement...",
+    "feedbackGood": "Le décalage est correct",
+    "feedbackBad": "Le décalage est incorrect",
+    "cannotFeedbackOwnSubmission": "Vous ne pouvez pas évaluer votre propre soumission"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

@@ -111,6 +111,11 @@
 	animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* 전체화면 모드에서 업데이트 배너 숨기기 */
+#lyrics-fullscreen-container .lyrics-plus-update-banner {
+	display: none !important;
+}
+
 .lyrics-update-button-primary:hover {
 	background: rgba(255, 255, 255, 0.22) !important;
 	transform: scale(1.02);

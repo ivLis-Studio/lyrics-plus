@@ -636,6 +636,26 @@ window.LANG_EN = {
         "desc": "Preload video background information for the next track"
       }
     },
+    "communitySync": {
+      "title": "Community Sync",
+      "subtitle": "Share lyrics sync offsets with other users",
+      "enabled": {
+        "label": "Use Community Sync",
+        "desc": "Use sync offsets shared by the community"
+      },
+      "autoApply": {
+        "label": "Auto Apply",
+        "desc": "Automatically apply community offset when confidence is sufficient"
+      },
+      "autoSubmit": {
+        "label": "Auto Submit",
+        "desc": "Automatically share your sync offset changes with the community"
+      },
+      "minConfidence": {
+        "label": "Minimum Confidence",
+        "desc": "Minimum confidence required for auto-apply (0.0 ~ 1.0). Confidence is calculated based on number of submissions and consistency of offset values. Higher values mean more users submitted similar offsets"
+      }
+    },
     "cacheManagement": {
       "title": "Cache Management",
       "subtitle": "Manage stored data",
@@ -886,8 +906,24 @@ window.LANG_EN = {
     }
   },
   "syncAdjust": {
-    "info": "Moving the slider to the right makes the lyrics pass faster.",
-    "reset": "Reset"
+    "info": "Move the slider to the right to make the lyrics faster.",
+    "reset": "Reset",
+    "communityTitle": "Community Sync",
+    "communityOffset": "Offset",
+    "submissions": "Submissions",
+    "confidenceHigh": "High Confidence",
+    "confidenceMedium": "Medium Confidence",
+    "confidenceLow": "Low Confidence",
+    "applyCommunity": "Apply",
+    "submitMine": "Submit My Offset",
+    "submitting": "Submitting...",
+    "submitSuccess": "Submitted to community",
+    "submitFailed": "Failed to submit",
+    "noData": "No community data available",
+    "loading": "Loading...",
+    "feedbackGood": "Offset is accurate",
+    "feedbackBad": "Offset is inaccurate",
+    "cannotFeedbackOwnSubmission": "You cannot rate your own submission"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

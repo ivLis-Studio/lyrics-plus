@@ -625,15 +625,35 @@ window.LANG_ZH_CN = {
       }
     },
     "prefetch": {
-      "title": "预加载下一曲",
-      "subtitle": "预加载下一曲的元素以减少切换延迟",
+      "title": "预加载下一首",
+      "subtitle": "预加载下一首歌曲的元素以减少切换延迟",
       "enabled": {
         "label": "预加载翻译/发音",
-        "desc": "预先请求下一曲的翻译和发音转换"
+        "desc": "预先请求下一首歌曲的翻译和发音转换"
       },
       "videoEnabled": {
         "label": "预加载视频背景",
-        "desc": "预先获取下一曲的视频背景信息"
+        "desc": "预先获取下一首歌曲的视频背景信息"
+      }
+    },
+    "communitySync": {
+      "title": "社区同步",
+      "subtitle": "与其他用户共享歌词同步偏移",
+      "enabled": {
+        "label": "使用社区同步",
+        "desc": "使用社区共享的同步偏移"
+      },
+      "autoApply": {
+        "label": "自动应用",
+        "desc": "当置信度足够时自动应用社区偏移"
+      },
+      "autoSubmit": {
+        "label": "自动提交",
+        "desc": "更改同步偏移时自动分享给社区"
+      },
+      "minConfidence": {
+        "label": "最低置信度",
+        "desc": "自动应用所需的最低置信度 (0.0 ~ 1.0)。置信度根据提交数量和偏移值的一致性计算。较高的值表示更多用户提交了相似的偏移值"
       }
     },
     "cacheManagement": {
@@ -886,8 +906,24 @@ window.LANG_ZH_CN = {
     }
   },
   "syncAdjust": {
-    "info": "将滑块向右移动，歌词会更快地通过。",
-    "reset": "重置"
+    "info": "将滑块向右移动会使歌词更快。",
+    "reset": "重置",
+    "communityTitle": "社区同步",
+    "communityOffset": "偏移",
+    "submissions": "提交数",
+    "confidenceHigh": "高置信度",
+    "confidenceMedium": "中置信度",
+    "confidenceLow": "低置信度",
+    "applyCommunity": "应用",
+    "submitMine": "提交我的偏移",
+    "submitting": "提交中...",
+    "submitSuccess": "已提交到社区",
+    "submitFailed": "提交失败",
+    "noData": "没有社区数据",
+    "loading": "加载中...",
+    "feedbackGood": "偏移量准确",
+    "feedbackBad": "偏移量不准确",
+    "cannotFeedbackOwnSubmission": "无法评价自己提交的偏移量"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

@@ -625,15 +625,35 @@ window.LANG_ZH_TW = {
       }
     },
     "prefetch": {
-      "title": "預先載入下一首",
-      "subtitle": "預先載入下一首歌曲的元素以減少切換延遲",
+      "title": "預載下一首",
+      "subtitle": "預載下一首歌曲的元素以減少切換延遲",
       "enabled": {
-        "label": "預先載入翻譯/發音",
+        "label": "預載翻譯/發音",
         "desc": "預先請求下一首歌曲的翻譯和發音轉換"
       },
       "videoEnabled": {
-        "label": "預先載入影片背景",
+        "label": "預載影片背景",
         "desc": "預先取得下一首歌曲的影片背景資訊"
+      }
+    },
+    "communitySync": {
+      "title": "社群同步",
+      "subtitle": "與其他用戶共享歌詞同步偏移",
+      "enabled": {
+        "label": "使用社群同步",
+        "desc": "使用社群共享的同步偏移"
+      },
+      "autoApply": {
+        "label": "自動套用",
+        "desc": "當信賴度足夠時自動套用社群偏移"
+      },
+      "autoSubmit": {
+        "label": "自動提交",
+        "desc": "變更同步偏移時自動分享給社群"
+      },
+      "minConfidence": {
+        "label": "最低信任度",
+        "desc": "自動套用所需的最低信任度 (0.0 ~ 1.0)。信任度根據提交數量和偏移值的一致性計算。較高的值表示更多用戶提交了相似的偏移值"
       }
     },
     "cacheManagement": {
@@ -887,7 +907,23 @@ window.LANG_ZH_TW = {
   },
   "syncAdjust": {
     "info": "將滑桿向右移動，歌詞會更快地通過。",
-    "reset": "重設"
+    "reset": "重設",
+    "communityTitle": "社群同步",
+    "communityOffset": "偏移",
+    "submissions": "提交數",
+    "confidenceHigh": "高信任度",
+    "confidenceMedium": "中信任度",
+    "confidenceLow": "低信任度",
+    "applyCommunity": "套用",
+    "submitMine": "提交我的偏移",
+    "submitting": "提交中...",
+    "submitSuccess": "已提交到社群",
+    "submitFailed": "提交失敗",
+    "noData": "沒有社群數據",
+    "loading": "載入中...",
+    "feedbackGood": "偏移量準確",
+    "feedbackBad": "偏移量不準確",
+    "cannotFeedbackOwnSubmission": "無法評價自己提交的偏移量"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

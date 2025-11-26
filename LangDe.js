@@ -626,7 +626,7 @@ window.LANG_DE = {
     },
     "prefetch": {
       "title": "Nächsten Track vorladen",
-      "subtitle": "Elemente für den nächsten Track vorladen, um Übergangsverzögerungen zu reduzieren",
+      "subtitle": "Elemente für den nächsten Track vorladen, um Übergangverzögerungen zu reduzieren",
       "enabled": {
         "label": "Übersetzung/Phonetik vorladen",
         "desc": "Übersetzung und phonetische Konvertierung für den nächsten Track vorladen"
@@ -634,6 +634,26 @@ window.LANG_DE = {
       "videoEnabled": {
         "label": "Videohintergrund vorladen",
         "desc": "Videohintergrund-Informationen für den nächsten Track vorladen"
+      }
+    },
+    "communitySync": {
+      "title": "Community-Synchronisierung",
+      "subtitle": "Teilen Sie Liedtext-Sync-Offsets mit anderen Benutzern",
+      "enabled": {
+        "label": "Community-Sync Verwenden",
+        "desc": "Von der Community geteilte Sync-Offsets verwenden"
+      },
+      "autoApply": {
+        "label": "Automatisch Anwenden",
+        "desc": "Community-Offset automatisch anwenden, wenn das Vertrauen ausreichend ist"
+      },
+      "autoSubmit": {
+        "label": "Automatisch Senden",
+        "desc": "Ihre Offset-Änderungen automatisch mit der Community teilen"
+      },
+      "minConfidence": {
+        "label": "Mindestvertrauen",
+        "desc": "Mindestvertrauen für automatische Anwendung erforderlich (0.0 ~ 1.0). Das Vertrauen wird basierend auf der Anzahl der Einreichungen und der Konsistenz der Offset-Werte berechnet. Höhere Werte bedeuten, dass mehr Benutzer ähnliche Offsets eingereicht haben"
       }
     },
     "cacheManagement": {
@@ -887,7 +907,23 @@ window.LANG_DE = {
   },
   "syncAdjust": {
     "info": "Wenn Sie den Schieberegler nach rechts bewegen, läuft der Text schneller.",
-    "reset": "Zurücksetzen"
+    "reset": "Zurücksetzen",
+    "communityTitle": "Community-Synchronisierung",
+    "communityOffset": "Offset",
+    "submissions": "Einreichungen",
+    "confidenceHigh": "Hohe Zuverlässigkeit",
+    "confidenceMedium": "Mittlere Zuverlässigkeit",
+    "confidenceLow": "Niedrige Zuverlässigkeit",
+    "applyCommunity": "Anwenden",
+    "submitMine": "Meinen Offset einreichen",
+    "submitting": "Wird gesendet...",
+    "submitSuccess": "An Community gesendet",
+    "submitFailed": "Senden fehlgeschlagen",
+    "noData": "Keine Community-Daten",
+    "loading": "Laden...",
+    "feedbackGood": "Offset ist korrekt",
+    "feedbackBad": "Offset ist inkorrekt",
+    "cannotFeedbackOwnSubmission": "Du kannst deine eigene Einreichung nicht bewerten"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

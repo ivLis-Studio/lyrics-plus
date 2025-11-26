@@ -113,6 +113,7 @@ class Translator {
 
     // 사용자의 현재 언어 가져오기
     const userLang = I18n.getCurrentLanguage();
+    const userHash = Utils.getUserHash();
 
     const body = {
       artist,
@@ -123,6 +124,7 @@ class Translator {
       apiKey,
       ignore_cache: ignoreCache,
       lang: userLang,
+      userHash,
     };
 
     const tryFetch = async (url) => {

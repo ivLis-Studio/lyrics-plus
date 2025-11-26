@@ -626,14 +626,34 @@ window.LANG_PT = {
     },
     "prefetch": {
       "title": "Pré-carregar Próxima Faixa",
-      "subtitle": "Pré-carregar elementos para a próxima faixa para reduzir atrasos de transição",
+      "subtitle": "Pré-carrega elementos para a próxima faixa para reduzir atrasos de transição",
       "enabled": {
         "label": "Pré-carregar Tradução/Fonética",
-        "desc": "Pré-carregar tradução e conversão fonética para a próxima faixa"
+        "desc": "Pré-carrega tradução e conversão fonética para a próxima faixa"
       },
       "videoEnabled": {
         "label": "Pré-carregar Fundo de Vídeo",
-        "desc": "Pré-carregar informações de fundo de vídeo para a próxima faixa"
+        "desc": "Pré-carrega informações de fundo de vídeo para a próxima faixa"
+      }
+    },
+    "communitySync": {
+      "title": "Sincronização da Comunidade",
+      "subtitle": "Compartilhe offsets de sincronização de letras com outros usuários",
+      "enabled": {
+        "label": "Usar Sincronização da Comunidade",
+        "desc": "Usar offsets de sincronização compartilhados pela comunidade"
+      },
+      "autoApply": {
+        "label": "Aplicação Automática",
+        "desc": "Aplicar automaticamente o offset da comunidade quando a confiança for suficiente"
+      },
+      "autoSubmit": {
+        "label": "Envio Automático",
+        "desc": "Compartilhar automaticamente suas alterações de offset com a comunidade"
+      },
+      "minConfidence": {
+        "label": "Confiança Mínima",
+        "desc": "Confiança mínima necessária para aplicação automática (0.0 ~ 1.0). A confiança é calculada com base no número de envios e consistência dos valores de offset. Valores mais altos significam que mais usuários enviaram offsets semelhantes"
       }
     },
     "cacheManagement": {
@@ -887,7 +907,23 @@ window.LANG_PT = {
   },
   "syncAdjust": {
     "info": "Se você mover o controle deslizante para a direita, a letra passará mais rápido.",
-    "reset": "Redefinir"
+    "reset": "Redefinir",
+    "communityTitle": "Sincronização Comunitária",
+    "communityOffset": "Offset",
+    "submissions": "Envios",
+    "confidenceHigh": "Alta Confiança",
+    "confidenceMedium": "Média Confiança",
+    "confidenceLow": "Baixa Confiança",
+    "applyCommunity": "Aplicar",
+    "submitMine": "Enviar Meu Offset",
+    "submitting": "Enviando...",
+    "submitSuccess": "Enviado para a comunidade",
+    "submitFailed": "Falha ao enviar",
+    "noData": "Sem dados da comunidade",
+    "loading": "Carregando...",
+    "feedbackGood": "Offset está correto",
+    "feedbackBad": "Offset está incorreto",
+    "cannotFeedbackOwnSubmission": "Você não pode avaliar sua própria submissão"
   },
   "playbarButton": {
     "label": "Lyrics Plus"

@@ -1176,6 +1176,21 @@ const CONFIG = {
       "lyrics-plus:visual:prefetch-video-enabled",
       true
     ),
+    // Community sync settings
+    "community-sync-enabled": StorageManager.get(
+      "lyrics-plus:visual:community-sync-enabled",
+      true
+    ),
+    "community-sync-auto-apply": StorageManager.get(
+      "lyrics-plus:visual:community-sync-auto-apply",
+      true
+    ),
+    "community-sync-min-confidence":
+      Number(StorageManager.getItem("lyrics-plus:visual:community-sync-min-confidence")) || 0.5,
+    "community-sync-auto-submit": StorageManager.get(
+      "lyrics-plus:visual:community-sync-auto-submit",
+      true
+    ),
     "fullscreen-key":
       StorageManager.getItem("lyrics-plus:visual:fullscreen-key") || "f12",
     "synced-compact": StorageManager.get("lyrics-plus:visual:synced-compact"),
@@ -1879,7 +1894,8 @@ const Prefetcher = {
       try {
         console.log(`[Prefetcher] Fetching video info for trackId: ${trackId}`);
         
-        const response = await fetch(`https://api.ivl.is/lyrics_youtube/?trackId=${trackId}`);
+        const userHash = Utils.getUserHash();
+        const response = await fetch(`https://api.ivl.is/lyrics_youtube/?trackId=${trackId}&userHash=${userHash}`);
         const data = await response.json();
 
         if (data.success) {
@@ -3414,6 +3430,43 @@ class LyricsContainer extends react.Component {
     }
   }
 
+  /**
+   * 커뮤니티 싱크 오프셋 자동 적용
+   */
+  async applyCommunityOffset(trackUri) {
+    try {
+      // 이미 로컬에 저장된 오프셋이 있으면 스킵
+      const localOffset = await Utils.getTrackSyncOffset(trackUri);
+      if (localOffset && localOffset !== 0) {
+        console.log(`[Lyrics Plus] Using local offset: ${localOffset}ms`);
+        return;
+      }
+
+      // 커뮤니티 오프셋 조회
+      const communityData = await Utils.getCommunityOffset(trackUri);
+      if (!communityData) return;
+
+      const minConfidence = CONFIG.visual["community-sync-min-confidence"] || 0.5;
+      
+      // 신뢰도가 최소값 이상인 경우에만 적용
+      if ((communityData.confidence ?? 0) >= minConfidence) {
+        const offsetToApply = communityData.medianOffsetMs ?? communityData.offsetMs ?? 0;
+        
+        if (offsetToApply !== 0) {
+          await Utils.setTrackSyncOffset(trackUri, offsetToApply);
+          console.log(`[Lyrics Plus] Applied community offset: ${offsetToApply}ms (confidence: ${communityData.confidence})`);
+          
+          // UI 업데이트를 위해 이벤트 발생
+          window.dispatchEvent(new CustomEvent('lyrics-plus:offset-changed', {
+            detail: { trackUri, offset: offsetToApply }
+          }));
+        }
+      }
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to apply community offset:", error);
+    }
+  }
+
   resetDelay() {
     CONFIG.visual.delay =
       Number(
@@ -3667,6 +3720,11 @@ class LyricsContainer extends react.Component {
       this.currentTrackUri = queue.current.uri;
       this.fetchLyrics(queue.current, this.state.explicitMode);
       this.viewPort.scrollTo(0, 0);
+
+      // 커뮤니티 싱크 오프셋 자동 적용
+      if (CONFIG.visual["community-sync-enabled"] && CONFIG.visual["community-sync-auto-apply"]) {
+        this.applyCommunityOffset(queue.current.uri);
+      }
 
       // 다음 곡의 모든 요소 프리페치 (가사 → 번역/발음 → 영상 배경)
       const nextTrack = queue.queued?.[0] || queue.nextUp?.[0];

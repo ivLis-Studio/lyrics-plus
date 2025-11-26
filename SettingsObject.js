@@ -131,6 +131,10 @@ const SettingKeys = [
   "lyrics-plus:visual:prefetch-video-enabled",
   "lyrics-plus:visual:fullscreen-layout-reverse",
   "lyrics-plus:visual:language",
+  "lyrics-plus:visual:community-sync-enabled",
+  "lyrics-plus:visual:community-sync-auto-apply",
+  "lyrics-plus:visual:community-sync-min-confidence",
+  "lyrics-plus:visual:community-sync-auto-submit",
 ];
 
 const BYTES_FOR_INDEX = Math.ceil(SettingKeys.length / 255);

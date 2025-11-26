@@ -1125,4 +1125,121 @@ const Utils = {
       console.error("[Lyrics Plus] Failed to clear track sync offset:", error);
     }
   },
+
+  // ==========================================
+  // 커뮤니티 싱크 오프셋 시스템
+  // ==========================================
+
+  /**
+   * 사용자 해시 가져오기 (없으면 생성)
+   */
+  getUserHash() {
+    let hash = StorageManager.getPersisted("lyrics-plus:user-hash");
+    if (!hash) {
+      hash = crypto.randomUUID ? crypto.randomUUID() : 
+        'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+          const r = Math.random() * 16 | 0;
+          const v = c === 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      StorageManager.setPersisted("lyrics-plus:user-hash", hash);
+    }
+    return hash;
+  },
+
+  /**
+   * Track ID 추출 (spotify:track:xxx -> xxx)
+   */
+  extractTrackId(uri) {
+    if (!uri) return null;
+    const parts = uri.split(':');
+    return parts.length >= 3 ? parts[2] : null;
+  },
+
+  /**
+   * 커뮤니티 싱크 오프셋 조회
+   */
+  async getCommunityOffset(trackUri) {
+    const trackId = this.extractTrackId(trackUri);
+    if (!trackId) return null;
+
+    const userHash = this.getUserHash();
+
+    try {
+      const response = await fetch(`https://api.ivl.is/lyrics_sync/?trackId=${trackId}&userHash=${userHash}`);
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        return data.data;
+      }
+      return null;
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to get community offset:", error);
+      return null;
+    }
+  },
+
+  /**
+   * 커뮤니티 싱크 오프셋 제출
+   */
+  async submitCommunityOffset(trackUri, offsetMs) {
+    const trackId = this.extractTrackId(trackUri);
+    if (!trackId) return null;
+
+    const userHash = this.getUserHash();
+
+    try {
+      const response = await fetch('https://api.ivl.is/lyrics_sync/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          trackId,
+          offsetMs,
+          userHash
+        })
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log(`[Lyrics Plus] Community offset submitted: ${offsetMs}ms`);
+        return data;
+      }
+      return null;
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to submit community offset:", error);
+      return null;
+    }
+  },
+
+  /**
+   * 커뮤니티 싱크 피드백 제출
+   */
+  async submitCommunityFeedback(trackUri, isPositive) {
+    const trackId = this.extractTrackId(trackUri);
+    if (!trackId) return null;
+
+    const userHash = this.getUserHash();
+
+    try {
+      const response = await fetch('https://api.ivl.is/lyrics_sync/feedback.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          trackId,
+          userHash,
+          isPositive
+        })
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log(`[Lyrics Plus] Community feedback submitted: ${isPositive ? '👍' : '👎'}`);
+        return data;
+      }
+      return null;
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to submit community feedback:", error);
+      return null;
+    }
+  },
 };

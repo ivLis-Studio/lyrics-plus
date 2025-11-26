@@ -636,6 +636,26 @@ window.LANG_KO = {
         "desc": "다음 곡의 영상 배경 정보를 미리 가져옵니다"
       }
     },
+    "communitySync": {
+      "title": "커뮤니티 싱크",
+      "subtitle": "다른 사용자들과 가사 싱크 오프셋을 공유합니다",
+      "enabled": {
+        "label": "커뮤니티 싱크 사용",
+        "desc": "커뮤니티에서 공유된 싱크 오프셋을 사용합니다"
+      },
+      "autoApply": {
+        "label": "자동 적용",
+        "desc": "신뢰도가 충분하면 커뮤니티 오프셋을 자동으로 적용합니다"
+      },
+      "autoSubmit": {
+        "label": "자동 제출",
+        "desc": "싱크 오프셋을 변경하면 자동으로 커뮤니티에 공유합니다"
+      },
+      "minConfidence": {
+        "label": "최소 신뢰도",
+        "desc": "자동 적용에 필요한 최소 신뢰도 (0.0 ~ 1.0). 신뢰도는 제출 수와 오프셋 값의 일관성에 따라 계산됩니다. 높은 값은 더 많은 사용자가 비슷한 오프셋을 제출했음을 의미합니다"
+      }
+    },
     "cacheManagement": {
       "title": "캐시 관리",
       "subtitle": "저장된 데이터 관리",
@@ -887,7 +907,23 @@ window.LANG_KO = {
   },
   "syncAdjust": {
     "info": "슬라이더를 우측으로 이동하면, 가사가 빠르게 지나갑니다.",
-    "reset": "초기화"
+    "reset": "초기화",
+    "communityTitle": "커뮤니티 싱크",
+    "communityOffset": "오프셋",
+    "submissions": "제출 수",
+    "confidenceHigh": "높은 신뢰도",
+    "confidenceMedium": "보통 신뢰도",
+    "confidenceLow": "낮은 신뢰도",
+    "applyCommunity": "적용",
+    "submitMine": "내 오프셋 제출",
+    "submitting": "제출 중...",
+    "submitSuccess": "커뮤니티에 제출되었습니다",
+    "submitFailed": "제출에 실패했습니다",
+    "noData": "커뮤니티 데이터가 없습니다",
+    "loading": "로딩 중...",
+    "feedbackGood": "오프셋이 정확해요",
+    "feedbackBad": "오프셋이 정확하지 않아요",
+    "cannotFeedbackOwnSubmission": "자신이 제출한 오프셋에는 평가할 수 없습니다"
   },
   "playbarButton": {
     "label": "가사 플러스"

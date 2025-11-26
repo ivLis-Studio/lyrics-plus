@@ -61,7 +61,8 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
             setStatusMessage("");
         } else {
             // 프리페치된 데이터가 없으면 직접 fetch
-            fetch(`https://api.ivl.is/lyrics_youtube/?trackId=${trackId}`)
+            const userHash = Utils.getUserHash();
+            fetch(`https://api.ivl.is/lyrics_youtube/?trackId=${trackId}&userHash=${userHash}`)
                 .then((res) => res.json())
                 .then((data) => {
                     if (!isMounted) return;

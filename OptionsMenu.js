@@ -900,7 +900,12 @@ const SyncAdjustButton = react.memo(
   ({ trackUri, onOffsetChange }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [offset, setOffset] = useState(0);
+    const [communityData, setCommunityData] = useState(null);
+    const [isLoadingCommunity, setIsLoadingCommunity] = useState(false);
+    const [feedbackStatus, setFeedbackStatus] = useState(null); // 'positive', 'negative', null
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const buttonRef = useRef(null);
+    const submitTimeoutRef = useRef(null);
 
     // Load offset when trackUri changes
     useEffect(() => {
@@ -911,11 +916,74 @@ const SyncAdjustButton = react.memo(
       loadOffset();
     }, [trackUri]);
 
+    // Load community data when modal opens
+    useEffect(() => {
+      if (isOpen && CONFIG.visual["community-sync-enabled"]) {
+        loadCommunityData();
+      }
+    }, [isOpen, trackUri]);
+
+    const loadCommunityData = async () => {
+      setIsLoadingCommunity(true);
+      try {
+        const data = await Utils.getCommunityOffset(trackUri);
+        setCommunityData(data);
+        // 사용자의 기존 피드백 상태 복원
+        if (data?.user?.userFeedback !== null && data?.user?.userFeedback !== undefined) {
+          setFeedbackStatus(data.user.userFeedback ? 'positive' : 'negative');
+        }
+      } catch (error) {
+        console.error("[Lyrics Plus] Failed to load community data:", error);
+      } finally {
+        setIsLoadingCommunity(false);
+      }
+    };
+
+    // Listen for community offset changes
+    useEffect(() => {
+      const handleCommunityOffsetChange = (event) => {
+        if (event.detail?.trackUri === trackUri) {
+          setOffset(event.detail.offset);
+        }
+      };
+      window.addEventListener('lyrics-plus:offset-changed', handleCommunityOffsetChange);
+      return () => {
+        window.removeEventListener('lyrics-plus:offset-changed', handleCommunityOffsetChange);
+      };
+    }, [trackUri]);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+      return () => {
+        if (submitTimeoutRef.current) {
+          clearTimeout(submitTimeoutRef.current);
+        }
+      };
+    }, []);
+
     const handleOffsetChange = async (newOffset) => {
       setOffset(newOffset);
       await Utils.setTrackSyncOffset(trackUri, newOffset);
       if (onOffsetChange) {
         onOffsetChange(newOffset);
+      }
+
+      // 커뮤니티 싱크 자동 제출 (디바운스 적용)
+      if (CONFIG.visual["community-sync-enabled"] && CONFIG.visual["community-sync-auto-submit"]) {
+        // 이전 타이머 취소
+        if (submitTimeoutRef.current) {
+          clearTimeout(submitTimeoutRef.current);
+        }
+        
+        // 1초 후에 제출 (사용자가 조정을 멈추면)
+        submitTimeoutRef.current = setTimeout(async () => {
+          try {
+            await Utils.submitCommunityOffset(trackUri, newOffset);
+            loadCommunityData(); // 제출 후 커뮤니티 데이터 새로고침
+          } catch (error) {
+            console.error("[Lyrics Plus] Failed to auto-submit offset:", error);
+          }
+        }, 1000);
       }
     };
 
@@ -935,6 +1003,56 @@ const SyncAdjustButton = react.memo(
 
     const toggleModal = () => {
       setIsOpen(!isOpen);
+      if (!isOpen) {
+        setFeedbackStatus(null);
+      }
+    };
+
+    // 커뮤니티 오프셋 적용
+    const applyCommunityOffset = async () => {
+      if (!communityData) return;
+      const communityOffset = communityData.medianOffsetMs ?? communityData.offsetMs ?? 0;
+      handleOffsetChange(communityOffset);
+    };
+
+    // 수동 제출
+    const submitOffset = async () => {
+      if (!CONFIG.visual["community-sync-enabled"]) return;
+      setIsSubmitting(true);
+      try {
+        await Utils.submitCommunityOffset(trackUri, offset);
+        Spicetify.showNotification(I18n.t("syncAdjust.submitSuccess"), false, 2000);
+        loadCommunityData();
+      } catch (error) {
+        Spicetify.showNotification(I18n.t("syncAdjust.submitFailed"), true, 2000);
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    // 피드백 제출
+    const submitFeedback = async (isPositive) => {
+      if (!CONFIG.visual["community-sync-enabled"]) return;
+      try {
+        await Utils.submitCommunityFeedback(trackUri, isPositive);
+        setFeedbackStatus(isPositive ? 'positive' : 'negative');
+      } catch (error) {
+        console.error("[Lyrics Plus] Failed to submit feedback:", error);
+      }
+    };
+
+    // 신뢰도 표시 색상
+    const getConfidenceColor = (confidence) => {
+      if (confidence >= 0.8) return "#34c759"; // 녹색
+      if (confidence >= 0.5) return "#ff9500"; // 주황
+      return "#ff3b30"; // 빨강
+    };
+
+    // 신뢰도 레벨 텍스트
+    const getConfidenceLevel = (confidence) => {
+      if (confidence >= 0.8) return I18n.t("syncAdjust.confidenceHigh");
+      if (confidence >= 0.5) return I18n.t("syncAdjust.confidenceMedium");
+      return I18n.t("syncAdjust.confidenceLow");
     };
     
     // 버튼 위치 기반으로 모달 위치 계산
@@ -957,6 +1075,8 @@ const SyncAdjustButton = react.memo(
         };
       }
     };
+
+    const isCommunityEnabled = CONFIG.visual["community-sync-enabled"];
 
     return react.createElement(
       react.Fragment,
@@ -1024,7 +1144,7 @@ const SyncAdjustButton = react.memo(
 }
 .lyrics-sync-adjust-modal .sync-slider {
 	width: 100%;
-	height: 28px; /* Increased height for easier interaction */
+	height: 28px;
 	background: transparent;
 	outline: none;
 	-webkit-appearance: none;
@@ -1049,7 +1169,7 @@ const SyncAdjustButton = react.memo(
 	border-radius: 50%;
 	cursor: pointer;
 	box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1);
-	margin-top: -11px; /* (track_height - thumb_height) / 2 */
+	margin-top: -11px;
 	transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1086,197 +1206,505 @@ const SyncAdjustButton = react.memo(
 	cursor: pointer;
 	box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1);
 }
+
+.lyrics-sync-adjust-modal .community-section {
+	margin-top: 16px;
+	padding-top: 16px;
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lyrics-sync-adjust-modal .community-info-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.lyrics-sync-adjust-modal .community-stats {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.lyrics-sync-adjust-modal .stat-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+}
+
+.lyrics-sync-adjust-modal .stat-value {
+	font-size: 16px;
+	font-weight: 600;
+	color: #ffffff;
+}
+
+.lyrics-sync-adjust-modal .stat-label {
+	font-size: 10px;
+	color: #8e8e93;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.lyrics-sync-adjust-modal .community-actions {
+	display: flex;
+	gap: 8px;
+}
+
+.lyrics-sync-adjust-modal .feedback-btn {
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	background: rgba(255, 255, 255, 0.05);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+	font-size: 16px;
+}
+
+.lyrics-sync-adjust-modal .feedback-btn:hover {
+	background: rgba(255, 255, 255, 0.1);
+	transform: scale(1.05);
+}
+
+.lyrics-sync-adjust-modal .feedback-btn.active-positive {
+	background: rgba(52, 199, 89, 0.2);
+	border-color: rgba(52, 199, 89, 0.5);
+}
+
+.lyrics-sync-adjust-modal .feedback-btn.active-negative {
+	background: rgba(255, 59, 48, 0.2);
+	border-color: rgba(255, 59, 48, 0.5);
+}
+
+.lyrics-sync-adjust-modal .feedback-btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+.lyrics-sync-adjust-modal .action-btn {
+	padding: 8px 14px;
+	border-radius: 8px;
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	background: rgba(255, 255, 255, 0.05);
+	color: #ffffff;
+	font-size: 12px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+}
+
+.lyrics-sync-adjust-modal .action-btn:hover:not(:disabled) {
+	background: rgba(255, 255, 255, 0.1);
+	transform: translateY(-1px);
+}
+
+.lyrics-sync-adjust-modal .action-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.lyrics-sync-adjust-modal .action-btn.primary {
+	background: rgba(0, 122, 255, 0.2);
+	border-color: rgba(0, 122, 255, 0.4);
+	color: #007aff;
+}
+
+.lyrics-sync-adjust-modal .action-btn.primary:hover:not(:disabled) {
+	background: rgba(0, 122, 255, 0.3);
+}
 `,
-            },
-          }),
-          react.createElement(
-            "div",
-            {
-              style: {
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "12px",
               },
-            },
+            }),
+            // Header
             react.createElement(
               "div",
               {
                 style: {
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  color: "#ffffff",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "12px",
+                },
+              },
+              react.createElement(
+                "div",
+                {
+                  style: {
+                    fontSize: "16px",
+                    fontWeight: "600",
+                    color: "#ffffff",
+                    letterSpacing: "-0.01em",
+                  },
+                },
+                I18n.t("menu.syncAdjustTitle")
+              ),
+              react.createElement(
+                "button",
+                {
+                  onClick: toggleModal,
+                  style: {
+                    background: "rgba(255, 255, 255, 0.1)",
+                    border: "none",
+                    borderRadius: "50%",
+                    color: "#ffffff",
+                    cursor: "pointer",
+                    fontSize: "18px",
+                    padding: "0",
+                    width: "28px",
+                    height: "28px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "all 0.2s ease",
+                  },
+                  onMouseEnter: (e) => {
+                    e.target.style.background = "rgba(255, 255, 255, 0.15)";
+                    e.target.style.transform = "scale(1.05)";
+                  },
+                  onMouseLeave: (e) => {
+                    e.target.style.background = "rgba(255, 255, 255, 0.1)";
+                    e.target.style.transform = "scale(1)";
+                  },
+                },
+                "×"
+              )
+            ),
+            // Info text
+            react.createElement(
+              "div",
+              {
+                style: {
+                  fontSize: "13px",
+                  color: "#8e8e93",
+                  marginBottom: "16px",
                   letterSpacing: "-0.01em",
                 },
               },
-              I18n.t("menu.syncAdjustTitle")
+              I18n.t("syncAdjust.info")
             ),
-            react.createElement(
-              "button",
-              {
-                onClick: toggleModal,
-                style: {
-                  background: "rgba(255, 255, 255, 0.1)",
-                  border: "none",
-                  borderRadius: "50%",
-                  color: "#ffffff",
-                  cursor: "pointer",
-                  fontSize: "18px",
-                  padding: "0",
-                  width: "28px",
-                  height: "28px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "all 0.2s ease",
-                },
-                onMouseEnter: (e) => {
-                  e.target.style.background = "rgba(255, 255, 255, 0.15)";
-                  e.target.style.transform = "scale(1.05)";
-                },
-                onMouseLeave: (e) => {
-                  e.target.style.background = "rgba(255, 255, 255, 0.1)";
-                  e.target.style.transform = "scale(1)";
-                },
-              },
-              "×"
-            )
-          ),
-          react.createElement(
-            "div",
-            {
-              style: {
-                fontSize: "13px",
-                color: "#8e8e93",
-                marginBottom: "16px",
-                letterSpacing: "-0.01em",
-              },
-            },
-            I18n.t("syncAdjust.info")
-          ),
-          react.createElement(
-            "div",
-            {
-              style: {
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-              },
-            },
-            // Slider
+            // Slider section
             react.createElement(
               "div",
               {
-                className: "slider-container",
-              },
-              react.createElement("input", {
-                type: "range",
-                className: "sync-slider",
-                min: -10000,
-                max: 10000,
-                step: 10,
-                value: offset,
-                onInput: handleSliderChange,
                 style: {
-                  "--progress-percent": `${((offset + 10000) / 20000) * 100}%`,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
                 },
-              }),
+              },
+              // Slider
+              react.createElement(
+                "div",
+                {
+                  className: "slider-container",
+                },
+                react.createElement("input", {
+                  type: "range",
+                  className: "sync-slider",
+                  min: -10000,
+                  max: 10000,
+                  step: 10,
+                  value: offset,
+                  onInput: handleSliderChange,
+                  style: {
+                    "--progress-percent": `${((offset + 10000) / 20000) * 100}%`,
+                  },
+                }),
+                react.createElement(
+                  "div",
+                  {
+                    style: {
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: "11px",
+                      color: "#8e8e93",
+                      fontWeight: "500",
+                      padding: "0 4px",
+                    },
+                  },
+                  react.createElement("span", null, "-10s"),
+                  react.createElement(
+                    "span",
+                    {
+                      style: {
+                        color: "#ffffff",
+                        fontWeight: "600",
+                        fontSize: "14px",
+                        letterSpacing: "-0.01em",
+                      },
+                    },
+                    `${offset}ms`
+                  ),
+                  react.createElement("span", null, "+10s")
+                )
+              ),
+              // Fine adjustment buttons
               react.createElement(
                 "div",
                 {
                   style: {
                     display: "flex",
-                    justifyContent: "space-between",
-                    fontSize: "11px",
-                    color: "#8e8e93",
-                    fontWeight: "500",
-                    padding: "0 4px",
+                    flexDirection: "column",
+                    gap: "6px",
                   },
                 },
-                react.createElement("span", null, "-10s"),
+                react.createElement(
+                  "div",
+                  {
+                    style: {
+                      display: "flex",
+                      gap: "6px",
+                    },
+                  },
+                  react.createElement(AdjustButton, { value: "-1000", onClick: () => adjustOffset(-1000) }),
+                  react.createElement(AdjustButton, { value: "-100", onClick: () => adjustOffset(-100) }),
+                  react.createElement(AdjustButton, { value: "-10", onClick: () => adjustOffset(-10) })
+                ),
+                react.createElement(
+                  "div",
+                  {
+                    style: {
+                      display: "flex",
+                      gap: "6px",
+                    },
+                  },
+                  react.createElement(AdjustButton, { value: "+1000", onClick: () => adjustOffset(1000) }),
+                  react.createElement(AdjustButton, { value: "+100", onClick: () => adjustOffset(100) }),
+                  react.createElement(AdjustButton, { value: "+10", onClick: () => adjustOffset(10) })
+                )
+              ),
+              // Reset button
+              react.createElement(
+                "button",
+                {
+                  onClick: resetOffset,
+                  style: {
+                    background: "rgba(255, 59, 48, 0.15)",
+                    border: "1px solid rgba(255, 59, 48, 0.3)",
+                    borderRadius: "10px",
+                    color: "#ff3b30",
+                    cursor: "pointer",
+                    padding: "10px 16px",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    letterSpacing: "-0.01em",
+                    transition: "all 0.2s ease",
+                    whiteSpace: "nowrap",
+                  },
+                  onMouseEnter: (e) => {
+                    e.target.style.background = "rgba(255, 59, 48, 0.2)";
+                    e.target.style.borderColor = "rgba(255, 59, 48, 0.4)";
+                    e.target.style.transform = "translateY(-1px)";
+                  },
+                  onMouseLeave: (e) => {
+                    e.target.style.background = "rgba(255, 59, 48, 0.15)";
+                    e.target.style.borderColor = "rgba(255, 59, 48, 0.3)";
+                    e.target.style.transform = "translateY(0)";
+                  },
+                },
+                I18n.t("syncAdjust.reset")
+              )
+            ),
+            // Community Sync Section
+            isCommunityEnabled && react.createElement(
+              "div",
+              { className: "community-section" },
+              react.createElement(
+                "div",
+                {
+                  style: {
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    marginBottom: "12px",
+                  },
+                },
+                react.createElement(
+                  "svg",
+                  { width: 14, height: 14, viewBox: "0 0 16 16", fill: "#8e8e93" },
+                  react.createElement("path", {
+                    d: "M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z",
+                  })
+                ),
                 react.createElement(
                   "span",
                   {
                     style: {
-                      color: "#ffffff",
+                      fontSize: "13px",
                       fontWeight: "600",
-                      fontSize: "14px",
-                      letterSpacing: "-0.01em",
+                      color: "#ffffff",
                     },
                   },
-                  `${offset}ms`
-                ),
-                react.createElement("span", null, "+10s")
-              )
-            ),
-            // Fine adjustment buttons
-            react.createElement(
-              "div",
-              {
-                style: {
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "6px",
-                },
-              },
-              react.createElement(
-                "div",
-                {
-                  style: {
-                    display: "flex",
-                    gap: "6px",
-                  },
-                },
-                react.createElement(AdjustButton, { value: "-1000", onClick: () => adjustOffset(-1000) }),
-                react.createElement(AdjustButton, { value: "-100", onClick: () => adjustOffset(-100) }),
-                react.createElement(AdjustButton, { value: "-10", onClick: () => adjustOffset(-10) })
+                  I18n.t("syncAdjust.communityTitle")
+                )
               ),
-              react.createElement(
+              isLoadingCommunity
+                ? react.createElement(
+                    "div",
+                    {
+                      style: {
+                        color: "#8e8e93",
+                        fontSize: "12px",
+                        textAlign: "center",
+                        padding: "12px 0",
+                      },
+                    },
+                    I18n.t("syncAdjust.loading")
+                  )
+                : communityData
+                ? react.createElement(
+                    "div",
+                    { className: "community-info-row" },
+                    // Stats
+                    react.createElement(
+                      "div",
+                      { className: "community-stats" },
+                      // Offset
+                      react.createElement(
+                        "div",
+                        { className: "stat-item" },
+                        react.createElement(
+                          "span",
+                          { className: "stat-value" },
+                          `${communityData.medianOffsetMs ?? communityData.offsetMs ?? 0}ms`
+                        ),
+                        react.createElement(
+                          "span",
+                          { className: "stat-label" },
+                          I18n.t("syncAdjust.communityOffset")
+                        )
+                      ),
+                      // Submissions
+                      react.createElement(
+                        "div",
+                        { className: "stat-item" },
+                        react.createElement(
+                          "span",
+                          { className: "stat-value" },
+                          communityData.submissionCount ?? 0
+                        ),
+                        react.createElement(
+                          "span",
+                          { className: "stat-label" },
+                          I18n.t("syncAdjust.submissions")
+                        )
+                      ),
+                      // Confidence
+                      react.createElement(
+                        "div",
+                        { className: "stat-item" },
+                        react.createElement(
+                          "span",
+                          {
+                            className: "stat-value",
+                            style: { color: getConfidenceColor(communityData.confidence) },
+                          },
+                          `${Math.round(communityData.confidence * 100)}%`
+                        ),
+                        react.createElement(
+                          "span",
+                          { className: "stat-label" },
+                          getConfidenceLevel(communityData.confidence)
+                        )
+                      )
+                    ),
+                    // Actions
+                    react.createElement(
+                      "div",
+                      { className: "community-actions" },
+                      // Feedback buttons
+                      react.createElement(
+                        "button",
+                        {
+                          className: `feedback-btn ${feedbackStatus === 'positive' ? 'active-positive' : ''}`,
+                          onClick: () => submitFeedback(true),
+                          title: communityData?.user?.hasSubmitted 
+                            ? I18n.t("syncAdjust.cannotFeedbackOwnSubmission") 
+                            : I18n.t("syncAdjust.feedbackGood"),
+                          disabled: communityData?.user?.hasSubmitted,
+                        },
+                        "👍"
+                      ),
+                      react.createElement(
+                        "button",
+                        {
+                          className: `feedback-btn ${feedbackStatus === 'negative' ? 'active-negative' : ''}`,
+                          onClick: () => submitFeedback(false),
+                          title: communityData?.user?.hasSubmitted 
+                            ? I18n.t("syncAdjust.cannotFeedbackOwnSubmission") 
+                            : I18n.t("syncAdjust.feedbackBad"),
+                          disabled: communityData?.user?.hasSubmitted,
+                        },
+                        "👎"
+                      ),
+                      // Apply button
+                      react.createElement(
+                        "button",
+                        {
+                          className: "action-btn primary",
+                          onClick: applyCommunityOffset,
+                        },
+                        I18n.t("syncAdjust.applyCommunity")
+                      )
+                    )
+                  )
+                : react.createElement(
+                    "div",
+                    {
+                      style: {
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      },
+                    },
+                    react.createElement(
+                      "span",
+                      {
+                        style: {
+                          color: "#8e8e93",
+                          fontSize: "12px",
+                        },
+                      },
+                      I18n.t("syncAdjust.noData")
+                    ),
+                    react.createElement(
+                      "button",
+                      {
+                        className: "action-btn primary",
+                        onClick: submitOffset,
+                        disabled: isSubmitting || offset === 0,
+                      },
+                      isSubmitting ? I18n.t("syncAdjust.submitting") : I18n.t("syncAdjust.submitMine")
+                    )
+                  ),
+              // Submit button (when community data exists)
+              communityData && !CONFIG.visual["community-sync-auto-submit"] && react.createElement(
                 "div",
                 {
                   style: {
+                    marginTop: "12px",
                     display: "flex",
-                    gap: "6px",
+                    justifyContent: "flex-end",
                   },
                 },
-                react.createElement(AdjustButton, { value: "+1000", onClick: () => adjustOffset(1000) }),
-                react.createElement(AdjustButton, { value: "+100", onClick: () => adjustOffset(100) }),
-                react.createElement(AdjustButton, { value: "+10", onClick: () => adjustOffset(10) })
+                react.createElement(
+                  "button",
+                  {
+                    className: "action-btn",
+                    onClick: submitOffset,
+                    disabled: isSubmitting,
+                  },
+                  isSubmitting ? I18n.t("syncAdjust.submitting") : I18n.t("syncAdjust.submitMine")
+                )
               )
-            ),
-            // Reset button
-            react.createElement(
-              "button",
-              {
-                onClick: resetOffset,
-                style: {
-                  background: "rgba(255, 59, 48, 0.15)",
-                  border: "1px solid rgba(255, 59, 48, 0.3)",
-                  borderRadius: "10px",
-                  color: "#ff3b30",
-                  cursor: "pointer",
-                  padding: "10px 16px",
-                  fontSize: "13px",
-                  fontWeight: "600",
-                  letterSpacing: "-0.01em",
-                  transition: "all 0.2s ease",
-                  whiteSpace: "nowrap",
-                },
-                onMouseEnter: (e) => {
-                  e.target.style.background = "rgba(255, 59, 48, 0.2)";
-                  e.target.style.borderColor = "rgba(255, 59, 48, 0.4)";
-                  e.target.style.transform = "translateY(-1px)";
-                },
-                onMouseLeave: (e) => {
-                  e.target.style.background = "rgba(255, 59, 48, 0.15)";
-                  e.target.style.borderColor = "rgba(255, 59, 48, 0.3)";
-                  e.target.style.transform = "translateY(0)";
-                },
-              },
-              I18n.t("syncAdjust.reset")
             )
-          )
-        );
+          );
         })()
     );
   }

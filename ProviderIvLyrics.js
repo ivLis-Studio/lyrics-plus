@@ -1,7 +1,8 @@
 const ProviderIvLyrics = (() => {
 	async function findLyrics(info) {
 		const trackId = info.uri.split(":")[2];
-		const baseURL = `https://api.ivl.is/lyrics/?trackid=${trackId}`;
+		const userHash = Utils.getUserHash();
+		const baseURL = `https://api.ivl.is/lyrics/?trackid=${trackId}&userHash=${userHash}`;
 
 		const body = await fetch(baseURL, {
 			headers: {

@@ -632,8 +632,28 @@ window.LANG_JA = {
         "desc": "次の曲の翻訳と発音変換を事前にリクエストします"
       },
       "videoEnabled": {
-        "label": "ビデオ背景を先読み",
-        "desc": "次の曲のビデオ背景情報を事前に取得します"
+        "label": "動画背景を先読み",
+        "desc": "次の曲の動画背景情報を事前に取得します"
+      }
+    },
+    "communitySync": {
+      "title": "コミュニティ同期",
+      "subtitle": "他のユーザーと歌詞同期オフセットを共有します",
+      "enabled": {
+        "label": "コミュニティ同期を使用",
+        "desc": "コミュニティで共有された同期オフセットを使用します"
+      },
+      "autoApply": {
+        "label": "自動適用",
+        "desc": "信頼度が十分な場合、コミュニティオフセットを自動的に適用します"
+      },
+      "autoSubmit": {
+        "label": "自動送信",
+        "desc": "同期オフセットを変更すると自動的にコミュニティに共有します"
+      },
+      "minConfidence": {
+        "label": "最小信頼度",
+        "desc": "自動適用に必要な最小信頼度 (0.0 ~ 1.0)。信頼度は提出数とオフセット値の一貫性に基づいて計算されます。高い値は、より多くのユーザーが似たオフセットを提出したことを意味します"
       }
     },
     "cacheManagement": {
@@ -886,8 +906,24 @@ window.LANG_JA = {
     }
   },
   "syncAdjust": {
-    "info": "スライダーを右に動かすと歌詞が速く進みます。",
-    "reset": "リセット"
+    "info": "スライダーを右に移動すると、歌詞が速くなります。",
+    "reset": "リセット",
+    "communityTitle": "コミュニティシンク",
+    "communityOffset": "オフセット",
+    "submissions": "提出数",
+    "confidenceHigh": "高信頼度",
+    "confidenceMedium": "中信頼度",
+    "confidenceLow": "低信頼度",
+    "applyCommunity": "適用",
+    "submitMine": "自分のオフセットを提出",
+    "submitting": "提出中...",
+    "submitSuccess": "コミュニティに提出しました",
+    "submitFailed": "提出に失敗しました",
+    "noData": "コミュニティデータがありません",
+    "loading": "読み込み中...",
+    "feedbackGood": "オフセットは正確です",
+    "feedbackBad": "オフセットは不正確です",
+    "cannotFeedbackOwnSubmission": "自分の提出したオフセットには評価できません"
   },
   "playbarButton": {
     "label": "Lyrics Plus"
