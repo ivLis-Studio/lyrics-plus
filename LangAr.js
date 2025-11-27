@@ -509,6 +509,14 @@ window.LANG_AR = {
       "fadeoutBlur": {
         "label": "تأثير التلاشي المموه",
         "desc": "تطبيق تأثير التمويه على الكلمات غير النشطة"
+      },
+      "highlightMode": {
+        "label": "وضع التمييز",
+        "desc": "يميز الكلمات الحالية فقط ويخفت الباقي"
+      },
+      "highlightIntensity": {
+        "label": "شدة التمييز",
+        "desc": "ضبط شفافية الكلمات غير النشطة (أقل = أغمق)"
       }
     },
     "livePreview": {
@@ -742,6 +750,10 @@ window.LANG_AR = {
       },
       "twoColumnLayout": {
         "desc": "استخدام تخطيط عمودين"
+      },
+      "browserFullscreen": {
+        "desc": "استخدام ملء الشاشة لـ Spotify",
+        "info": "عند الدخول في وضع ملء الشاشة، يتحول Spotify إلى ملء الشاشة لملء الشاشة بالكامل"
       }
     },
     "fullscreenStyle": {

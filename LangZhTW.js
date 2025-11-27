@@ -509,6 +509,14 @@ window.LANG_ZH_TW = {
       "fadeoutBlur": {
         "label": "淡出模糊效果",
         "desc": "對非使用中的歌詞套用模糊效果"
+      },
+      "highlightMode": {
+        "label": "高亮模式",
+        "desc": "只高亮顯示目前播放的歌詞，其他歌詞變暗"
+      },
+      "highlightIntensity": {
+        "label": "高亮強度",
+        "desc": "調整非使用中歌詞的透明度（值越低越暗）"
       }
     },
     "livePreview": {
@@ -742,6 +750,10 @@ window.LANG_ZH_TW = {
       },
       "twoColumnLayout": {
         "desc": "使用雙欄版面配置"
+      },
+      "browserFullscreen": {
+        "desc": "使用 Spotify 全螢幕",
+        "info": "進入全螢幕模式時將 Spotify 切換為全螢幕以填滿整個螢幕"
       }
     },
     "fullscreenStyle": {

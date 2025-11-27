@@ -509,6 +509,14 @@ window.LANG_EN = {
       "fadeoutBlur": {
         "label": "Fadeout Blur Effect",
         "desc": "Apply blur effect to inactive lyrics"
+      },
+      "highlightMode": {
+        "label": "Highlight Mode",
+        "desc": "Emphasize only the current lyrics and dim the rest"
+      },
+      "highlightIntensity": {
+        "label": "Highlight Intensity",
+        "desc": "Adjust the opacity of inactive lyrics (lower is dimmer)"
       }
     },
     "livePreview": {
@@ -742,6 +750,10 @@ window.LANG_EN = {
       },
       "twoColumnLayout": {
         "desc": "Use Two-Column Layout"
+      },
+      "browserFullscreen": {
+        "desc": "Use Spotify Fullscreen",
+        "info": "Enter Spotify fullscreen when entering fullscreen mode to fill the entire monitor"
       }
     },
     "fullscreenStyle": {

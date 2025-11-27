@@ -327,6 +327,33 @@
 	filter: blur(calc(var(--blur-index) * 1.5px));
 }
 
+/* 하이라이트 모드: 현재 가사만 밝게, 나머지는 희미하게 */
+.lyrics-lyricsContainer-LyricsContainer.highlight-mode-enabled .lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine {
+	opacity: var(--highlight-inactive-opacity, 0.3);
+	transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.3s ease;
+}
+
+.lyrics-lyricsContainer-LyricsContainer.highlight-mode-enabled .lyrics-lyricsContainer-SyncedLyrics .lyrics-lyricsContainer-LyricsLine.lyrics-lyricsContainer-LyricsLine-active {
+	opacity: 1 !important;
+	text-shadow: 0 0 20px rgba(255, 255, 255, 0.3), 0 3px 10px rgba(0, 0, 0, 0.7);
+}
+
+/* 하이라이트 모드: Unsynced 가사에도 적용 */
+.lyrics-lyricsContainer-LyricsContainer.highlight-mode-enabled .lyrics-lyricsContainer-UnsyncedLyricsPage .lyrics-lyricsContainer-LyricsLine {
+	opacity: var(--highlight-inactive-opacity, 0.3);
+	transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease;
+}
+
+.lyrics-lyricsContainer-LyricsContainer.highlight-mode-enabled .lyrics-lyricsContainer-UnsyncedLyricsPage .lyrics-lyricsContainer-LyricsLine.lyrics-lyricsContainer-LyricsLine-active {
+	opacity: 1 !important;
+	text-shadow: 0 0 20px rgba(255, 255, 255, 0.3), 0 3px 10px rgba(0, 0, 0, 0.7);
+}
+
+/* 하이라이트 모드 + 호버 효과: 마우스 올리면 밝게 */
+.lyrics-lyricsContainer-LyricsContainer.highlight-mode-enabled .lyrics-lyricsContainer-LyricsLine:hover {
+	opacity: 0.8 !important;
+}
+
 .lyrics-lyricsContainer-UnsyncedLyricsPage .lyrics-lyricsContainer-LyricsLine a {
 	color: var(--lyrics-color-active);
 }

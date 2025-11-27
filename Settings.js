@@ -2704,6 +2704,22 @@ const ConfigModal = () => {
               info: I18n.t("settingsAdvanced.syncMode.fadeoutBlur.desc"),
               type: ConfigSlider,
             },
+            {
+              desc: I18n.t("settingsAdvanced.syncMode.highlightMode.label"),
+              key: "highlight-mode",
+              info: I18n.t("settingsAdvanced.syncMode.highlightMode.desc"),
+              type: ConfigSlider,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.syncMode.highlightIntensity.label"),
+              key: "highlight-intensity",
+              info: I18n.t("settingsAdvanced.syncMode.highlightIntensity.desc"),
+              type: ConfigSliderRange,
+              min: 30,
+              max: 90,
+              step: 5,
+              unit: "%",
+            },
           ],
           onChange: (name, value) => {
             CONFIG.visual[name] = value;
@@ -4138,6 +4154,13 @@ const ConfigModal = () => {
               key: "fullscreen-center-when-no-lyrics",
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-center-when-no-lyrics"] ?? true,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.fullscreenMode.browserFullscreen.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.browserFullscreen.info"),
+              key: "fullscreen-browser-fullscreen",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-browser-fullscreen"] ?? false,
             },
           ],
           onChange: (name, value) => {

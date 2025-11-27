@@ -509,6 +509,14 @@ window.LANG_JA = {
       "fadeoutBlur": {
         "label": "フェードアウトブラー効果",
         "desc": "非アクティブな歌詞にブラー効果を適用"
+      },
+      "highlightMode": {
+        "label": "ハイライトモード",
+        "desc": "現在再生中の歌詞だけを明るく強調し、他は薄く表示します"
+      },
+      "highlightIntensity": {
+        "label": "ハイライト強度",
+        "desc": "非アクティブな歌詞の透明度を調整します（低いほど薄い）"
       }
     },
     "livePreview": {
@@ -742,6 +750,10 @@ window.LANG_JA = {
       },
       "twoColumnLayout": {
         "desc": "2カラムレイアウトを使用"
+      },
+      "browserFullscreen": {
+        "desc": "Spotifyフルスクリーンを使用",
+        "info": "フルスクリーンモードに入るときにSpotifyをフルスクリーンにしてモニターいっぱいに表示します"
       }
     },
     "fullscreenStyle": {

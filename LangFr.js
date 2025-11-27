@@ -509,6 +509,14 @@ window.LANG_FR = {
       "fadeoutBlur": {
         "label": "Effet de flou en fondu",
         "desc": "Applique un effet de flou aux paroles inactives"
+      },
+      "highlightMode": {
+        "label": "Mode surbrillance",
+        "desc": "Met en évidence uniquement les paroles actuelles et atténue le reste"
+      },
+      "highlightIntensity": {
+        "label": "Intensité de surbrillance",
+        "desc": "Ajuste l'opacité des paroles inactives (plus bas = plus sombre)"
       }
     },
     "livePreview": {
@@ -742,6 +750,10 @@ window.LANG_FR = {
       },
       "twoColumnLayout": {
         "desc": "Utiliser la mise en page à 2 colonnes"
+      },
+      "browserFullscreen": {
+        "desc": "Utiliser le plein écran Spotify",
+        "info": "En mode plein écran, Spotify passe en plein écran pour remplir tout l'écran"
       }
     },
     "fullscreenStyle": {

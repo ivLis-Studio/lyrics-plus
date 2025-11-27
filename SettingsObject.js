@@ -89,6 +89,8 @@ const SettingKeys = [
   "lyrics-plus:visual:ja-detect-threshold",
   "lyrics-plus:visual:hans-detect-threshold",
   "lyrics-plus:visual:fade-blur",
+  "lyrics-plus:visual:highlight-mode",
+  "lyrics-plus:visual:highlight-intensity",
   "lyrics-plus:visual:karaoke-bounce",
   "lyrics-plus:visual:karaoke-mode-enabled",
   "lyrics-plus:visual:fullscreen-key",
@@ -135,6 +137,7 @@ const SettingKeys = [
   "lyrics-plus:visual:community-sync-auto-apply",
   "lyrics-plus:visual:community-sync-min-confidence",
   "lyrics-plus:visual:community-sync-auto-submit",
+  "lyrics-plus:visual:fullscreen-browser-fullscreen",
 ];
 
 const BYTES_FOR_INDEX = Math.ceil(SettingKeys.length / 255);

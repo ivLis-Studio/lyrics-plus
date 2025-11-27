@@ -509,6 +509,14 @@ window.LANG_ES = {
       "fadeoutBlur": {
         "label": "Efecto de desenfoque de desvanecimiento",
         "desc": "Aplica efecto de desenfoque a las letras inactivas"
+      },
+      "highlightMode": {
+        "label": "Modo de resaltado",
+        "desc": "Resalta solo la letra actual y oscurece el resto"
+      },
+      "highlightIntensity": {
+        "label": "Intensidad del resaltado",
+        "desc": "Ajusta la opacidad de las letras inactivas (menor = más oscuro)"
       }
     },
     "livePreview": {
@@ -742,6 +750,10 @@ window.LANG_ES = {
       },
       "twoColumnLayout": {
         "desc": "Usar diseño de 2 columnas"
+      },
+      "browserFullscreen": {
+        "desc": "Usar pantalla completa de Spotify",
+        "info": "Al entrar en modo pantalla completa, Spotify pasa a pantalla completa para llenar todo el monitor"
       }
     },
     "fullscreenStyle": {

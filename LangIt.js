@@ -509,6 +509,14 @@ window.LANG_IT = {
       "fadeoutBlur": {
         "label": "Effetto sfocatura dissolvenza",
         "desc": "Applica effetto sfocatura al testo inattivo"
+      },
+      "highlightMode": {
+        "label": "Modalità evidenziazione",
+        "desc": "Evidenzia solo il testo corrente e oscura il resto"
+      },
+      "highlightIntensity": {
+        "label": "Intensità evidenziazione",
+        "desc": "Regola l'opacità del testo inattivo (più basso = più scuro)"
       }
     },
     "livePreview": {
@@ -742,6 +750,10 @@ window.LANG_IT = {
       },
       "twoColumnLayout": {
         "desc": "Usa Layout a 2 Colonne"
+      },
+      "browserFullscreen": {
+        "desc": "Usa Schermo Intero Spotify",
+        "info": "Quando si entra in modalità schermo intero, Spotify passa a schermo intero per riempire l'intero monitor"
       }
     },
     "fullscreenStyle": {

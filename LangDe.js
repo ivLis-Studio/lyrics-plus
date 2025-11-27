@@ -509,6 +509,14 @@ window.LANG_DE = {
       "fadeoutBlur": {
         "label": "Fadeout-Weichzeichnungseffekt",
         "desc": "Wendet Weichzeichnungseffekt auf inaktiven Text an"
+      },
+      "highlightMode": {
+        "label": "Hervorhebungsmodus",
+        "desc": "Hebt nur den aktuellen Text hervor und verdunkelt den Rest"
+      },
+      "highlightIntensity": {
+        "label": "Hervorhebungsintensität",
+        "desc": "Passt die Transparenz inaktiver Texte an (niedriger = dunkler)"
       }
     },
     "livePreview": {
@@ -742,6 +750,10 @@ window.LANG_DE = {
       },
       "twoColumnLayout": {
         "desc": "2-Spalten-Layout verwenden"
+      },
+      "browserFullscreen": {
+        "desc": "Spotify Vollbild verwenden",
+        "info": "Beim Wechsel in den Vollbildmodus wird Spotify in den Vollbildmodus geschaltet, um den gesamten Monitor auszufüllen"
       }
     },
     "fullscreenStyle": {

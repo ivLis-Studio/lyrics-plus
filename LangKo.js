@@ -509,6 +509,14 @@ window.LANG_KO = {
       "fadeoutBlur": {
         "label": "페이드아웃 블러 효과",
         "desc": "비활성 가사에 블러 효과를 적용합니다"
+      },
+      "highlightMode": {
+        "label": "하이라이트 모드",
+        "desc": "현재 부르는 가사만 밝게 강조하고 나머지는 희미하게 표시합니다"
+      },
+      "highlightIntensity": {
+        "label": "하이라이트 강도",
+        "desc": "비활성 가사의 투명도를 조절합니다 (낮을수록 희미함)"
       }
     },
     "livePreview": {
@@ -742,6 +750,10 @@ window.LANG_KO = {
       },
       "twoColumnLayout": {
         "desc": "2열 레이아웃 사용"
+      },
+      "browserFullscreen": {
+        "desc": "Spotify 전체화면 사용",
+        "info": "전체화면 모드 진입 시 Spotify를 전체화면으로 전환하여 모니터를 꽉 채웁니다"
       }
     },
     "fullscreenStyle": {

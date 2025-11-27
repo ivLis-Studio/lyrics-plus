@@ -1159,6 +1159,9 @@ const CONFIG = {
       StorageManager.getItem("lyrics-plus:visual:hans-detect-threshold") ||
       "40",
     "fade-blur": StorageManager.get("lyrics-plus:visual:fade-blur"),
+    "highlight-mode": StorageManager.get("lyrics-plus:visual:highlight-mode", false),
+    "highlight-intensity":
+      StorageManager.getItem("lyrics-plus:visual:highlight-intensity") || "70",
     "karaoke-bounce": StorageManager.get(
       "lyrics-plus:visual:karaoke-bounce",
       true
@@ -1281,6 +1284,11 @@ const CONFIG = {
     "fullscreen-auto-hide-delay":
       Number(StorageManager.getItem("lyrics-plus:visual:fullscreen-auto-hide-delay")) ||
       3,
+    // Browser fullscreen (monitor fill)
+    "fullscreen-browser-fullscreen": StorageManager.get(
+      "lyrics-plus:visual:fullscreen-browser-fullscreen",
+      false
+    ),
 
     delay: 0,
   },
@@ -1363,6 +1371,9 @@ CONFIG.visual["ja-detect-threshold"] = Number.parseInt(
 );
 CONFIG.visual["hans-detect-threshold"] = Number.parseInt(
   CONFIG.visual["hans-detect-threshold"]
+);
+CONFIG.visual["highlight-intensity"] = Number.parseInt(
+  CONFIG.visual["highlight-intensity"]
 );
 
 let CACHE = {};
@@ -3807,6 +3818,7 @@ class LyricsContainer extends react.Component {
 
     this.toggleFullscreen = () => {
       const isEnabled = !this.state.isFullscreen;
+      const useBrowserFullscreen = CONFIG.visual["fullscreen-browser-fullscreen"] === true;
       if (isEnabled) {
         document.body.append(this.fullscreenContainer);
         this.mousetrap.bind("esc", this.toggleFullscreen);
@@ -3819,6 +3831,12 @@ class LyricsContainer extends react.Component {
           }
         };
         document.addEventListener("keydown", this._escHandler);
+        // 브라우저 전체화면 활성화
+        if (useBrowserFullscreen && !document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch((err) => {
+            console.debug("Fullscreen request failed:", err);
+          });
+        }
       } else {
         this.fullscreenContainer.remove();
         if (document.fullscreenElement) {
@@ -4142,6 +4160,8 @@ class LyricsContainer extends react.Component {
       "--lyrics-original-opacity": CONFIG.visual["original-opacity"] / 100,
       "--lyrics-translation-opacity":
         CONFIG.visual["translation-opacity"] / 100,
+      "--highlight-inactive-opacity":
+        (100 - (CONFIG.visual["highlight-intensity"] || 70)) / 100,
       "--animation-tempo": this.state.tempo,
       "--lyrics-fullscreen-right-padding": `${CONFIG.visual["fullscreen-lyrics-right-padding"] || 40}px`,
     };
@@ -4338,7 +4358,7 @@ class LyricsContainer extends react.Component {
       "div",
       {
         className: `lyrics-lyricsContainer-LyricsContainer${CONFIG.visual["fade-blur"] ? " blur-enabled" : ""
-          }${fadLyricsContainer ? " fad-enabled" : ""}${fullscreenClasses}`,
+          }${CONFIG.visual["highlight-mode"] ? " highlight-mode-enabled" : ""}${fadLyricsContainer ? " fad-enabled" : ""}${fullscreenClasses}`,
         style: this.styleVariables,
         ref: (el) => {
           if (!el) return;

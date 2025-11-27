@@ -883,9 +883,14 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 						{
 							onContextMenu: (event) => {
 								event.preventDefault();
-								Spicetify.Platform.ClipboardAPI.copy(Utils.convertParsedToLRC(lyrics).original)
-									.then(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopied"), false, 2000))
-									.catch(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopyFailed"), true, 2000));
+								const copyText = Utils.formatLyricLineToCopy(mainText, subText, subText2, originalText);
+								if (copyText) {
+									Spicetify.Platform.ClipboardAPI.copy(copyText)
+										.then(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopied"), false, 2000))
+										.catch(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopyFailed"), true, 2000));
+								} else {
+									Spicetify.showNotification(I18n.t("notifications.lyricsCopyFailed"), true, 2000);
+								}
 							},
 							// For Furigana/Hiragana HTML strings - React 310 방지를 위한 안전한 검증
 							...(typeof mainText === "string" && !isKara && mainText ? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(mainText) } } : {}),
@@ -1379,9 +1384,14 @@ const SyncedExpandedLyricsPage = react.memo(({ lyrics = [], provider, copyright,
 					{
 						onContextMenu: (event) => {
 							event.preventDefault();
-							Spicetify.Platform.ClipboardAPI.copy(Utils.convertParsedToLRC(lyrics).original)
-								.then(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopied"), false, 2000))
-								.catch(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopyFailed"), true, 2000));
+							const copyText = Utils.formatLyricLineToCopy(mainText, subText, subText2, originalText);
+							if (copyText) {
+								Spicetify.Platform.ClipboardAPI.copy(copyText)
+									.then(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopied"), false, 2000))
+									.catch(() => Spicetify.showNotification(I18n.t("notifications.lyricsCopyFailed"), true, 2000));
+							} else {
+								Spicetify.showNotification(I18n.t("notifications.lyricsCopyFailed"), true, 2000);
+							}
 						},
 						// For Furigana/Hiragana HTML strings - React 310 방지를 위한 안전한 검증
 						...(typeof mainText === "string" && !isKara && mainText ? { dangerouslySetInnerHTML: { __html: Utils.rubyTextToHTML(mainText) } } : {}),

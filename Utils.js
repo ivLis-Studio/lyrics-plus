@@ -682,6 +682,58 @@ const Utils = {
     }
     return text;
   },
+
+  /**
+   * 해당 줄의 활성화된 항목들만 복사하기 위한 텍스트 생성
+   * @param {string|object} mainText - 메인 텍스트 (후리가나 HTML 포함 가능, 또는 객체)
+   * @param {string} subText - 발음 (로마지 등)
+   * @param {string} subText2 - 번역
+   * @param {string} originalText - 원문 가사 (원본)
+   * @returns {string} 복사할 텍스트
+   */
+  formatLyricLineToCopy(mainText, subText, subText2, originalText) {
+    const lines = [];
+    
+    // HTML 태그 제거 헬퍼
+    const cleanHtml = (text) => {
+      if (!text || typeof text !== "string") return "";
+      return text
+        .replace(/<rt[^>]*>.*?<\/rt>/gi, "") // rt 태그 제거
+        .replace(/<\/?ruby[^>]*>/gi, "") // ruby 태그 제거
+        .replace(/<[^>]+>/g, "") // 기타 HTML 태그 제거
+        .trim();
+    };
+    
+    // 원문 처리 - originalText가 있으면 우선 사용, 없으면 mainText 사용
+    let originalClean = "";
+    if (originalText && typeof originalText === "string") {
+      originalClean = cleanHtml(originalText);
+    } else if (mainText && typeof mainText === "string") {
+      originalClean = cleanHtml(mainText);
+    } else if (mainText && typeof mainText === "object" && mainText.text) {
+      // 카라오케 모드에서 line 객체인 경우
+      originalClean = cleanHtml(mainText.text);
+    }
+    
+    if (originalClean) {
+      lines.push(originalClean);
+    }
+    
+    // subText 처리 (발음)
+    const subClean = cleanHtml(subText);
+    if (subClean) {
+      lines.push(subClean);
+    }
+    
+    // subText2 처리 (번역)
+    const sub2Clean = cleanHtml(subText2);
+    if (sub2Clean) {
+      lines.push(sub2Clean);
+    }
+    
+    return lines.join("\n");
+  },
+
   convertParsedToLRC(lyrics, isBelow) {
     let original = "";
     let conver = "";
@@ -834,7 +886,7 @@ const Utils = {
   /**
    * Current version of the lyrics-plus app
    */
-  currentVersion: "2.2.6",
+  currentVersion: "2.2.7",
 
   /**
    * Check for updates from remote repository
