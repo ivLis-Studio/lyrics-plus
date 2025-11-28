@@ -226,9 +226,13 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
 
             const spotifyTime = Spicetify.Player.getProgress() / 1000;
             const lyricsStartTime = (firstLyricTime || 0) / 1000;
-            const captionStartTime = videoInfo.captionStartTime || 0;
+            const captionStartTime = videoInfo.captionStartTime;
 
-            const offset = captionStartTime - lyricsStartTime;
+            // captionStartTime이 null이면 (자막이 없는 영상) 오프셋 계산 없이 Spotify 시간을 그대로 사용
+            // captionStartTime이 있는 경우에만 가사와 자막 시작 시간 차이를 계산하여 오프셋 적용
+            const offset = (captionStartTime !== null && captionStartTime !== undefined) 
+                ? (captionStartTime - lyricsStartTime) 
+                : 0;
             const globalDelayMs = typeof CONFIG !== "undefined" && CONFIG.visual ? Number(CONFIG.visual.delay || 0) : 0;
             const additionalDelaySeconds = (trackOffsetMs + globalDelayMs) / 1000;
             let targetVideoTime = spotifyTime + offset + additionalDelaySeconds;
