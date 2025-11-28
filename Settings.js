@@ -1138,7 +1138,7 @@ const OptionList = ({ type, items, onChange }) => {
 };
 
 const languageCodes =
-  "none,en,af,ar,bg,bn,ca,zh,cs,da,de,el,es,et,fa,fi,fr,gu,he,hi,hr,hu,id,is,it,ja,jv,kn,ko,lt,lv,ml,mr,ms,nl,no,pl,pt,ro,ru,sk,sl,sr,su,sv,ta,te,th,tr,uk,ur,vi,zu".split(
+  "none,en,af,ar,bg,bn,ca,zh,cs,da,de,el,es,et,fa,fi,fr,gu,he,hi,hr,hu,id,is,it,ja,jv,id,kn,ko,lt,lv,ml,mr,ms,nl,no,pl,pt,ro,ru,sk,sl,sr,su,sv,ta,te,th,tr,uk,ur,vi,zu".split(
     ","
   );
 
@@ -2480,6 +2480,9 @@ const ConfigModal = () => {
                 pt: "Português",
                 bn: "বাংলা",
                 it: "Italiano",
+                th: "ภาษาไทย",
+                vi: "Tiếng Việt",
+                id: "Bahasa Indonesia",
               },
             },
           ],

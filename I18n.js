@@ -10,7 +10,7 @@
     var fallbackData = {};
     var STORAGE_KEY = "lyrics-plus:visual:language";
     var DEFAULT_LANGUAGE = "ko";
-    var AVAILABLE_LANGUAGES = ["ko", "en", "zh-CN", "zh-TW", "ja", "es", "fr", "de", "it", "ru", "pt", "hi", "ar", "bn", "ur"];
+    var AVAILABLE_LANGUAGES = ["ko", "en", "zh-CN", "zh-TW", "ja", "es", "fr", "de", "it", "ru", "pt", "hi", "ar", "bn", "ur", "th", "vi", "id"];
 
     // Language display names
     var LANGUAGE_NAMES = {
@@ -28,7 +28,10 @@
         hi: "हिन्दी",
         ar: "العربية",
         bn: "বাংলা",
-        ur: "اردو"
+        ur: "اردو",
+        th: "ภาษาไทย",
+        vi: "Tiếng Việt",
+        id: "Bahasa Indonesia"
     };
 
     /**
@@ -79,6 +82,15 @@
         }
         if (langCode === 'ur' && typeof window.LANG_UR !== 'undefined' && window.LANG_UR) {
             return window.LANG_UR;
+        }
+        if (langCode === 'th' && typeof window.LANG_TH !== 'undefined' && window.LANG_TH) {
+            return window.LANG_TH;
+        }
+        if (langCode === 'vi' && typeof window.LANG_VI !== 'undefined' && window.LANG_VI) {
+            return window.LANG_VI;
+        }
+        if (langCode === 'id' && typeof window.LANG_ID !== 'undefined' && window.LANG_ID) {
+            return window.LANG_ID;
         }
         return null;
     }
