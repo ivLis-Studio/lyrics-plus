@@ -65,9 +65,9 @@
 		"zh-CN": "歌词",
 		"hu": "Dalszöveg"
 	},
-    "description": "App description",
+    "description": "Enjoy Music with your Language.",
     "preview": "preview.png",
-    "readme": "README.md",
+    "readme": "MARKETPLACE.md",
     "authors": [
         { "name": "ivLis STUDIO", "url": "https://github.com/ivLis-STUDIO" }
     ],
