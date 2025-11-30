@@ -1,3 +1,8 @@
+<img width="100%" alt="preview-eng" src="https://github.com/user-attachments/assets/f42d4732-4960-4f2b-99e6-a68973b00f7d" />
+
+### preview
+![preview](https://github.com/user-attachments/assets/c8643d11-44aa-49e2-ab59-b056884e798a)
+
 # How to install?
 
 ##### Windows
@@ -11,7 +16,6 @@ Run the following command in Terminal.
 ```bash
 curl -fsSL https://ivlis.kr/lyrics-plus/install.sh | sh
 ```
-
 
 ---
 
@@ -79,3 +83,4 @@ If you experience issues with settings or lyrics display:
 If you'd like to support the development, please buy me a coffee.
 
 <a href="https://www.buymeacoffee.com/ivlis" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
