@@ -1,130 +1,108 @@
-# Lyrics Plus (brand-new)
+# Lyrics Plus
 
 <p align="center">
   <a href="README.md">한국어</a> |
-  <a href="README_EN.md">English</a> |
-  <a href="README_JA.md">日本語</a> |
-  <a href="README_ZH_CN.md">简体中文</a> |
-  <a href="README_ZH_TW.md">繁體中文</a>
+  <a href="README_EN.md">English</a>
 </p>
 
-A heavily modified version of the **Lyrics Plus** custom app for Spicetify, rebuilt from the ground up. It provides pronunciation and translation using the Google Gemini API.
+A lyrics extension for Spicetify. Supports pronunciation display and translation for various languages using the Google Gemini API.
 
-If you find this useful, please give it a star! PRs are welcome. :D
+For bug reports and feature suggestions, please contact us via GitHub Issues or [Discord](https://discord.gg/2fu36fUzdE).
 
-For any bugs or issues with ivLyrics sync/translation, please contact us on Discord: https://discord.gg/2fu36fUzdE
-
-# Support
-If you have some spare change... please buy me a coffee...
-
-<a href="https://www.buymeacoffee.com/ivlis" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-
-
-https://github.com/user-attachments/assets/c865affb-1a7b-405c-86ac-e1421f426c58
+![preview](https://github.com/user-attachments/assets/0596a769-76aa-49c5-970c-85897fe8d260)
 
 ---
 
 ## Key Features
 
-### 1. Lyrics Translation with Gemini API
-- Uses Google's LLM model to provide pronunciation and translation for lyrics in any language.
+### Lyrics Translation & Pronunciation
+- Real-time lyrics translation via Google Gemini API
+- Romanization support for various languages including Japanese, Korean, and Chinese
+- Furigana (ふりがな) display for Japanese lyrics
 
-### 2. Modern UI & Optimized User Experience
-- Integration with FullScreen extension
-- Smooth karaoke effects (not available before)
-- Complete overhaul
+### User Interface
+- Karaoke-style lyrics display (word-by-word highlighting)
+- Fullscreen mode support
+- YouTube music video background playback
+- Per-song sync offset adjustment
+- Community sync offset sharing
+- Various font, color, and layout customization options
 
-### 3. API Cost Optimization
-- **Central Proxy Server**: API requests are processed through a proxy server to save costs. If another extension user has already translated the same lyrics, cached data is used instead of calling the Gemini API. (In fact, Gemini's usage limits are generous enough for regular use, so it's essentially free.)
+### Supported Languages
+Korean, English, Japanese, Chinese (Simplified/Traditional), Spanish, French, German, Italian, Portuguese, Russian, Arabic, Hindi, Bengali, Thai, Vietnamese, Indonesian
 
 ---
 
-## Installation Guide
+## Installation
 
-### 1. Installing Spotify (For older version if you have issues with the latest)
+### 1. Install Spotify
 
-If you installed Spotify from the official website, it may not be compatible with Spicetify.
-Use the commands below to install a patchable version of Spotify. This method also blocks automatic updates.
+The latest version installed from the official Spotify website may not be compatible with Spicetify. Install a compatible version using the methods below.
 
-If Spotify is already installed, please uninstall it first.
+If you already have Spotify installed, please uninstall it first.
 
-Windows:
-1. Press the Start button and run "Windows PowerShell".
-2. Copy and paste the following code:
-```
+#### Windows
+Open PowerShell and run the following command:
+```powershell
 iex "& { $(iwr -useb 'https://amd64fox.github.io/Rollback-Spotify/run.ps1') } -version 1.2.76.298-x64"
 ```
-3. Press Enter.
 
-MacOS:
-1. Open the Terminal app.
-2. Copy and paste the following code:
-```
+#### macOS
+Open Terminal and run the following command:
+```bash
 bash <(curl -sSL https://raw.githubusercontent.com/jetfir3/TBZify/main/tbzify.sh) -v 1.2.76.298
 ```
-3. Press Enter.
 
+#### Manual Download
+- Windows: https://loadspot.pages.dev/?os=win&build=release&search=1.2.76.298
+- macOS: https://loadspot.pages.dev/?os=mac&build=release&search=1.2.76.298
 
-Or you can download manually from the links below:
+### 2. Install Spicetify
 
-Windows: https://loadspot.pages.dev/?os=win&build=release&search=1.2.76.298
+Skip this step if you already have Spicetify installed.
 
-Mac: https://loadspot.pages.dev/?os=mac&build=release&search=1.2.76.298
+Do not run as administrator.
 
+#### Windows
+Open PowerShell and run the following command:
+```powershell
+iwr -useb https://raw.githubusercontent.com/spicetify/cli/main/install.ps1 | iex
+```
 
-### 2. Installing Spicetify (Skip if already installed!)
+#### macOS / Linux
+Open Terminal and run the following command:
+```bash
+curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh
+```
 
-*Warning*: Do NOT run as administrator.
+When prompted to install Marketplace during installation, enter Y. Using it with the FullScreen extension from Marketplace provides a better experience.
 
-Windows:
-1. Press the Start button and run "Windows PowerShell".
-2. Copy and paste the following code:
-   ```
-   iwr -useb https://raw.githubusercontent.com/spicetify/cli/main/install.ps1 | iex
-   ```
-3. Press Enter.
+### 3. Install Lyrics Plus
 
-MacOS:
-1. Open the Terminal app.
-2. Copy and paste the following code:
-   ```
-   curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh
-   ```
-3. Press Enter.
+#### Automatic Installation (Recommended)
 
-During installation, you'll be asked if you want to install Marketplace.
-We recommend installing it since the FullScreen extension from Marketplace works great with Lyrics-Plus.
-Press Enter or Y to install when prompted.
+If you just installed Spicetify, restart PowerShell or Terminal before proceeding.
 
+##### Windows
+```powershell
+iwr -useb https://ivlis.kr/lyrics-plus/install.ps1 | iex
+```
 
-### 3-1. Automatic Installation & Update
+##### macOS / Linux
+```bash
+curl -fsSL https://ivlis.kr/lyrics-plus/install.sh | sh
+```
 
-**Important**: If you just installed Spicetify, please restart PowerShell first.
+Updates can also be done with the same command.
 
-Both installation and updates can be done with a single command:
+#### Manual Installation
 
-Windows:
-1. Press the Start button and run "Windows PowerShell".
-2. Copy and paste the following code:
-    ```
-   iwr -useb https://ivlis.kr/lyrics-plus/install.ps1 | iex
-    ```
-3. Press Enter.
-
-MacOS:
-1. Open the Terminal app.
-2. Copy and paste the following code:
-   ```
-   curl -fsSL https://ivlis.kr/lyrics-plus/install.sh | sh
-   ```
-3. Press Enter.
-
-### 3-2. Manual Installation
-1. Download and extract this project
-2. Copy the `lyrics-plus` folder to the Spicetify CustomApps directory (Remove "-main" from the folder name if it's "lyrics-plus-main")
+1. Download the latest version from [GitHub Releases](https://github.com/ivLis-Studio/lyrics-plus/releases).
+2. Extract and rename the folder to `lyrics-plus`.
+3. Copy the folder to the Spicetify CustomApps directory:
    - Windows: `%LocalAppData%\spicetify\CustomApps`
-   - MacOS/Linux: `~/.config/spicetify/CustomApps`
-3. Run in terminal:
+   - macOS/Linux: `~/.config/spicetify/CustomApps`
+4. Run the following commands in the terminal:
    ```
    spicetify config custom_apps lyrics-plus
    spicetify apply
@@ -134,22 +112,35 @@ MacOS:
 
 ## Initial Setup
 
-1. Open Spotify and go to the Lyrics Plus app
-2. Settings button (bottom right) -> Advanced -> Enter Gemini API key
-    - Get your GEMINI API key here -> https://aistudio.google.com/apikey
-3. Play music, hover over the lyrics area → Click the convert button to enable pronunciation and translation mode
+1. Launch Spotify and select Lyrics Plus from the left menu.
+2. Click the settings button at the bottom right.
+3. Enter your Gemini API key in the Advanced tab.
+   - You can get an API key for free from [Google AI Studio](https://aistudio.google.com/apikey).
+4. Play music and click the conversion button that appears when hovering over the lyrics area to enable translation/pronunciation mode.
 
 ---
 
-## Emergency Reset
-Something doesn't seem to be working properly.
--> Let's reset!
+## Troubleshooting
 
-1. Open cmd or terminal and type `spicetify enable-devtools`
-2. Right-click anywhere in the Spotify window and open DevTools
-3. Click Application -> Storage -> Clear site data
-<img width="917" height="311" alt="image" src="https://github.com/user-attachments/assets/ed560e07-f39e-4bfb-b514-ddf70277fada" />
-4. Click on Spotify and press Ctrl(Cmd) + Shift + R
-5. Done!
+### How to Reset
+
+If you experience issues with settings or lyrics display:
+
+1. Run the `spicetify enable-devtools` command in the terminal.
+2. Right-click in the Spotify window and select "Inspect Element" or "Developer Tools".
+3. Go to Application tab > Storage > Click "Clear site data".
+4. Click on the Spotify window and press Ctrl+Shift+R (macOS: Cmd+Shift+R) to refresh.
+
+### Common Issues
+
+- **Lyrics not displaying**: Check if lyrics providers are enabled in settings.
+- **Translation not working**: Verify that your Gemini API key is entered correctly.
+- **Spotify won't launch**: Run `spicetify restore` followed by `spicetify apply`.
 
 ---
+
+## Support
+
+If you'd like to support development, please buy me a coffee.
+
+<a href="https://www.buymeacoffee.com/ivlis" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
