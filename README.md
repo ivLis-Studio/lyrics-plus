@@ -1,9 +1,16 @@
-# Lyrics Plus
+<img width="100%" alt="preview" src="https://github.com/user-attachments/assets/679830cb-2bad-485f-9b22-9fed6f2e1773" />
+
+---
 
 <p align="center">
   <a href="README.md">한국어</a> |
   <a href="README_EN.md">English</a>
 </p>
+
+---
+
+### Lyrics Plus - 당신의 언어로 즐기는, 그런 음악.
+
 
 Spicetify용 가사 확장 프로그램입니다. Google Gemini API를 활용하여 다양한 언어의 발음 표기와 번역을 지원합니다.
 
@@ -144,3 +151,4 @@ curl -fsSL https://ivlis.kr/lyrics-plus/install.sh | sh
 개발을 지원해주시려면 커피 한 잔 사주세요.
 
 <a href="https://www.buymeacoffee.com/ivlis" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
