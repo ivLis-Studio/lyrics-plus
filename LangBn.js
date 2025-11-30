@@ -542,6 +542,10 @@ window.LANG_BN = {
       "opacity": {
         "label": "অস্বচ্ছতা",
         "desc": "মূল লিরিক্সের অস্বচ্ছতা (0-100%)"
+      },
+      "letterSpacing": {
+        "label": "অক্ষরের ব্যবধান",
+        "desc": "মূল পাঠে অক্ষরের মধ্যে দূরত্ব (পিক্সেল)"
       }
     },
     "pronunciationStyle": {
@@ -564,6 +568,19 @@ window.LANG_BN = {
       "gap": {
         "label": "মূল থেকে দূরত্ব",
         "desc": "মূল টেক্সট এবং উচ্চারণের মধ্যে ব্যবধান"
+      },
+      "letterSpacing": {
+        "label": "অক্ষরের ব্যবধান",
+        "desc": "উচ্চারণে অক্ষরের মধ্যে দূরত্ব (পিক্সেল)"
+      },
+      "hyphenReplace": {
+        "label": "হাইফেন প্রক্রিয়াকরণ",
+        "desc": "উচ্চারণে হাইফেন (-) অন্য অক্ষর দিয়ে প্রতিস্থাপন করুন",
+        "options": {
+          "keep": "রাখুন",
+          "space": "স্পেস দিয়ে প্রতিস্থাপন",
+          "remove": "সরান"
+        }
       }
     },
     "translationStyle": {
@@ -586,6 +603,10 @@ window.LANG_BN = {
       "gap": {
         "label": "উচ্চারণ থেকে দূরত্ব",
         "desc": "উচ্চারণ এবং অনুবাদের মধ্যে ব্যবধান (পিক্সেল)"
+      },
+      "letterSpacing": {
+        "label": "অক্ষরের ব্যবধান",
+        "desc": "অনুবাদে অক্ষরের মধ্যে দূরত্ব (পিক্সেল)"
       }
     },
     "textShadow": {
@@ -984,5 +1005,42 @@ window.LANG_BN = {
     "karaoke": "কারাওকে",
     "synced": "সিঙ্ক",
     "unsynced": "সাধারণ"
-  }
+  },
+  "communityVideo": {
+    "title": "কমিউনিটি ভিডিও সুপারিশ",
+    "loading": "ভিডিও লোড হচ্ছে...",
+    "loadError": "ভিডিও লোড ব্যর্থ হয়েছে",
+    "noVideos": "এখনও কোনো কমিউনিটি ভিডিও নেই",
+    "autoDetected": "অটো",
+    "startTime": "শুরু",
+    "submittedBy": "দ্বারা",
+    "addVideo": "ভিডিও যোগ করুন",
+    "addVideoNoEmoji": "ভিডিও যোগ করুন",
+    "youtubeUrl": "YouTube URL",
+    "startTimeSeconds": "শুরুর সময় (সেকেন্ড)",
+    "submit": "জমা দিন",
+    "submitting": "জমা দেওয়া হচ্ছে...",
+    "submitted": "ভিডিও সফলভাবে জমা দেওয়া হয়েছে!",
+    "updated": "ভিডিও সফলভাবে আপডেট হয়েছে!",
+    "submitError": "ভিডিও জমা দেওয়া ব্যর্থ হয়েছে",
+    "invalidUrl": "অবৈধ YouTube URL",
+    "videoNotFound": "YouTube ভিডিও পাওয়া যায়নি",
+    "videoPrivate": "ভিডিওটি ব্যক্তিগত বা মুছে ফেলা হয়েছে",
+    "validationError": "ভিডিও যাচাই করা যায়নি। আবার চেষ্টা করুন",
+    "selectVideo": "ভিডিও নির্বাচন করুন",
+    "preview": "পূর্বরূপ",
+    "apply": "প্রয়োগ করুন",
+    "applyShort": "প্রয়োগ",
+    "applied": "ভিডিও প্রয়োগ করা হয়েছে",
+    "videoTitle": "ভিডিও শিরোনাম",
+    "loadingTitle": "শিরোনাম লোড হচ্ছে...",
+    "startTimeLabel": "প্রথম গানের শুরুর সময় (সেকেন্ড)",
+    "startTimeHint": "YouTube ভিডিওতে প্রথম গান শুরু হওয়ার সময় লিখুন",
+    "delete": "মুছে ফেলুন",
+    "deleteConfirm": "আপনি কি এই ভিডিওটি মুছে ফেলতে চান?",
+    "deleted": "ভিডিও সফলভাবে মুছে ফেলা হয়েছে",
+    "deleteError": "ভিডিও মুছে ফেলা যায়নি"
+  },
+  "close": "বন্ধ করুন",
+  "cancel": "বাতিল"
 };

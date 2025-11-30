@@ -96,6 +96,7 @@
 		"TabBar.js",
 		"Utils.js",
 		"Translator.js",
+		"CommunityVideoSelector.js",
 		"VideoBackground.js",
 		"FullscreenOverlay.js"
 	],

@@ -542,6 +542,10 @@ window.LANG_ID = {
       "opacity": {
         "label": "Transparansi",
         "desc": "Opasitas lirik asli (0-100%)"
+      },
+      "letterSpacing": {
+        "label": "Spasi huruf",
+        "desc": "Jarak antar huruf dalam teks asli (piksel)"
       }
     },
     "pronunciationStyle": {
@@ -564,6 +568,19 @@ window.LANG_ID = {
       "gap": {
         "label": "Jarak dengan Asli",
         "desc": "Jarak antara lirik asli dan pelafalan"
+      },
+      "letterSpacing": {
+        "label": "Spasi huruf",
+        "desc": "Jarak antar huruf dalam pelafalan (piksel)"
+      },
+      "hyphenReplace": {
+        "label": "Penanganan tanda hubung",
+        "desc": "Ganti tanda hubung (-) dalam pengucapan dengan karakter lain",
+        "options": {
+          "keep": "Pertahankan",
+          "space": "Ganti dengan spasi",
+          "remove": "Hapus"
+        }
       }
     },
     "translationStyle": {
@@ -586,6 +603,10 @@ window.LANG_ID = {
       "gap": {
         "label": "Jarak dengan Pelafalan",
         "desc": "Jarak antara pelafalan dan terjemahan (piksel)"
+      },
+      "letterSpacing": {
+        "label": "Spasi huruf",
+        "desc": "Jarak antar huruf dalam terjemahan (piksel)"
       }
     },
     "textShadow": {
@@ -984,5 +1005,42 @@ window.LANG_ID = {
     "karaoke": "Karaoke",
     "synced": "Sinkron",
     "unsynced": "Normal"
-  }
+  },
+  "communityVideo": {
+    "title": "Rekomendasi Video Komunitas",
+    "loading": "Memuat video...",
+    "loadError": "Gagal memuat video",
+    "noVideos": "Belum ada video komunitas",
+    "autoDetected": "Otomatis",
+    "startTime": "Mulai",
+    "submittedBy": "Oleh",
+    "addVideo": "Tambah Video",
+    "addVideoNoEmoji": "Tambah Video",
+    "youtubeUrl": "URL YouTube",
+    "startTimeSeconds": "Waktu mulai (detik)",
+    "submit": "Kirim",
+    "submitting": "Mengirim...",
+    "submitted": "Video berhasil dikirim!",
+    "updated": "Video berhasil diperbarui!",
+    "submitError": "Gagal mengirim video",
+    "invalidUrl": "URL YouTube tidak valid",
+    "videoNotFound": "Video YouTube tidak ditemukan",
+    "videoPrivate": "Video bersifat pribadi atau dihapus",
+    "validationError": "Tidak dapat memvalidasi video. Silakan coba lagi",
+    "selectVideo": "Pilih Video",
+    "preview": "Pratinjau",
+    "apply": "Terapkan",
+    "applyShort": "Terapkan",
+    "applied": "Video diterapkan",
+    "videoTitle": "Judul video",
+    "loadingTitle": "Memuat judul...",
+    "startTimeLabel": "Waktu mulai lirik pertama (detik)",
+    "startTimeHint": "Masukkan waktu saat lirik pertama dimulai di video YouTube",
+    "delete": "Hapus",
+    "deleteConfirm": "Apakah Anda yakin ingin menghapus video ini?",
+    "deleted": "Video berhasil dihapus",
+    "deleteError": "Gagal menghapus video"
+  },
+  "close": "Tutup",
+  "cancel": "Batal"
 };

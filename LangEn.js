@@ -542,6 +542,10 @@ window.LANG_EN = {
       "opacity": {
         "label": "Opacity",
         "desc": "Opacity of original lyrics (0-100%)"
+      },
+      "letterSpacing": {
+        "label": "Letter Spacing",
+        "desc": "Spacing between letters in original lyrics (pixels)"
       }
     },
     "pronunciationStyle": {
@@ -564,6 +568,19 @@ window.LANG_EN = {
       "gap": {
         "label": "Gap from Original",
         "desc": "Spacing between original lyrics and romanization"
+      },
+      "letterSpacing": {
+        "label": "Letter Spacing",
+        "desc": "Spacing between letters in romanization (pixels)"
+      },
+      "hyphenReplace": {
+        "label": "Hyphen (-) Processing",
+        "desc": "Choose how to display hyphens in pronunciation (e.g., Tah-shee-kah → Tah shee kah or Tahsheekah)",
+        "options": {
+          "keep": "Keep (Tah-shee-kah)",
+          "space": "Replace with space (Tah shee kah)",
+          "remove": "Remove (Tahsheekah)"
+        }
       }
     },
     "translationStyle": {
@@ -586,6 +603,10 @@ window.LANG_EN = {
       "gap": {
         "label": "Gap from Pronunciation",
         "desc": "Spacing between romanization and translation (pixels)"
+      },
+      "letterSpacing": {
+        "label": "Letter Spacing",
+        "desc": "Spacing between letters in translation (pixels)"
       }
     },
     "textShadow": {
@@ -984,5 +1005,42 @@ window.LANG_EN = {
     "karaoke": "Karaoke",
     "synced": "Synced",
     "unsynced": "Unsynced"
-  }
+  },
+  "communityVideo": {
+    "title": "Community Video Recommendations",
+    "loading": "Loading videos...",
+    "loadError": "Failed to load videos",
+    "noVideos": "No community videos yet",
+    "autoDetected": "Auto",
+    "startTime": "Start",
+    "submittedBy": "By",
+    "addVideo": "Add Video",
+    "addVideoNoEmoji": "Add Video",
+    "youtubeUrl": "YouTube URL",
+    "startTimeSeconds": "Start Time (seconds)",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "submitted": "Video submitted successfully!",
+    "updated": "Video updated successfully!",
+    "submitError": "Failed to submit video",
+    "invalidUrl": "Invalid YouTube URL",
+    "videoNotFound": "YouTube video not found",
+    "videoPrivate": "Video is private or deleted",
+    "validationError": "Could not validate video. Please try again",
+    "selectVideo": "Select Video",
+    "preview": "Preview",
+    "apply": "Apply",
+    "applyShort": "Apply",
+    "applied": "Video applied",
+    "videoTitle": "Video Title",
+    "loadingTitle": "Loading title...",
+    "startTimeLabel": "First Lyric Start Time (seconds)",
+    "startTimeHint": "Enter the time when the first lyric starts in the YouTube video",
+    "delete": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this video?",
+    "deleted": "Video deleted successfully",
+    "deleteError": "Failed to delete video"
+  },
+  "close": "Close",
+  "cancel": "Cancel"
 };

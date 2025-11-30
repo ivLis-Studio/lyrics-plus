@@ -542,6 +542,10 @@ window.LANG_ZH_CN = {
       "opacity": {
         "label": "不透明度",
         "desc": "原文歌词的不透明度 (0-100%)"
+      },
+      "letterSpacing": {
+        "label": "字符间距",
+        "desc": "原文歌词的字符间距（像素）"
       }
     },
     "pronunciationStyle": {
@@ -563,7 +567,20 @@ window.LANG_ZH_CN = {
       },
       "gap": {
         "label": "与原文的间距",
-        "desc": "原文歌词与罗马化之间的间距"
+        "desc": "原文歌词与罗马化的间距"
+      },
+      "letterSpacing": {
+        "label": "字符间距",
+        "desc": "罗马化的字符间距（像素）"
+      },
+      "hyphenReplace": {
+        "label": "连字符处理",
+        "desc": "将发音中的连字符(-)替换为其他字符",
+        "options": {
+          "keep": "保持",
+          "space": "替换为空格",
+          "remove": "删除"
+        }
       }
     },
     "translationStyle": {
@@ -585,7 +602,11 @@ window.LANG_ZH_CN = {
       },
       "gap": {
         "label": "与发音的间距",
-        "desc": "罗马化与翻译之间的间距（像素）"
+        "desc": "罗马化与翻译的间距（像素）"
+      },
+      "letterSpacing": {
+        "label": "字符间距",
+        "desc": "翻译歌词的字符间距（像素）"
       }
     },
     "textShadow": {
@@ -984,5 +1005,42 @@ window.LANG_ZH_CN = {
     "karaoke": "卡拉OK",
     "synced": "同步",
     "unsynced": "非同步"
-  }
+  },
+  "communityVideo": {
+    "title": "社区视频推荐",
+    "loading": "加载视频中...",
+    "loadError": "加载视频失败",
+    "noVideos": "暂无社区视频",
+    "autoDetected": "自动",
+    "startTime": "开始",
+    "submittedBy": "提交者",
+    "addVideo": "添加视频",
+    "addVideoNoEmoji": "添加视频",
+    "youtubeUrl": "YouTube 链接",
+    "startTimeSeconds": "开始时间（秒）",
+    "submit": "提交",
+    "submitting": "提交中...",
+    "submitted": "视频提交成功！",
+    "updated": "视频更新成功！",
+    "submitError": "视频提交失败",
+    "invalidUrl": "无效的 YouTube 链接",
+    "videoNotFound": "YouTube 视频不存在",
+    "videoPrivate": "视频为私享或已删除",
+    "validationError": "无法验证视频，请重试",
+    "selectVideo": "选择视频",
+    "preview": "预览",
+    "apply": "应用",
+    "applyShort": "应用",
+    "applied": "视频已应用",
+    "videoTitle": "视频标题",
+    "loadingTitle": "正在获取标题...",
+    "startTimeLabel": "首句歌词开始时间（秒）",
+    "startTimeHint": "请输入 YouTube 视频中第一句歌词开始的时间",
+    "delete": "删除",
+    "deleteConfirm": "确定要删除这个视频吗？",
+    "deleted": "视频已删除",
+    "deleteError": "删除视频失败"
+  },
+  "close": "关闭",
+  "cancel": "取消"
 };

@@ -2772,6 +2772,7 @@ const ConfigModal = () => {
                     "Pretendard Variable",
                   textAlign: CONFIG.visual["alignment"] || "left",
                   opacity: (CONFIG.visual["original-opacity"] || 100) / 100,
+                  letterSpacing: `${CONFIG.visual["original-letter-spacing"] || 0}px`,
                   textShadow: CONFIG.visual["text-shadow-enabled"]
                     ? `0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"
                     }${Math.round(
@@ -2800,6 +2801,7 @@ const ConfigModal = () => {
                   color: "rgba(255,255,255,0.7)",
                   marginTop: `${(parseInt(CONFIG.visual["phonetic-spacing"]) || 4) - 10
                     }px`,
+                  letterSpacing: `${CONFIG.visual["phonetic-letter-spacing"] || 0}px`,
                   textShadow: CONFIG.visual["text-shadow-enabled"]
                     ? `0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"
                     }${Math.round(
@@ -2828,6 +2830,7 @@ const ConfigModal = () => {
                   color: "rgba(255,255,255,0.7)",
                   marginTop: `${parseInt(CONFIG.visual["translation-spacing"]) || 8
                     }px`,
+                  letterSpacing: `${CONFIG.visual["translation-letter-spacing"] || 0}px`,
                   textShadow: CONFIG.visual["text-shadow-enabled"]
                     ? `0 0 ${CONFIG.visual["text-shadow-blur"] || 2}px ${CONFIG.visual["text-shadow-color"] || "#000000"
                     }${Math.round(
@@ -2968,6 +2971,16 @@ const ConfigModal = () => {
               step: 5,
               unit: "%",
             },
+            {
+              desc: I18n.t("settingsAdvanced.originalStyle.letterSpacing.label"),
+              info: I18n.t("settingsAdvanced.originalStyle.letterSpacing.desc"),
+              key: "original-letter-spacing",
+              type: ConfigSliderRange,
+              min: -5,
+              max: 20,
+              step: 0.5,
+              unit: "px",
+            },
           ],
           onChange: (name, value) => {
             CONFIG.visual[name] = value;
@@ -2980,6 +2993,8 @@ const ConfigModal = () => {
                 lyricsPreview.style.fontWeight = value;
               if (name === "original-opacity")
                 lyricsPreview.style.opacity = value / 100;
+              if (name === "original-letter-spacing")
+                lyricsPreview.style.letterSpacing = `${value}px`;
             }
             lyricContainerUpdate?.();
             window.dispatchEvent(
@@ -3125,6 +3140,27 @@ const ConfigModal = () => {
               step: 1,
               unit: "px",
             },
+            {
+              desc: I18n.t("settingsAdvanced.pronunciationStyle.letterSpacing.label"),
+              info: I18n.t("settingsAdvanced.pronunciationStyle.letterSpacing.desc"),
+              key: "phonetic-letter-spacing",
+              type: ConfigSliderRange,
+              min: -5,
+              max: 20,
+              step: 0.5,
+              unit: "px",
+            },
+            {
+              desc: I18n.t("settingsAdvanced.pronunciationStyle.hyphenReplace.label"),
+              info: I18n.t("settingsAdvanced.pronunciationStyle.hyphenReplace.desc"),
+              key: "phonetic-hyphen-replace",
+              type: ConfigSelection,
+              options: {
+                keep: I18n.t("settingsAdvanced.pronunciationStyle.hyphenReplace.options.keep"),
+                space: I18n.t("settingsAdvanced.pronunciationStyle.hyphenReplace.options.space"),
+                remove: I18n.t("settingsAdvanced.pronunciationStyle.hyphenReplace.options.remove"),
+              },
+            },
           ],
           onChange: (name, value) => {
             CONFIG.visual[name] = value;
@@ -3139,8 +3175,15 @@ const ConfigModal = () => {
                 phoneticPreview.style.opacity = value / 100;
               if (name === "phonetic-spacing")
                 phoneticPreview.style.marginTop = `${parseInt(value) || 0}px`;
+              if (name === "phonetic-letter-spacing")
+                phoneticPreview.style.letterSpacing = `${value}px`;
             }
-            lyricContainerUpdate?.();
+            // Reload lyrics when hyphen replacement setting changes
+            if (name === "phonetic-hyphen-replace") {
+              reloadLyrics?.();
+            } else {
+              lyricContainerUpdate?.();
+            }
             window.dispatchEvent(
               new CustomEvent("lyrics-plus", {
                 detail: { type: "config", name, value },
@@ -3285,6 +3328,16 @@ const ConfigModal = () => {
               step: 2,
               unit: "px",
             },
+            {
+              desc: I18n.t("settingsAdvanced.translationStyle.letterSpacing.label"),
+              info: I18n.t("settingsAdvanced.translationStyle.letterSpacing.desc"),
+              key: "translation-letter-spacing",
+              type: ConfigSliderRange,
+              min: -5,
+              max: 20,
+              step: 0.5,
+              unit: "px",
+            },
           ],
           onChange: (name, value) => {
             CONFIG.visual[name] = value;
@@ -3302,6 +3355,8 @@ const ConfigModal = () => {
               if (name === "translation-spacing")
                 translationPreview.style.marginTop = `${parseInt(value) || 0
                   }px`;
+              if (name === "translation-letter-spacing")
+                translationPreview.style.letterSpacing = `${value}px`;
             }
             lyricContainerUpdate?.();
             window.dispatchEvent(

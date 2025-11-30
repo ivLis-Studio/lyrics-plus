@@ -542,6 +542,10 @@ window.LANG_AR = {
       "opacity": {
         "label": "الشفافية",
         "desc": "شفافية الكلمات الأصلية (0-100%)"
+      },
+      "letterSpacing": {
+        "label": "المسافة بين الحروف",
+        "desc": "المسافة بين الحروف في النص الأصلي (بكسل)"
       }
     },
     "pronunciationStyle": {
@@ -563,7 +567,20 @@ window.LANG_AR = {
       },
       "gap": {
         "label": "المسافة من الأصل",
-        "desc": "الهامش بين النص الأصلي والنطق"
+        "desc": "المسافة بين الكلمات الأصلية والنقحرة"
+      },
+      "letterSpacing": {
+        "label": "المسافة بين الحروف",
+        "desc": "المسافة بين الحروف في النطق (بكسل)"
+      },
+      "hyphenReplace": {
+        "label": "معالجة الشرطة",
+        "desc": "استبدال الشرطة (-) في النطق بحرف آخر",
+        "options": {
+          "keep": "إبقاء",
+          "space": "استبدال بمسافة",
+          "remove": "إزالة"
+        }
       }
     },
     "translationStyle": {
@@ -585,7 +602,11 @@ window.LANG_AR = {
       },
       "gap": {
         "label": "المسافة من النطق",
-        "desc": "الهامش بين النطق والترجمة (بكسل)"
+        "desc": "المسافة بين النطق والترجمة (بكسل)"
+      },
+      "letterSpacing": {
+        "label": "المسافة بين الحروف",
+        "desc": "المسافة بين الحروف في الترجمة (بكسل)"
       }
     },
     "textShadow": {
@@ -984,5 +1005,42 @@ window.LANG_AR = {
     "karaoke": "كاريوكي",
     "synced": "متزامن",
     "unsynced": "عادي"
-  }
+  },
+  "communityVideo": {
+    "title": "توصيات فيديو المجتمع",
+    "loading": "جاري تحميل الفيديوهات...",
+    "loadError": "فشل في تحميل الفيديوهات",
+    "noVideos": "لا توجد فيديوهات مجتمعية بعد",
+    "autoDetected": "تلقائي",
+    "startTime": "البداية",
+    "submittedBy": "بواسطة",
+    "addVideo": "إضافة فيديو",
+    "addVideoNoEmoji": "إضافة فيديو",
+    "youtubeUrl": "رابط YouTube",
+    "startTimeSeconds": "وقت البدء (ثواني)",
+    "submit": "إرسال",
+    "submitting": "جاري الإرسال...",
+    "submitted": "تم إرسال الفيديو بنجاح!",
+    "updated": "تم تحديث الفيديو بنجاح!",
+    "submitError": "فشل في إرسال الفيديو",
+    "invalidUrl": "رابط YouTube غير صالح",
+    "videoNotFound": "فيديو YouTube غير موجود",
+    "videoPrivate": "الفيديو خاص أو محذوف",
+    "validationError": "تعذر التحقق من الفيديو. حاول مرة أخرى",
+    "selectVideo": "اختر فيديو",
+    "preview": "معاينة",
+    "apply": "تطبيق",
+    "applyShort": "تطبيق",
+    "applied": "تم تطبيق الفيديو",
+    "videoTitle": "عنوان الفيديو",
+    "loadingTitle": "جارٍ تحميل العنوان...",
+    "startTimeLabel": "وقت بدء أول كلمات (ثواني)",
+    "startTimeHint": "أدخل الوقت الذي تبدأ فيه أول كلمات في فيديو YouTube",
+    "delete": "حذف",
+    "deleteConfirm": "هل أنت متأكد من حذف هذا الفيديو؟",
+    "deleted": "تم حذف الفيديو بنجاح",
+    "deleteError": "فشل في حذف الفيديو"
+  },
+  "close": "إغلاق",
+  "cancel": "إلغاء"
 };

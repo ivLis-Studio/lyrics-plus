@@ -542,6 +542,10 @@ window.LANG_ES = {
       "opacity": {
         "label": "Opacidad",
         "desc": "Opacidad de las letras originales (0-100%)"
+      },
+      "letterSpacing": {
+        "label": "Espaciado de letras",
+        "desc": "Espacio entre letras en el texto original (píxeles)"
       }
     },
     "pronunciationStyle": {
@@ -564,6 +568,19 @@ window.LANG_ES = {
       "gap": {
         "label": "Espacio desde el original",
         "desc": "Margen entre el texto original y la pronunciación"
+      },
+      "letterSpacing": {
+        "label": "Espaciado de letras",
+        "desc": "Espacio entre letras en la pronunciación (píxeles)"
+      },
+      "hyphenReplace": {
+        "label": "Manejo del guión",
+        "desc": "Reemplazar el guión (-) en la pronunciación por otro carácter",
+        "options": {
+          "keep": "Mantener",
+          "space": "Reemplazar por espacio",
+          "remove": "Eliminar"
+        }
       }
     },
     "translationStyle": {
@@ -586,6 +603,10 @@ window.LANG_ES = {
       "gap": {
         "label": "Espacio desde la pronunciación",
         "desc": "Margen entre la pronunciación y la traducción (píxeles)"
+      },
+      "letterSpacing": {
+        "label": "Espaciado de letras",
+        "desc": "Espacio entre letras en la traducción (píxeles)"
       }
     },
     "textShadow": {
@@ -984,5 +1005,42 @@ window.LANG_ES = {
     "karaoke": "Karaoke",
     "synced": "Sincronizado",
     "unsynced": "Normal"
-  }
+  },
+  "communityVideo": {
+    "title": "Videos recomendados por la comunidad",
+    "loading": "Cargando videos...",
+    "loadError": "Error al cargar videos",
+    "noVideos": "Aún no hay videos de la comunidad",
+    "autoDetected": "Auto",
+    "startTime": "Inicio",
+    "submittedBy": "Por",
+    "addVideo": "Agregar video",
+    "addVideoNoEmoji": "Agregar video",
+    "youtubeUrl": "URL de YouTube",
+    "startTimeSeconds": "Tiempo de inicio (segundos)",
+    "submit": "Enviar",
+    "submitting": "Enviando...",
+    "submitted": "¡Video enviado con éxito!",
+    "updated": "¡Video actualizado con éxito!",
+    "submitError": "Error al enviar video",
+    "invalidUrl": "URL de YouTube inválida",
+    "videoNotFound": "Video de YouTube no encontrado",
+    "videoPrivate": "El video es privado o fue eliminado",
+    "validationError": "No se pudo validar el video. Inténtalo de nuevo",
+    "selectVideo": "Seleccionar video",
+    "preview": "Vista previa",
+    "apply": "Aplicar",
+    "applyShort": "Aplicar",
+    "applied": "Video aplicado",
+    "videoTitle": "Título del video",
+    "loadingTitle": "Cargando título...",
+    "startTimeLabel": "Tiempo de inicio de la primera letra (segundos)",
+    "startTimeHint": "Ingrese el tiempo en que comienza la primera letra en el video de YouTube",
+    "delete": "Eliminar",
+    "deleteConfirm": "¿Está seguro de que desea eliminar este video?",
+    "deleted": "Video eliminado exitosamente",
+    "deleteError": "Error al eliminar el video"
+  },
+  "close": "Cerrar",
+  "cancel": "Cancelar"
 };

@@ -286,17 +286,22 @@ const FullscreenOverlay = (() => {
 
     // Player Controls Component (개선된 UI/UX)
     const PlayerControls = ({ show, showVolume = true, buttonSize = 36, showBackground = false }) => {
-        const [isPlaying, setIsPlaying] = useState(!Spicetify.Player.isPaused?.());
+        const [isPlaying, setIsPlaying] = useState(false);
         const [isShuffle, setIsShuffle] = useState(false);
         const [repeatMode, setRepeatMode] = useState(0);
         const [isLiked, setIsLiked] = useState(false);
         const [volume, setVolume] = useState(Spicetify.Player.getVolume?.() ?? 1);
         const [isMuted, setIsMuted] = useState(false);
 
+        // 재생 상태를 Spicetify.Player.data.isPaused에서 직접 가져옴
         useEffect(() => {
             if (!show) return;
 
-            const updatePlayState = () => setIsPlaying(!Spicetify.Player.isPaused?.());
+            const updatePlayState = () => {
+                // Spicetify.Player.data.isPaused가 가장 신뢰할 수 있는 소스
+                const isPaused = Spicetify.Player.data?.isPaused ?? true;
+                setIsPlaying(!isPaused);
+            };
             const updateShuffle = () => setIsShuffle(Spicetify.Player.getShuffle?.() || false);
             const updateRepeat = () => setRepeatMode(Spicetify.Player.getRepeat?.() || 0);
             
@@ -310,6 +315,7 @@ const FullscreenOverlay = (() => {
                 } catch (e) {}
             };
 
+            // 초기 상태 설정
             updatePlayState();
             updateShuffle();
             updateRepeat();

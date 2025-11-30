@@ -886,7 +886,7 @@ const Utils = {
   /**
    * Current version of the lyrics-plus app
    */
-  currentVersion: "2.2.9",
+  currentVersion: "2.3.0",
 
   /**
    * Check for updates from remote repository
@@ -1292,6 +1292,401 @@ const Utils = {
     } catch (error) {
       console.error("[Lyrics Plus] Failed to submit community feedback:", error);
       return null;
+    }
+  },
+
+  // ==========================================
+  // 커뮤니티 영상 추천 시스템
+  // ==========================================
+
+  /**
+   * 커뮤니티 영상 목록 조회
+   */
+  async getCommunityVideos(trackUri) {
+    const trackId = this.extractTrackId(trackUri);
+    if (!trackId) return null;
+
+    const userHash = this.getUserHash();
+
+    try {
+      const response = await fetch(
+        `https://api.ivl.is/lyrics_youtube/community.php?trackId=${trackId}&userId=${userHash}`
+      );
+      const data = await response.json();
+      
+      if (data.success) {
+        return data.data;
+      }
+      return null;
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to get community videos:", error);
+      return null;
+    }
+  },
+
+  /**
+   * 커뮤니티 영상 등록
+   */
+  async submitCommunityVideo(trackUri, videoId, videoTitle, startTime = 0) {
+    const trackId = this.extractTrackId(trackUri);
+    if (!trackId) return null;
+
+    const userHash = this.getUserHash();
+    const userName = Spicetify.Platform?.UserAPI?._currentUser?.displayName || 
+                     Spicetify.User?.displayName || 
+                     'Anonymous';
+
+    try {
+      const response = await fetch('https://api.ivl.is/lyrics_youtube/community.php?action=submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          trackId,
+          videoId,
+          videoTitle,
+          startTime,
+          submitterId: userHash,
+          submitterName: userName
+        })
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log(`[Lyrics Plus] Community video submitted: ${videoId}`);
+        return data;
+      }
+      return null;
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to submit community video:", error);
+      return null;
+    }
+  },
+
+  /**
+   * 커뮤니티 영상 투표
+   */
+  async voteCommunityVideo(videoEntryId, voteType) {
+    const userHash = this.getUserHash();
+
+    try {
+      const response = await fetch('https://api.ivl.is/lyrics_youtube/community.php?action=vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoEntryId,
+          voterId: userHash,
+          voteType // 1=like, -1=dislike, 0=remove
+        })
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log(`[Lyrics Plus] Community vote submitted: ${voteType > 0 ? '👍' : voteType < 0 ? '👎' : '취소'}`);
+        return data;
+      }
+      return null;
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to vote community video:", error);
+      return null;
+    }
+  },
+
+  /**
+   * 커뮤니티 영상 삭제 (본인만 가능)
+   */
+  async deleteCommunityVideo(videoEntryId) {
+    const userHash = this.getUserHash();
+
+    try {
+      // DELETE 메서드 대신 POST 사용 (CORS 문제 방지)
+      const response = await fetch(
+        `https://api.ivl.is/lyrics_youtube/community.php`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'delete',
+            id: videoEntryId,
+            submitterId: userHash
+          })
+        }
+      );
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log(`[Lyrics Plus] Community video deleted: ${videoEntryId}`);
+        return data;
+      }
+      return null;
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to delete community video:", error);
+      return null;
+    }
+  },
+
+  /**
+   * 현재 사용자의 해시 ID 가져오기
+   */
+  getCurrentUserHash() {
+    return this.getUserHash();
+  },
+
+  // =========================================================================
+  // IndexedDB 기반 선택한 커뮤니티 영상 저장/로드
+  // =========================================================================
+  
+  /**
+   * IndexedDB 데이터베이스 열기
+   */
+  async _openSelectedVideoDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open('LyricsPlusSelectedVideos', 1);
+      
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+      
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains('selectedVideos')) {
+          db.createObjectStore('selectedVideos', { keyPath: 'trackUri' });
+        }
+      };
+    });
+  },
+  
+  /**
+   * 선택한 영상 정보 저장 (IndexedDB)
+   * @param {string} trackUri - 트랙 URI
+   * @param {object} videoInfo - 영상 정보 (youtubeVideoId, youtubeTitle, captionStartTime 등)
+   */
+  async saveSelectedVideo(trackUri, videoInfo) {
+    try {
+      const db = await this._openSelectedVideoDB();
+      const tx = db.transaction('selectedVideos', 'readwrite');
+      const store = tx.objectStore('selectedVideos');
+      
+      // 저장
+      store.put({
+        trackUri,
+        ...videoInfo,
+        savedAt: Date.now()
+      });
+      
+      // 트랜잭션 완료 대기
+      await new Promise((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+      
+      // 오래된 항목 정리 (30일 이상)
+      this._cleanupOldSelectedVideos(db).catch(() => {});
+      
+      db.close();
+      console.log(`[Lyrics Plus] Saved selected video for ${trackUri}:`, videoInfo.youtubeVideoId);
+      return true;
+    } catch (error) {
+      console.error('[Lyrics Plus] Failed to save selected video:', error);
+      return false;
+    }
+  },
+  
+  /**
+   * 오래된 선택 영상 정리 (30일 이상)
+   */
+  async _cleanupOldSelectedVideos(db) {
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    const tx = db.transaction('selectedVideos', 'readwrite');
+    const store = tx.objectStore('selectedVideos');
+    
+    const request = store.openCursor();
+    request.onsuccess = (event) => {
+      const cursor = event.target.result;
+      if (cursor) {
+        if (cursor.value.savedAt && cursor.value.savedAt < thirtyDaysAgo) {
+          cursor.delete();
+        }
+        cursor.continue();
+      }
+    };
+  },
+  
+  /**
+   * 저장된 선택 영상 정보 로드 (IndexedDB)
+   * @param {string} trackUri - 트랙 URI
+   * @returns {object|null} 저장된 영상 정보 또는 null
+   */
+  async getSelectedVideo(trackUri) {
+    try {
+      const db = await this._openSelectedVideoDB();
+      const tx = db.transaction('selectedVideos', 'readonly');
+      const store = tx.objectStore('selectedVideos');
+      
+      const result = await new Promise((resolve, reject) => {
+        const request = store.get(trackUri);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      
+      db.close();
+      
+      if (result) {
+        console.log(`[Lyrics Plus] Loaded selected video for ${trackUri}:`, result.youtubeVideoId);
+        return result;
+      }
+      return null;
+    } catch (error) {
+      console.error('[Lyrics Plus] Failed to load selected video:', error);
+      return null;
+    }
+  },
+  
+  /**
+   * 저장된 선택 영상 삭제 (기본 영상으로 되돌릴 때)
+   * @param {string} trackUri - 트랙 URI
+   */
+  async removeSelectedVideo(trackUri) {
+    try {
+      const db = await this._openSelectedVideoDB();
+      const tx = db.transaction('selectedVideos', 'readwrite');
+      const store = tx.objectStore('selectedVideos');
+      
+      await new Promise((resolve, reject) => {
+        const request = store.delete(trackUri);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+      
+      db.close();
+      console.log(`[Lyrics Plus] Removed selected video for ${trackUri}`);
+      return true;
+    } catch (error) {
+      console.error('[Lyrics Plus] Failed to remove selected video:', error);
+      return false;
+    }
+  },
+
+  /**
+   * YouTube URL에서 Video ID 추출
+   */
+  extractYouTubeVideoId(url) {
+    if (!url) return null;
+    
+    // 이미 Video ID 형식인 경우 (11자리)
+    if (/^[a-zA-Z0-9_-]{11}$/.test(url)) {
+      return url;
+    }
+    
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+    
+    return null;
+  },
+
+  /**
+   * YouTube 영상 제목 가져오기 (oEmbed API 사용)
+   * @returns {Promise<string|null>} 영상 제목 또는 null (존재하지 않는 영상)
+   */
+  async getYouTubeVideoTitle(videoId) {
+    if (!videoId) return null;
+    
+    try {
+      // YouTube oEmbed API는 API 키 없이도 사용 가능
+      const response = await fetch(
+        `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
+      );
+      
+      // 404 = 영상이 존재하지 않음, 401 = 비공개 영상
+      if (response.status === 404 || response.status === 401) {
+        console.log("[Lyrics Plus] YouTube video not found or private:", videoId);
+        return null;
+      }
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data.title || null;
+    } catch (error) {
+      console.error("[Lyrics Plus] Failed to get YouTube title:", error);
+      
+      // 백업: noembed.com 사용
+      try {
+        const backupResponse = await fetch(
+          `https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`
+        );
+        
+        if (backupResponse.ok) {
+          const backupData = await backupResponse.json();
+          // noembed은 존재하지 않는 영상에 대해 error 필드를 반환함
+          if (backupData.error) {
+            console.log("[Lyrics Plus] Video not found via noembed:", videoId);
+            return null;
+          }
+          return backupData.title || null;
+        }
+      } catch (backupError) {
+        console.error("[Lyrics Plus] Backup title fetch also failed:", backupError);
+      }
+      
+      return null;
+    }
+  },
+
+  /**
+   * YouTube 영상이 실제로 존재하고 재생 가능한지 확인
+   * @returns {Promise<{valid: boolean, title: string|null, error: string|null}>}
+   */
+  async validateYouTubeVideo(videoId) {
+    if (!videoId) {
+      return { valid: false, title: null, error: 'invalidId' };
+    }
+    
+    // 기본적인 ID 형식 검증 (11자리, 영숫자 + 특수문자)
+    if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+      return { valid: false, title: null, error: 'invalidFormat' };
+    }
+    
+    try {
+      // oEmbed API로 영상 존재 여부 확인
+      const response = await fetch(
+        `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
+      );
+      
+      // 404 = 영상이 존재하지 않음
+      if (response.status === 404) {
+        return { valid: false, title: null, error: 'notFound' };
+      }
+      
+      // 401 = 비공개 영상
+      if (response.status === 401) {
+        return { valid: false, title: null, error: 'private' };
+      }
+      
+      if (!response.ok) {
+        return { valid: false, title: null, error: 'httpError' };
+      }
+      
+      const data = await response.json();
+      
+      if (!data.title) {
+        return { valid: false, title: null, error: 'noTitle' };
+      }
+      
+      return { valid: true, title: data.title, error: null };
+    } catch (error) {
+      console.error("[Lyrics Plus] YouTube validation error:", error);
+      return { valid: false, title: null, error: 'networkError' };
     }
   },
 };

@@ -542,6 +542,10 @@ window.LANG_VI = {
       "opacity": {
         "label": "Độ trong suốt",
         "desc": "Độ mờ của lời bài hát gốc (0-100%)"
+      },
+      "letterSpacing": {
+        "label": "Giãn cách chữ",
+        "desc": "Khoảng cách giữa các chữ trong lời gốc (pixel)"
       }
     },
     "pronunciationStyle": {
@@ -563,7 +567,20 @@ window.LANG_VI = {
       },
       "gap": {
         "label": "Khoảng cách với bản gốc",
-        "desc": "Khoảng cách giữa lời bài hát gốc và phiên âm"
+        "desc": "Khoảng cách giữa lời gốc và phiên âm"
+      },
+      "letterSpacing": {
+        "label": "Giãn cách chữ",
+        "desc": "Khoảng cách giữa các chữ trong phiên âm (pixel)"
+      },
+      "hyphenReplace": {
+        "label": "Xử lý dấu gạch ngang",
+        "desc": "Thay thế dấu gạch ngang (-) trong phiên âm bằng ký tự khác",
+        "options": {
+          "keep": "Giữ nguyên",
+          "space": "Thay bằng khoảng trắng",
+          "remove": "Xóa"
+        }
       }
     },
     "translationStyle": {
@@ -586,6 +603,10 @@ window.LANG_VI = {
       "gap": {
         "label": "Khoảng cách với phát âm",
         "desc": "Khoảng cách giữa phiên âm và bản dịch (pixel)"
+      },
+      "letterSpacing": {
+        "label": "Giãn cách chữ",
+        "desc": "Khoảng cách giữa các chữ trong bản dịch (pixel)"
       }
     },
     "textShadow": {
@@ -984,5 +1005,42 @@ window.LANG_VI = {
     "karaoke": "Karaoke",
     "synced": "Đồng bộ",
     "unsynced": "Thông thường"
-  }
+  },
+  "communityVideo": {
+    "title": "Video đề xuất từ cộng đồng",
+    "loading": "Đang tải video...",
+    "loadError": "Không thể tải video",
+    "noVideos": "Chưa có video cộng đồng",
+    "autoDetected": "Tự động",
+    "startTime": "Bắt đầu",
+    "submittedBy": "Bởi",
+    "addVideo": "Thêm video",
+    "addVideoNoEmoji": "Thêm video",
+    "youtubeUrl": "URL YouTube",
+    "startTimeSeconds": "Thời gian bắt đầu (giây)",
+    "submit": "Gửi",
+    "submitting": "Đang gửi...",
+    "submitted": "Gửi video thành công!",
+    "updated": "Cập nhật video thành công!",
+    "submitError": "Gửi video thất bại",
+    "invalidUrl": "URL YouTube không hợp lệ",
+    "videoNotFound": "Không tìm thấy video YouTube",
+    "videoPrivate": "Video đã bị ẩn hoặc xóa",
+    "validationError": "Không thể xác minh video. Vui lòng thử lại",
+    "selectVideo": "Chọn video",
+    "preview": "Xem trước",
+    "apply": "Áp dụng",
+    "applyShort": "Áp dụng",
+    "applied": "Đã áp dụng video",
+    "videoTitle": "Tiêu đề video",
+    "loadingTitle": "Đang tải tiêu đề...",
+    "startTimeLabel": "Thời gian bắt đầu lời đầu tiên (giây)",
+    "startTimeHint": "Nhập thời gian lời đầu tiên bắt đầu trong video YouTube",
+    "delete": "Xóa",
+    "deleteConfirm": "Bạn có chắc chắn muốn xóa video này không?",
+    "deleted": "Video đã được xóa",
+    "deleteError": "Không thể xóa video"
+  },
+  "close": "Đóng",
+  "cancel": "Hủy"
 };

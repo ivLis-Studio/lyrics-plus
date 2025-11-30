@@ -542,6 +542,10 @@ window.LANG_JA = {
       "opacity": {
         "label": "不透明度",
         "desc": "原文歌詞の不透明度 (0-100%)"
+      },
+      "letterSpacing": {
+        "label": "文字間隔",
+        "desc": "原文歌詞の文字間隔（ピクセル）"
       }
     },
     "pronunciationStyle": {
@@ -564,6 +568,19 @@ window.LANG_JA = {
       "gap": {
         "label": "原文との間隔",
         "desc": "原文歌詞とローマ字化の間隔"
+      },
+      "letterSpacing": {
+        "label": "文字間隔",
+        "desc": "ローマ字化の文字間隔（ピクセル）"
+      },
+      "hyphenReplace": {
+        "label": "ハイフン処理",
+        "desc": "発音のハイフン(-)を別の文字に置き換え",
+        "options": {
+          "keep": "維持",
+          "space": "スペースに置換",
+          "remove": "削除"
+        }
       }
     },
     "translationStyle": {
@@ -586,6 +603,10 @@ window.LANG_JA = {
       "gap": {
         "label": "発音との間隔",
         "desc": "ローマ字化と翻訳の間隔（ピクセル）"
+      },
+      "letterSpacing": {
+        "label": "文字間隔",
+        "desc": "翻訳歌詞の文字間隔（ピクセル）"
       }
     },
     "textShadow": {
@@ -984,5 +1005,42 @@ window.LANG_JA = {
     "karaoke": "カラオケ",
     "synced": "同期",
     "unsynced": "非同期"
-  }
+  },
+  "communityVideo": {
+    "title": "コミュニティ動画のおすすめ",
+    "loading": "動画を読み込み中...",
+    "loadError": "動画の読み込みに失敗しました",
+    "noVideos": "コミュニティ動画はまだありません",
+    "autoDetected": "自動登録",
+    "startTime": "開始",
+    "submittedBy": "投稿者",
+    "addVideo": "動画を追加",
+    "addVideoNoEmoji": "動画を追加",
+    "youtubeUrl": "YouTube URL",
+    "startTimeSeconds": "開始時間（秒）",
+    "submit": "送信",
+    "submitting": "送信中...",
+    "submitted": "動画が正常に送信されました！",
+    "updated": "動画が正常に更新されました！",
+    "submitError": "動画の送信に失敗しました",
+    "invalidUrl": "無効なYouTube URLです",
+    "videoNotFound": "YouTube動画が見つかりません",
+    "videoPrivate": "動画は非公開または削除されています",
+    "validationError": "動画を確認できませんでした。もう一度お試しください",
+    "selectVideo": "動画を選択",
+    "preview": "プレビュー",
+    "apply": "適用",
+    "applyShort": "適用",
+    "applied": "動画が適用されました",
+    "videoTitle": "動画タイトル",
+    "loadingTitle": "タイトルを取得中...",
+    "startTimeLabel": "最初の歌詞開始時間（秒）",
+    "startTimeHint": "YouTube動画で最初の歌詞が始まる時間を入力してください",
+    "delete": "削除",
+    "deleteConfirm": "この動画を削除してもよろしいですか？",
+    "deleted": "動画が削除されました",
+    "deleteError": "動画の削除に失敗しました"
+  },
+  "close": "閉じる",
+  "cancel": "キャンセル"
 };

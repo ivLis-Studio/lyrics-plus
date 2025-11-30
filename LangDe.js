@@ -542,6 +542,10 @@ window.LANG_DE = {
       "opacity": {
         "label": "Transparenz",
         "desc": "Transparenz des Originaltextes (0-100%)"
+      },
+      "letterSpacing": {
+        "label": "Buchstabenabstand",
+        "desc": "Abstand zwischen den Buchstaben im Originaltext (Pixel)"
       }
     },
     "pronunciationStyle": {
@@ -563,7 +567,20 @@ window.LANG_DE = {
       },
       "gap": {
         "label": "Abstand zum Original",
-        "desc": "Abstand zwischen Originaltext und Aussprache"
+        "desc": "Abstand zwischen Originaltext und Romanisierung"
+      },
+      "letterSpacing": {
+        "label": "Buchstabenabstand",
+        "desc": "Abstand zwischen den Buchstaben in der Aussprache (Pixel)"
+      },
+      "hyphenReplace": {
+        "label": "Bindestrich-Behandlung",
+        "desc": "Bindestrich (-) in der Aussprache durch anderes Zeichen ersetzen",
+        "options": {
+          "keep": "Beibehalten",
+          "space": "Durch Leerzeichen ersetzen",
+          "remove": "Entfernen"
+        }
       }
     },
     "translationStyle": {
@@ -586,6 +603,10 @@ window.LANG_DE = {
       "gap": {
         "label": "Abstand zur Aussprache",
         "desc": "Abstand zwischen Aussprache und Übersetzung (Pixel)"
+      },
+      "letterSpacing": {
+        "label": "Buchstabenabstand",
+        "desc": "Abstand zwischen den Buchstaben in der Übersetzung (Pixel)"
       }
     },
     "textShadow": {
@@ -984,5 +1005,42 @@ window.LANG_DE = {
     "karaoke": "Karaoke",
     "synced": "Synchronisiert",
     "unsynced": "Normal"
-  }
+  },
+  "communityVideo": {
+    "title": "Community-Videoempfehlungen",
+    "loading": "Videos werden geladen...",
+    "loadError": "Videos konnten nicht geladen werden",
+    "noVideos": "Noch keine Community-Videos",
+    "autoDetected": "Auto",
+    "startTime": "Start",
+    "submittedBy": "Von",
+    "addVideo": "Video hinzufügen",
+    "addVideoNoEmoji": "Video hinzufügen",
+    "youtubeUrl": "YouTube-URL",
+    "startTimeSeconds": "Startzeit (Sekunden)",
+    "submit": "Absenden",
+    "submitting": "Wird gesendet...",
+    "submitted": "Video erfolgreich eingereicht!",
+    "updated": "Video erfolgreich aktualisiert!",
+    "submitError": "Video konnte nicht eingereicht werden",
+    "invalidUrl": "Ungültige YouTube-URL",
+    "videoNotFound": "YouTube-Video nicht gefunden",
+    "videoPrivate": "Video ist privat oder gelöscht",
+    "validationError": "Video konnte nicht überprüft werden. Bitte erneut versuchen",
+    "selectVideo": "Video auswählen",
+    "preview": "Vorschau",
+    "apply": "Anwenden",
+    "applyShort": "Anwenden",
+    "applied": "Video angewendet",
+    "videoTitle": "Videotitel",
+    "loadingTitle": "Titel wird geladen...",
+    "startTimeLabel": "Startzeit des ersten Textes (Sekunden)",
+    "startTimeHint": "Geben Sie die Zeit ein, zu der der erste Text im YouTube-Video beginnt",
+    "delete": "Löschen",
+    "deleteConfirm": "Möchten Sie dieses Video wirklich löschen?",
+    "deleted": "Video erfolgreich gelöscht",
+    "deleteError": "Video konnte nicht gelöscht werden"
+  },
+  "close": "Schließen",
+  "cancel": "Abbrechen"
 };

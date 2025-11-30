@@ -542,6 +542,10 @@ window.LANG_HI = {
       "opacity": {
         "label": "अपारदर्शिता",
         "desc": "मूल लिरिक्स की अपारदर्शिता (0-100%)"
+      },
+      "letterSpacing": {
+        "label": "अक्षर अंतराल",
+        "desc": "मूल पाठ में अक्षरों के बीच का अंतर (पिक्सेल)"
       }
     },
     "pronunciationStyle": {
@@ -564,6 +568,19 @@ window.LANG_HI = {
       "gap": {
         "label": "मूल पाठ से अंतराल",
         "desc": "मूल पाठ और उच्चारण के बीच का मार्जिन"
+      },
+      "letterSpacing": {
+        "label": "अक्षर अंतराल",
+        "desc": "उच्चारण में अक्षरों के बीच का अंतर (पिक्सेल)"
+      },
+      "hyphenReplace": {
+        "label": "हाइफ़न प्रबंधन",
+        "desc": "उच्चारण में हाइफ़न (-) को अन्य वर्ण से बदलें",
+        "options": {
+          "keep": "रखें",
+          "space": "स्पेस से बदलें",
+          "remove": "हटाएं"
+        }
       }
     },
     "translationStyle": {
@@ -586,6 +603,10 @@ window.LANG_HI = {
       "gap": {
         "label": "उच्चारण से अंतराल",
         "desc": "उच्चारण और अनुवाद के बीच का मार्जिन (पिक्सेल)"
+      },
+      "letterSpacing": {
+        "label": "अक्षर अंतराल",
+        "desc": "अनुवाद में अक्षरों के बीच का अंतर (पिक्सेल)"
       }
     },
     "textShadow": {
@@ -984,5 +1005,42 @@ window.LANG_HI = {
     "karaoke": "कराओके",
     "synced": "सिंक",
     "unsynced": "सामान्य"
-  }
+  },
+  "communityVideo": {
+    "title": "समुदाय वीडियो सिफारिशें",
+    "loading": "वीडियो लोड हो रहे हैं...",
+    "loadError": "वीडियो लोड करने में विफल",
+    "noVideos": "अभी तक कोई समुदाय वीडियो नहीं",
+    "autoDetected": "ऑटो",
+    "startTime": "शुरू",
+    "submittedBy": "द्वारा",
+    "addVideo": "वीडियो जोड़ें",
+    "addVideoNoEmoji": "वीडियो जोड़ें",
+    "youtubeUrl": "YouTube URL",
+    "startTimeSeconds": "शुरुआत समय (सेकंड)",
+    "submit": "जमा करें",
+    "submitting": "जमा हो रहा है...",
+    "submitted": "वीडियो सफलतापूर्वक जमा हो गया!",
+    "updated": "वीडियो सफलतापूर्वक अपडेट हो गया!",
+    "submitError": "वीडियो जमा करने में विफल",
+    "invalidUrl": "अमान्य YouTube URL",
+    "videoNotFound": "YouTube वीडियो नहीं मिला",
+    "videoPrivate": "वीडियो निजी है या हटा दिया गया",
+    "validationError": "वीडियो सत्यापित नहीं किया जा सका। पुनः प्रयास करें",
+    "selectVideo": "वीडियो चुनें",
+    "preview": "पूर्वावलोकन",
+    "apply": "लागू करें",
+    "applyShort": "लागू करें",
+    "applied": "वीडियो लागू किया गया",
+    "videoTitle": "वीडियो शीर्षक",
+    "loadingTitle": "शीर्षक लोड हो रहा है...",
+    "startTimeLabel": "पहले गीत का प्रारंभ समय (सेकंड)",
+    "startTimeHint": "YouTube वीडियो में पहला गीत शुरू होने का समय दर्ज करें",
+    "delete": "हटाएं",
+    "deleteConfirm": "क्या आप वाकई इस वीडियो को हटाना चाहते हैं?",
+    "deleted": "वीडियो सफलतापूर्वक हटा दिया गया",
+    "deleteError": "वीडियो हटाने में विफल"
+  },
+  "close": "बंद करें",
+  "cancel": "रद्द करें"
 };

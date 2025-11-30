@@ -542,6 +542,10 @@ window.LANG_KO = {
       "opacity": {
         "label": "투명도",
         "desc": "원문 가사의 불투명도 (0-100%)"
+      },
+      "letterSpacing": {
+        "label": "글자 간격",
+        "desc": "원문 가사의 글자 사이 간격 (픽셀)"
       }
     },
     "pronunciationStyle": {
@@ -564,6 +568,19 @@ window.LANG_KO = {
       "gap": {
         "label": "원문과의 간격",
         "desc": "원문과 발음 표기 사이의 여백"
+      },
+      "letterSpacing": {
+        "label": "글자 간격",
+        "desc": "발음 표기의 글자 사이 간격 (픽셀)"
+      },
+      "hyphenReplace": {
+        "label": "하이픈(-) 처리",
+        "desc": "발음의 하이픈(-)을 어떻게 표시할지 선택합니다 (예: Tah-shee-kah → Tah shee kah 또는 Tahsheekah)",
+        "options": {
+          "keep": "유지 (Tah-shee-kah)",
+          "space": "공백으로 대체 (Tah shee kah)",
+          "remove": "제거 (Tahsheekah)"
+        }
       }
     },
     "translationStyle": {
@@ -586,6 +603,10 @@ window.LANG_KO = {
       "gap": {
         "label": "발음과의 간격",
         "desc": "발음 표기와 번역문 사이의 여백 (픽셀)"
+      },
+      "letterSpacing": {
+        "label": "글자 간격",
+        "desc": "번역 가사의 글자 사이 간격 (픽셀)"
       }
     },
     "textShadow": {
@@ -984,5 +1005,42 @@ window.LANG_KO = {
     "karaoke": "노래방",
     "synced": "동기화",
     "unsynced": "일반가사"
-  }
+  },
+  "communityVideo": {
+    "title": "커뮤니티 영상 추천",
+    "loading": "영상 목록 불러오는 중...",
+    "loadError": "영상 목록을 불러오지 못했습니다",
+    "noVideos": "등록된 커뮤니티 영상이 없습니다",
+    "autoDetected": "자동등록",
+    "startTime": "시작",
+    "submittedBy": "등록자",
+    "addVideo": "영상 추가",
+    "addVideoNoEmoji": "영상 추가",
+    "youtubeUrl": "YouTube URL",
+    "startTimeSeconds": "시작 시간 (초)",
+    "submit": "등록하기",
+    "submitting": "등록 중...",
+    "submitted": "영상이 성공적으로 등록되었습니다!",
+    "updated": "영상 정보가 업데이트되었습니다!",
+    "submitError": "영상 등록에 실패했습니다",
+    "invalidUrl": "올바르지 않은 YouTube URL입니다",
+    "videoNotFound": "존재하지 않는 YouTube 영상입니다",
+    "videoPrivate": "비공개 또는 삭제된 영상입니다",
+    "validationError": "영상을 확인할 수 없습니다. 다시 시도해주세요",
+    "selectVideo": "영상 선택",
+    "preview": "미리보기",
+    "apply": "적용",
+    "applyShort": "적용",
+    "applied": "영상이 적용되었습니다",
+    "videoTitle": "영상 제목",
+    "loadingTitle": "제목 가져오는 중...",
+    "startTimeLabel": "첨 가사 시작 시간 (초)",
+    "startTimeHint": "YouTube 영상에서 첫 번째 가사가 시작되는 시간을 입력하세요",
+    "delete": "삭제",
+    "deleteConfirm": "이 영상을 삭제하시겠습니까?",
+    "deleted": "영상이 삭제되었습니다",
+    "deleteError": "영상 삭제에 실패했습니다"
+  },
+  "close": "닫기",
+  "cancel": "취소"
 };

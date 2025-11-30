@@ -1737,6 +1737,130 @@ const SyncAdjustButton = react.memo(
   }
 );
 
+// Community Video Selector를 document.body에 직접 렌더링
+function openCommunityVideoSelector(trackUri, currentVideoId, onVideoSelect) {
+  // 이미 열려있으면 무시
+  if (document.getElementById("lyrics-plus-community-video-overlay")) {
+    return;
+  }
+
+  const overlay = document.createElement("div");
+  overlay.id = "lyrics-plus-community-video-overlay";
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  `;
+
+  const modalContainer = document.createElement("div");
+  modalContainer.style.cssText = `
+    background: rgba(24, 24, 24, 0.95);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border-radius: 16px;
+    max-width: 90vw;
+    max-height: 70vh;
+    width: 560px;
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+  `;
+
+  const closeModal = () => {
+    if (overlay.parentNode) {
+      document.body.removeChild(overlay);
+    }
+    document.removeEventListener("keydown", handleEscape);
+  };
+
+  // Close on outside click
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      closeModal();
+    }
+  });
+
+  // Close on escape key
+  const handleEscape = (e) => {
+    if (e.key === "Escape") {
+      closeModal();
+    }
+  };
+  document.addEventListener("keydown", handleEscape);
+
+  overlay.appendChild(modalContainer);
+  document.body.appendChild(overlay);
+
+  // Render React component
+  const dom = window.Spicetify?.ReactDOM ?? window.ReactDOM ?? null;
+  if (!dom?.render) {
+    return;
+  }
+
+  const selectorComponent = react.createElement(CommunityVideoSelector, {
+    trackUri: trackUri,
+    currentVideoId: currentVideoId,
+    onVideoSelect: (newVideoInfo) => {
+      if (onVideoSelect) {
+        onVideoSelect(newVideoInfo);
+      }
+      closeModal();
+    },
+    onClose: closeModal
+  });
+
+  dom.render(selectorComponent, modalContainer);
+}
+
+// Community Video Selector Button
+const CommunityVideoButton = react.memo(({ trackUri, videoInfo, onVideoSelect }) => {
+  // 비디오 배경이 비활성화되어 있으면 버튼 숨김
+  if (!CONFIG.visual["video-background"]) {
+    return null;
+  }
+
+  const handleClick = () => {
+    openCommunityVideoSelector(
+      trackUri,
+      videoInfo?.youtubeVideoId,
+      onVideoSelect
+    );
+  };
+
+  return react.createElement(
+    Spicetify.ReactComponent.TooltipWrapper,
+    { label: I18n.t("communityVideo.selectVideo") },
+    react.createElement(
+      "button",
+      { 
+        className: "lyrics-config-button", 
+        onClick: handleClick
+      },
+      react.createElement(
+        "svg",
+        { width: 16, height: 16, viewBox: "0 0 16 16", fill: "currentColor" },
+        react.createElement("path", {
+          d: "M2 3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2zm0-1h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"
+        }),
+        react.createElement("path", {
+          d: "M6 5.5a.5.5 0 0 1 .79-.407l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5z"
+        })
+      )
+    )
+  );
+});
+
 const SettingsMenu = react.memo(() => {
   const openSettings = () => {
     openConfig();

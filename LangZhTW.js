@@ -542,6 +542,10 @@ window.LANG_ZH_TW = {
       "opacity": {
         "label": "不透明度",
         "desc": "原文歌詞的不透明度 (0-100%)"
+      },
+      "letterSpacing": {
+        "label": "字元間距",
+        "desc": "原文歌詞的字元間距（像素）"
       }
     },
     "pronunciationStyle": {
@@ -563,7 +567,20 @@ window.LANG_ZH_TW = {
       },
       "gap": {
         "label": "與原文的間距",
-        "desc": "原文歌詞與羅馬化之間的間距"
+        "desc": "原文歌詞與羅馬化的間距"
+      },
+      "letterSpacing": {
+        "label": "字元間距",
+        "desc": "羅馬化的字元間距（像素）"
+      },
+      "hyphenReplace": {
+        "label": "連字符處理",
+        "desc": "將發音中的連字符(-)替換為其他字符",
+        "options": {
+          "keep": "保持",
+          "space": "替換為空格",
+          "remove": "刪除"
+        }
       }
     },
     "translationStyle": {
@@ -585,7 +602,11 @@ window.LANG_ZH_TW = {
       },
       "gap": {
         "label": "與發音的間距",
-        "desc": "羅馬化與翻譯之間的間距（像素）"
+        "desc": "羅馬化與翻譯的間距（像素）"
+      },
+      "letterSpacing": {
+        "label": "字元間距",
+        "desc": "翻譯歌詞的字元間距（像素）"
       }
     },
     "textShadow": {
@@ -984,5 +1005,42 @@ window.LANG_ZH_TW = {
     "karaoke": "卡拉OK",
     "synced": "同步",
     "unsynced": "非同步"
-  }
+  },
+  "communityVideo": {
+    "title": "社群影片推薦",
+    "loading": "載入影片中...",
+    "loadError": "載入影片失敗",
+    "noVideos": "尚無社群影片",
+    "autoDetected": "自動",
+    "startTime": "開始",
+    "submittedBy": "提交者",
+    "addVideo": "新增影片",
+    "addVideoNoEmoji": "新增影片",
+    "youtubeUrl": "YouTube 連結",
+    "startTimeSeconds": "開始時間（秒）",
+    "submit": "提交",
+    "submitting": "提交中...",
+    "submitted": "影片提交成功！",
+    "updated": "影片更新成功！",
+    "submitError": "影片提交失敗",
+    "invalidUrl": "無效的 YouTube 連結",
+    "videoNotFound": "YouTube 影片不存在",
+    "videoPrivate": "影片為私人或已刪除",
+    "validationError": "無法驗證影片，請重試",
+    "selectVideo": "選擇影片",
+    "preview": "預覽",
+    "apply": "套用",
+    "applyShort": "套用",
+    "applied": "影片已套用",
+    "videoTitle": "影片標題",
+    "loadingTitle": "正在取得標題...",
+    "startTimeLabel": "首句歌詞開始時間（秒）",
+    "startTimeHint": "請輸入 YouTube 影片中第一句歌詞開始的時間",
+    "delete": "刪除",
+    "deleteConfirm": "確定要刪除這個影片嗎？",
+    "deleted": "影片已刪除",
+    "deleteError": "刪除影片失敗"
+  },
+  "close": "關閉",
+  "cancel": "取消"
 };
