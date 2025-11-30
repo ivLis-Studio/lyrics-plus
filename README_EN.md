@@ -15,7 +15,7 @@ A lyrics extension for Spicetify. Supports pronunciation display and translation
 
 For bug reports and feature suggestions, please contact us via GitHub Issues or [Discord](https://discord.gg/2fu36fUzdE).
 
-![preview](https://github.com/user-attachments/assets/0596a769-76aa-49c5-970c-85897fe8d260)
+![preview](https://github.com/user-attachments/assets/c8643d11-44aa-49e2-ab59-b056884e798a)
 
 ---
 
@@ -150,4 +150,5 @@ If you experience issues with settings or lyrics display:
 If you'd like to support development, please buy me a coffee.
 
 <a href="https://www.buymeacoffee.com/ivlis" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 
