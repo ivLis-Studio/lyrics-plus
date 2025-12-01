@@ -52,6 +52,10 @@ function getRequestKey(trackId, wantSmartPhonetic, lang) {
 }
 
 class Translator {
+  // 메타데이터 번역 캐시 (메모리)
+  static _metadataCache = new Map();
+  static _metadataInflightRequests = new Map();
+
   // 특정 trackId에 대한 진행 중인 요청 정리 (곡 변경 시 호출)
   static clearInflightRequests(trackId) {
     if (!trackId) return;
@@ -75,6 +79,113 @@ class Translator {
   static clearAllInflightRequests() {
     _inflightRequests.clear();
     _pendingRetries.clear();
+  }
+
+  /**
+   * 메타데이터 번역 (제목/아티스트)
+   * @param {Object} options - 옵션
+   * @param {string} options.trackId - Spotify Track ID
+   * @param {string} options.title - 노래 제목
+   * @param {string} options.artist - 아티스트 이름
+   * @param {boolean} options.ignoreCache - 캐시 무시 여부
+   * @returns {Promise<Object>} - 번역 결과
+   */
+  static async translateMetadata({ trackId, title, artist, ignoreCache = false }) {
+    if (!title || !artist) {
+      return null;
+    }
+
+    // trackId가 없으면 현재 재생 중인 곡에서 가져옴
+    let finalTrackId = trackId;
+    if (!finalTrackId) {
+      finalTrackId = Spicetify.Player.data?.item?.uri?.split(':')[2];
+    }
+    if (!finalTrackId) {
+      return null;
+    }
+
+    // API 키 확인
+    const apiKey = StorageManager.getItem("lyrics-plus:visual:gemini-api-key");
+    if (!apiKey || apiKey.trim() === "") {
+      return null;
+    }
+
+    // 사용자 언어
+    const userLang = I18n.getCurrentLanguage();
+    const cacheKey = `${finalTrackId}:${userLang}`;
+
+    // 메모리 캐시 확인
+    if (!ignoreCache && this._metadataCache.has(cacheKey)) {
+      return this._metadataCache.get(cacheKey);
+    }
+
+    // 중복 요청 방지
+    if (this._metadataInflightRequests.has(cacheKey)) {
+      return this._metadataInflightRequests.get(cacheKey);
+    }
+
+    const requestPromise = (async () => {
+      try {
+        const response = await fetch("https://lyrics.api.ivl.is/lyrics/translate/metadata", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            trackId: finalTrackId,
+            title,
+            artist,
+            lang: userLang,
+            apiKey,
+            ignore_cache: ignoreCache,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.error) {
+          throw new Error(data.message || "Translation failed");
+        }
+
+        if (data.success && data.data) {
+          // 메모리 캐시에 저장
+          this._metadataCache.set(cacheKey, data.data);
+          return data.data;
+        }
+
+        return null;
+      } catch (error) {
+        console.warn(`[Translator] Metadata translation failed:`, error.message);
+        return null;
+      } finally {
+        this._metadataInflightRequests.delete(cacheKey);
+      }
+    })();
+
+    this._metadataInflightRequests.set(cacheKey, requestPromise);
+    return requestPromise;
+  }
+
+  /**
+   * 메타데이터 캐시에서 가져오기 (동기)
+   */
+  static getMetadataFromCache(trackId) {
+    const userLang = I18n.getCurrentLanguage();
+    const cacheKey = `${trackId}:${userLang}`;
+    return this._metadataCache.get(cacheKey) || null;
+  }
+
+  /**
+   * 메타데이터 캐시 클리어
+   */
+  static clearMetadataCache() {
+    this._metadataCache.clear();
+    this._metadataInflightRequests.clear();
   }
 
   constructor(lang, isUsingNetease = false) {

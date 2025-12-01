@@ -100,6 +100,36 @@
 
 /* Add a way to exit fullscreen (ESC hint or button could be added later) */
 
+/* Translated Metadata Styles */
+.lyrics-fullscreen-title-container,
+.lyrics-fullscreen-artist-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.lyrics-fullscreen-title-translated {
+    font-weight: 500;
+    color: var(--spice-text);
+    opacity: 0.75;
+    line-height: 1.2;
+}
+
+.lyrics-fullscreen-title-romanized {
+    font-weight: 400;
+    color: var(--spice-subtext);
+    opacity: 0.6;
+    font-style: italic;
+    line-height: 1.2;
+}
+
+.lyrics-fullscreen-artist-translated {
+    font-weight: 400;
+    color: var(--spice-subtext);
+    opacity: 0.7;
+    line-height: 1.2;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1200px) {
     .lyrics-fullscreen-title {

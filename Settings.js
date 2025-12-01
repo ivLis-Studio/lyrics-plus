@@ -4207,6 +4207,29 @@ const ConfigModal = () => {
               when: () => CONFIG.visual["fullscreen-two-column"] !== false,
             },
             {
+              desc: I18n.t("settingsAdvanced.fullscreenMode.translateMetadata.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.translateMetadata.info"),
+              key: "translate-metadata",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["translate-metadata"] ?? false,
+              when: () => CONFIG.visual["fullscreen-two-column"] !== false && CONFIG.visual["fullscreen-show-info"] !== false,
+            },
+            {
+              desc: I18n.t("settingsAdvanced.fullscreenMode.translateMetadataMode.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.translateMetadataMode.info"),
+              key: "translate-metadata-mode",
+              type: ConfigSelection,
+              options: {
+                "translated": I18n.t("settingsAdvanced.fullscreenMode.translateMetadataMode.options.translated"),
+                "romanized": I18n.t("settingsAdvanced.fullscreenMode.translateMetadataMode.options.romanized"),
+                "original-translated": I18n.t("settingsAdvanced.fullscreenMode.translateMetadataMode.options.originalTranslated"),
+                "original-romanized": I18n.t("settingsAdvanced.fullscreenMode.translateMetadataMode.options.originalRomanized"),
+                "all": I18n.t("settingsAdvanced.fullscreenMode.translateMetadataMode.options.all")
+              },
+              defaultValue: CONFIG.visual["translate-metadata-mode"] || "translated",
+              when: () => CONFIG.visual["fullscreen-two-column"] !== false && CONFIG.visual["fullscreen-show-info"] !== false && CONFIG.visual["translate-metadata"] === true,
+            },
+            {
               desc: I18n.t("settingsAdvanced.fullscreenMode.centerWhenNoLyrics.desc"),
               info: I18n.t("settingsAdvanced.fullscreenMode.centerWhenNoLyrics.info"),
               key: "fullscreen-center-when-no-lyrics",

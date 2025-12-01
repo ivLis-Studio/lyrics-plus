@@ -765,6 +765,21 @@ window.LANG_KO = {
         "desc": "트랙 정보 표시",
         "info": "전체화면에서 곡 제목과 아티스트를 표시합니다"
       },
+      "translateMetadata": {
+        "desc": "제목/아티스트 번역",
+        "info": "외국어 곡 제목과 아티스트 이름을 번역하여 표시합니다 (Gemini API 키 필요)"
+      },
+      "translateMetadataMode": {
+        "desc": "번역 표시 방식",
+        "info": "제목과 아티스트를 어떻게 표시할지 선택합니다",
+        "options": {
+          "translated": "번역만",
+          "romanized": "발음만",
+          "originalTranslated": "원어 + 번역",
+          "originalRomanized": "원어 + 발음",
+          "all": "모두 표시"
+        }
+      },
       "centerWhenNoLyrics": {
         "desc": "가사 없을 때 앨범 중앙 배치",
         "info": "가사가 없거나 로딩 중일 때 앨범 아트를 화면 중앙에 배치합니다"

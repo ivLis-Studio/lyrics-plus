@@ -1205,6 +1205,13 @@ const CONFIG = {
     "fullscreen-key":
       StorageManager.getItem("lyrics-plus:visual:fullscreen-key") || "f12",
     "synced-compact": StorageManager.get("lyrics-plus:visual:synced-compact"),
+    // 메타데이터 번역 (제목/아티스트)
+    "translate-metadata": StorageManager.get(
+      "lyrics-plus:visual:translate-metadata",
+      false
+    ),
+    "translate-metadata-mode":
+      StorageManager.getItem("lyrics-plus:visual:translate-metadata-mode") || "translated",
     // Fullscreen settings
     "fullscreen-two-column": StorageManager.get(
       "lyrics-plus:visual:fullscreen-two-column",
@@ -2029,6 +2036,8 @@ class LyricsContainer extends react.Component {
       isTranslationLoading: false,
       currentLyricIndex: 0,
       videoInfo: null,
+      // 메타데이터 번역
+      translatedMetadata: null,
     };
     this.currentTrackUri = "";
     this.nextTrackUri = "";
@@ -2055,6 +2064,40 @@ class LyricsContainer extends react.Component {
 
     // Bind regenerate translation method
     this.regenerateTranslation = this.regenerateTranslation.bind(this);
+  }
+
+  /**
+   * 메타데이터 번역 요청 (제목/아티스트)
+   * @param {string} uri - 트랙 URI
+   * @param {string} title - 원본 제목
+   * @param {string} artist - 원본 아티스트
+   */
+  async fetchMetadataTranslation(uri, title, artist) {
+    // 메타데이터 번역 설정이 꺼져 있으면 스킵
+    if (!CONFIG.visual["translate-metadata"]) {
+      return;
+    }
+
+    const trackId = uri?.split(':')[2];
+    if (!trackId || !title || !artist) {
+      return;
+    }
+
+    try {
+      const result = await Translator.translateMetadata({
+        trackId,
+        title,
+        artist,
+        ignoreCache: false,
+      });
+
+      // 현재 트랙이 여전히 같은지 확인
+      if (this.currentTrackUri === uri && result) {
+        this.setState({ translatedMetadata: result });
+      }
+    } catch (error) {
+      console.warn('[Lyrics Plus] Metadata translation failed:', error);
+    }
   }
 
   /**
@@ -2493,7 +2536,10 @@ class LyricsContainer extends react.Component {
       }
 
       // keep artist/title for prompts
-      this.setState({ artist: info.artist, title: info.title, coverUrl: info.image });
+      this.setState({ artist: info.artist, title: info.title, coverUrl: info.image, translatedMetadata: null });
+
+      // 메타데이터 번역 요청 (백그라운드에서 비동기로)
+      this.fetchMetadataTranslation(info.uri, info.title, info.artist);
 
       let isCached = this.lyricsSaved(info.uri);
 
@@ -4483,7 +4529,8 @@ class LyricsContainer extends react.Component {
         artist: this.state.artist,
         isFullscreen: this.state.isFullscreen,
         currentLyricIndex: this.state.currentLyricIndex || 0,
-        totalLyrics: Array.isArray(this.state.currentLyrics) ? this.state.currentLyrics.length : 0
+        totalLyrics: Array.isArray(this.state.currentLyrics) ? this.state.currentLyrics.length : 0,
+        translatedMetadata: this.state.translatedMetadata
       }),
       // Tab bar for mode switching
       topBarContent,

@@ -765,6 +765,21 @@ window.LANG_EN = {
         "desc": "Show Track Info",
         "info": "Display song title and artist in fullscreen"
       },
+      "translateMetadata": {
+        "desc": "Translate Title/Artist",
+        "info": "Translate foreign song titles and artist names (requires Gemini API key)"
+      },
+      "translateMetadataMode": {
+        "desc": "Display Mode",
+        "info": "Choose how to display the title and artist",
+        "options": {
+          "translated": "Translation Only",
+          "romanized": "Romanization Only",
+          "originalTranslated": "Original + Translation",
+          "originalRomanized": "Original + Romanization",
+          "all": "Show All"
+        }
+      },
       "centerWhenNoLyrics": {
         "desc": "Center Album When No Lyrics",
         "info": "Center album art when lyrics are unavailable or loading"
