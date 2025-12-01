@@ -1718,6 +1718,7 @@ const Prefetcher = {
    */
   async _prefetchTranslations(trackInfo, lyrics) {
     const uri = trackInfo.uri;
+    const trackId = uri?.split(':')[2];  // spotify:track:XXXX -> XXXX
     const cacheKeyBase = `prefetch:translation:${uri}`;
 
     // 이미 캐시에 있으면 스킵
@@ -1819,6 +1820,7 @@ const Prefetcher = {
         if (needPhonetic) {
           try {
             const phoneticResponse = await Translator.callGemini({
+              trackId,
               artist: trackInfo.artist,
               title: trackInfo.title,
               text,
@@ -1843,6 +1845,7 @@ const Prefetcher = {
         if (needTranslation) {
           try {
             const translationResponse = await Translator.callGemini({
+              trackId,
               artist: trackInfo.artist,
               title: trackInfo.title,
               text,
@@ -1914,7 +1917,7 @@ const Prefetcher = {
         console.log(`[Prefetcher] Fetching video info for trackId: ${trackId}`);
         
         const userHash = Utils.getUserHash();
-        const response = await fetch(`https://api.ivl.is/lyrics_youtube/?trackId=${trackId}&userHash=${userHash}`);
+        const response = await fetch(`https://lyrics.api.ivl.is/lyrics/youtube?trackId=${trackId}&userHash=${userHash}`);
         const data = await response.json();
 
         if (data.success) {
@@ -3794,6 +3797,12 @@ class LyricsContainer extends react.Component {
     }
 
     this.onQueueChange = async ({ data: queue }) => {
+      // 이전 트랙의 진행 중인 번역 요청 정리
+      const previousTrackId = this.currentTrackUri?.split(':')[2];
+      if (previousTrackId) {
+        Translator.clearInflightRequests(previousTrackId);
+      }
+
       this.state.explicitMode = this.state.lockMode;
       this.currentTrackUri = queue.current.uri;
       this.fetchLyrics(queue.current, this.state.explicitMode);

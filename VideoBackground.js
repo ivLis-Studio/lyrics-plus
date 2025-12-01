@@ -102,7 +102,7 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
             // 3. 프리페치된 데이터가 없으면 직접 fetch (커뮤니티 우선)
             try {
                 const userHash = Utils.getUserHash();
-                const res = await fetch(`https://api.ivl.is/lyrics_youtube/?trackId=${trackId}&userId=${userHash}&useCommunity=true`);
+                const res = await fetch(`https://lyrics.api.ivl.is/lyrics/youtube?trackId=${trackId}&userHash=${userHash}&useCommunity=true`);
                 const data = await res.json();
                 
                 if (!isMounted) return;

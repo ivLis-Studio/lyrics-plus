@@ -886,7 +886,7 @@ const Utils = {
   /**
    * Current version of the lyrics-plus app
    */
-  currentVersion: "2.3.0",
+  currentVersion: "2.3.1",
 
   /**
    * Check for updates from remote repository
@@ -1218,7 +1218,7 @@ const Utils = {
     const userHash = this.getUserHash();
 
     try {
-      const response = await fetch(`https://api.ivl.is/lyrics_sync/?trackId=${trackId}&userHash=${userHash}`);
+      const response = await fetch(`https://lyrics.api.ivl.is/lyrics/sync?trackId=${trackId}&userHash=${userHash}`);
       const data = await response.json();
       
       if (data.success && data.data) {
@@ -1241,7 +1241,7 @@ const Utils = {
     const userHash = this.getUserHash();
 
     try {
-      const response = await fetch('https://api.ivl.is/lyrics_sync/', {
+      const response = await fetch('https://lyrics.api.ivl.is/lyrics/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1273,7 +1273,7 @@ const Utils = {
     const userHash = this.getUserHash();
 
     try {
-      const response = await fetch('https://api.ivl.is/lyrics_sync/feedback.php', {
+      const response = await fetch('https://lyrics.api.ivl.is/lyrics/sync/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1310,7 +1310,7 @@ const Utils = {
 
     try {
       const response = await fetch(
-        `https://api.ivl.is/lyrics_youtube/community.php?trackId=${trackId}&userId=${userHash}`
+        `https://lyrics.api.ivl.is/lyrics/youtube/community?trackId=${trackId}&userId=${userHash}`
       );
       const data = await response.json();
       
@@ -1337,10 +1337,11 @@ const Utils = {
                      'Anonymous';
 
     try {
-      const response = await fetch('https://api.ivl.is/lyrics_youtube/community.php?action=submit', {
+      const response = await fetch('https://lyrics.api.ivl.is/lyrics/youtube/community', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          action: 'submit',
           trackId,
           videoId,
           videoTitle,
@@ -1369,10 +1370,11 @@ const Utils = {
     const userHash = this.getUserHash();
 
     try {
-      const response = await fetch('https://api.ivl.is/lyrics_youtube/community.php?action=vote', {
+      const response = await fetch('https://lyrics.api.ivl.is/lyrics/youtube/community', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          action: 'vote',
           videoEntryId,
           voterId: userHash,
           voteType // 1=like, -1=dislike, 0=remove
@@ -1398,9 +1400,8 @@ const Utils = {
     const userHash = this.getUserHash();
 
     try {
-      // DELETE 메서드 대신 POST 사용 (CORS 문제 방지)
       const response = await fetch(
-        `https://api.ivl.is/lyrics_youtube/community.php`,
+        `https://lyrics.api.ivl.is/lyrics/youtube/community`,
         {
           method: 'POST',
           headers: {

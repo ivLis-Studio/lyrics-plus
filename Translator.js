@@ -42,7 +42,41 @@ function handleAPIError(status, errorData) {
   return errorConfig || `${I18n.t("translator.requestFailed")} (${status})`;
 }
 
+// 전역 요청 상태 관리 (중복 요청 방지)
+const _inflightRequests = new Map();
+const _pendingRetries = new Map();
+
+// 진행 중인 요청 키 생성
+function getRequestKey(trackId, wantSmartPhonetic, lang) {
+  return `${trackId}:${wantSmartPhonetic ? 'phonetic' : 'translation'}:${lang}`;
+}
+
 class Translator {
+  // 특정 trackId에 대한 진행 중인 요청 정리 (곡 변경 시 호출)
+  static clearInflightRequests(trackId) {
+    if (!trackId) return;
+    
+    // _inflightRequests에서 해당 trackId로 시작하는 키 제거
+    for (const key of _inflightRequests.keys()) {
+      if (key.startsWith(`${trackId}:`)) {
+        _inflightRequests.delete(key);
+      }
+    }
+    
+    // _pendingRetries에서도 제거
+    for (const key of _pendingRetries.keys()) {
+      if (key.startsWith(`${trackId}:`)) {
+        _pendingRetries.delete(key);
+      }
+    }
+  }
+
+  // 모든 진행 중인 요청 정리
+  static clearAllInflightRequests() {
+    _inflightRequests.clear();
+    _pendingRetries.clear();
+  }
+
   constructor(lang, isUsingNetease = false) {
     this.finished = {
       ja: false,
@@ -87,6 +121,7 @@ class Translator {
   }
 
   static async callGemini({
+    trackId,
     artist,
     title,
     text,
@@ -106,111 +141,214 @@ class Translator {
       );
     }
 
-    const endpoints = [
-      "https://api.ivl.is/lyrics_tran/",
-      "https://api.ivl.is/lyrics_tran/index.php",
-    ];
+    // trackId가 전달되지 않으면 현재 재생 중인 곡에서 가져옴
+    let finalTrackId = trackId;
+    if (!finalTrackId) {
+      finalTrackId = Spicetify.Player.data?.item?.uri?.split(':')[2];
+    }
+    if (!finalTrackId) {
+      throw new Error("No track ID available");
+    }
 
     // 사용자의 현재 언어 가져오기
     const userLang = I18n.getCurrentLanguage();
-    const userHash = Utils.getUserHash();
+    
+    // 중복 요청 방지: 동일한 trackId + type + lang 조합에 대한 요청이 진행 중이면 해당 Promise 반환
+    const requestKey = getRequestKey(finalTrackId, wantSmartPhonetic, userLang);
+    
+    // ignoreCache가 아닌 경우에만 중복 요청 체크
+    if (!ignoreCache && _inflightRequests.has(requestKey)) {
+      console.log(`[Translator] Deduplicating request for: ${requestKey}`);
+      return _inflightRequests.get(requestKey);
+    }
 
-    const body = {
-      artist,
-      title,
-      text,
-      wantSmartPhonetic,
-      provider,
-      apiKey,
-      ignore_cache: ignoreCache,
-      lang: userLang,
-      userHash,
-    };
+    // 실제 API 호출을 수행하는 함수
+    const executeRequest = async () => {
+      const endpoints = [
+        "https://lyrics.api.ivl.is/lyrics/translate",
+      ];
 
-    const tryFetch = async (url) => {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 800000);
+      const userHash = Utils.getUserHash();
+
+      const body = {
+        trackId: finalTrackId,
+        artist,
+        title,
+        text,
+        wantSmartPhonetic,
+        provider,
+        apiKey,
+        ignore_cache: ignoreCache,
+        lang: userLang,
+        userHash,
+      };
+
+      const tryFetch = async (url) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 800000);
+
+        try {
+          const res = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify(body),
+            signal: controller.signal,
+            mode: "cors",
+          });
+
+          clearTimeout(timeoutId);
+          return res;
+        } catch (error) {
+          clearTimeout(timeoutId);
+          throw error;
+        }
+      };
 
       try {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(body),
-          signal: controller.signal,
-          mode: "cors",
-        });
+        let res;
+        let lastError;
 
-        clearTimeout(timeoutId);
-        return res;
-      } catch (error) {
-        clearTimeout(timeoutId);
-        throw error;
-      }
-    };
-
-    try {
-      let res;
-      let lastError;
-
-      for (const url of endpoints) {
-        try {
-          res = await tryFetch(url);
-          if (res.ok) {
-            break;
+        for (const url of endpoints) {
+          try {
+            res = await tryFetch(url);
+            if (res.ok) {
+              break;
+            }
+          } catch (error) {
+            lastError = error;
+            continue;
           }
-        } catch (error) {
-          lastError = error;
-          continue;
         }
-      }
 
-      if (!res || !res.ok) {
-        if (res) {
-          const errorData = await res
-            .json()
-            .catch(() => ({ message: "Unknown error" }));
+        if (!res || !res.ok) {
+          if (res) {
+            const errorData = await res
+              .json()
+              .catch(() => ({ message: "Unknown error" }));
 
-          if (errorData.error && errorData.message) {
-            throw new Error(errorData.message);
+            // 진행 중 응답 처리 (202): 재시도 없이 기존 요청 대기
+            if (res.status === 202 && errorData.status === "translation_in_progress") {
+              console.log(`[Translator] Translation in progress for: ${requestKey}, waiting...`);
+              
+              // 이미 재시도 대기 중인 경우 해당 Promise 반환
+              if (_pendingRetries.has(requestKey)) {
+                return _pendingRetries.get(requestKey);
+              }
+              
+              // 일정 시간 후 자동 재시도 (폴링)
+              const retryPromise = new Promise((resolve, reject) => {
+                const retryDelay = Math.min((errorData.retry_after || 5) * 1000, 30000);
+                const maxRetries = 20; // 최대 20회 재시도 (약 100초)
+                let retryCount = 0;
+                
+                const pollStatus = async () => {
+                  retryCount++;
+                  
+                  try {
+                    // 상태 확인 API 호출
+                    const statusUrl = `https://lyrics.api.ivl.is/lyrics/translate?action=status&trackId=${finalTrackId}&lang=${userLang}&isPhonetic=${wantSmartPhonetic}`;
+                    const statusRes = await fetch(statusUrl);
+                    const statusData = await statusRes.json();
+                    
+                    if (statusData.status === "completed") {
+                      // 완료되었으면 다시 요청 (캐시에서 가져옴)
+                      _pendingRetries.delete(requestKey);
+                      const result = await Translator.callGemini({
+                        trackId: finalTrackId,
+                        artist,
+                        title,
+                        text,
+                        wantSmartPhonetic,
+                        provider,
+                        ignoreCache: false,
+                      });
+                      resolve(result);
+                      return;
+                    } else if (statusData.status === "failed" || statusData.status === "not_found") {
+                      _pendingRetries.delete(requestKey);
+                      reject(new Error(statusData.message || "Translation failed"));
+                      return;
+                    }
+                    
+                    // 아직 진행 중이면 계속 대기
+                    if (retryCount < maxRetries) {
+                      setTimeout(pollStatus, retryDelay);
+                    } else {
+                      _pendingRetries.delete(requestKey);
+                      reject(new Error("Translation timeout - please try again later"));
+                    }
+                  } catch (pollError) {
+                    if (retryCount < maxRetries) {
+                      setTimeout(pollStatus, retryDelay);
+                    } else {
+                      _pendingRetries.delete(requestKey);
+                      reject(pollError);
+                    }
+                  }
+                };
+                
+                setTimeout(pollStatus, retryDelay);
+              });
+              
+              _pendingRetries.set(requestKey, retryPromise);
+              return retryPromise;
+            }
+
+            if (errorData.error && errorData.message) {
+              throw new Error(errorData.message);
+            }
+
+            // 최적화 #7 - 표준화된 에러 처리 사용
+            const errorMessage = handleAPIError(res.status, errorData);
+            throw new Error(errorMessage);
           }
 
+          throw lastError || new Error("All endpoints failed");
+        }
+
+        const data = await res.json();
+
+        if (data.error) {
           // 최적화 #7 - 표준화된 에러 처리 사용
-          const errorMessage = handleAPIError(res.status, errorData);
+          const errorCode = data.code;
+          const errorConfig = API_ERROR_MESSAGES[400];
+
+          if (errorConfig[errorCode]) {
+            throw new Error(errorConfig[errorCode]);
+          }
+
+          // 기본 메시지
+          const errorMessage = data.message || I18n.t("translator.translationFailed");
+          if (errorMessage.includes("API") || errorMessage.includes("키")) {
+            throw new Error(I18n.t("translator.apiKeyError"));
+          }
           throw new Error(errorMessage);
         }
 
-        throw lastError || new Error("All endpoints failed");
-      }
-
-      const data = await res.json();
-
-      if (data.error) {
-        // 최적화 #7 - 표준화된 에러 처리 사용
-        const errorCode = data.code;
-        const errorConfig = API_ERROR_MESSAGES[400];
-
-        if (errorConfig[errorCode]) {
-          throw new Error(errorConfig[errorCode]);
+        return data;
+      } catch (error) {
+        if (error.name === "AbortError") {
+          throw new Error(I18n.t("translator.requestTimeout"));
         }
-
-        // 기본 메시지
-        const errorMessage = data.message || I18n.t("translator.translationFailed");
-        if (errorMessage.includes("API") || errorMessage.includes("키")) {
-          throw new Error(I18n.t("translator.apiKeyError"));
-        }
-        throw new Error(errorMessage);
+        throw new Error(`${I18n.t("translator.failedPrefix")}: ${error.message}`);
       }
+    };
 
-      return data;
-    } catch (error) {
-      if (error.name === "AbortError") {
-        throw new Error(I18n.t("translator.requestTimeout"));
-      }
-      throw new Error(`${I18n.t("translator.failedPrefix")}: ${error.message}`);
+    // Promise를 생성하고 Map에 저장
+    const requestPromise = executeRequest().finally(() => {
+      // 요청 완료 후 Map에서 제거
+      _inflightRequests.delete(requestKey);
+    });
+
+    // ignoreCache가 아닌 경우에만 중복 요청 방지 등록
+    if (!ignoreCache) {
+      _inflightRequests.set(requestKey, requestPromise);
     }
+
+    return requestPromise;
   }
 
   includeExternal(url) {

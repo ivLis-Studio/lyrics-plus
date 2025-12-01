@@ -509,18 +509,16 @@ const CommunityVideoSelector = ({ trackUri, currentVideoId, onVideoSelect, onClo
                                 react.createElement("div", {
                                     className: "community-video-title",
                                     title: video.youtubeTitle
-                                }, 
-                                    video.youtubeTitle || video.youtubeVideoId,
-                                    video.submitterId === 'system' && react.createElement("span", {
-                                        className: "auto-badge"
-                                    }, I18n.t("communityVideo.autoDetected"))
-                                ),
+                                }, video.youtubeTitle || video.youtubeVideoId),
                                 react.createElement("div", {
                                     className: "community-video-meta"
                                 },
                                     react.createElement("span", null, 
                                         I18n.t("communityVideo.startTime") + ": " + formatTime(video.startTime)
-                                    )
+                                    ),
+                                    video.submitterId === 'system' && react.createElement("span", {
+                                        className: "auto-badge"
+                                    }, I18n.t("communityVideo.autoDetected"))
                                 )
                             ),
                             
