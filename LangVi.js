@@ -765,6 +765,21 @@ window.LANG_VI = {
         "desc": "Hiển thị thông tin bài hát",
         "info": "Hiển thị tên bài hát và nghệ sĩ trong chế độ toàn màn hình"
       },
+      "translateMetadata": {
+        "desc": "Dịch tiêu đề/nghệ sĩ",
+        "info": "Dịch tiêu đề bài hát nước ngoài và tên nghệ sĩ (cần khóa API Gemini)"
+      },
+      "translateMetadataMode": {
+        "desc": "Chế độ hiển thị",
+        "info": "Chọn cách hiển thị tiêu đề và nghệ sĩ",
+        "options": {
+          "translated": "Chỉ bản dịch",
+          "romanized": "Chỉ phiên âm",
+          "originalTranslated": "Gốc + bản dịch",
+          "originalRomanized": "Gốc + phiên âm",
+          "all": "Hiển thị tất cả"
+        }
+      },
       "centerWhenNoLyrics": {
         "desc": "Căn giữa khi không có lời",
         "info": "Căn giữa bìa album khi không có lời bài hát hoặc đang tải"

@@ -765,6 +765,21 @@ window.LANG_ID = {
         "desc": "Tampilkan Info Lagu",
         "info": "Tampilkan judul lagu dan artis dalam mode layar penuh"
       },
+      "translateMetadata": {
+        "desc": "Terjemahkan judul/artis",
+        "info": "Menerjemahkan judul lagu asing dan nama artis (memerlukan kunci API Gemini)"
+      },
+      "translateMetadataMode": {
+        "desc": "Mode tampilan",
+        "info": "Pilih cara menampilkan judul dan artis",
+        "options": {
+          "translated": "Terjemahan saja",
+          "romanized": "Romanisasi saja",
+          "originalTranslated": "Asli + terjemahan",
+          "originalRomanized": "Asli + romanisasi",
+          "all": "Tampilkan semua"
+        }
+      },
       "centerWhenNoLyrics": {
         "desc": "Tengah Saat Tidak Ada Lirik",
         "info": "Tengahkan sampul album saat tidak ada lirik atau sedang memuat"

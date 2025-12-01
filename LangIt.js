@@ -765,6 +765,21 @@ window.LANG_IT = {
         "desc": "Mostra Info Traccia",
         "info": "Mostra titolo brano e artista in schermo intero"
       },
+      "translateMetadata": {
+        "desc": "Traduci titolo/artista",
+        "info": "Traduce i titoli delle canzoni straniere e i nomi degli artisti (richiede chiave API Gemini)"
+      },
+      "translateMetadataMode": {
+        "desc": "Modalità di visualizzazione",
+        "info": "Scegli come visualizzare il titolo e l'artista",
+        "options": {
+          "translated": "Solo traduzione",
+          "romanized": "Solo romanizzazione",
+          "originalTranslated": "Originale + traduzione",
+          "originalRomanized": "Originale + romanizzazione",
+          "all": "Mostra tutto"
+        }
+      },
       "centerWhenNoLyrics": {
         "desc": "Centra Album Senza Testo",
         "info": "Centra copertina album quando non c'è testo o è in caricamento"

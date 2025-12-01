@@ -765,6 +765,21 @@ window.LANG_DE = {
         "desc": "Track-Info anzeigen",
         "info": "Zeigt Songtitel und Künstler im Vollbildmodus an"
       },
+      "translateMetadata": {
+        "desc": "Titel/Künstler übersetzen",
+        "info": "Übersetzt fremdsprachige Songtitel und Künstlernamen (erfordert Gemini API-Schlüssel)"
+      },
+      "translateMetadataMode": {
+        "desc": "Anzeigemodus",
+        "info": "Wählen Sie, wie Titel und Künstler angezeigt werden sollen",
+        "options": {
+          "translated": "Nur Übersetzung",
+          "romanized": "Nur Romanisierung",
+          "originalTranslated": "Original + Übersetzung",
+          "originalRomanized": "Original + Romanisierung",
+          "all": "Alles anzeigen"
+        }
+      },
       "centerWhenNoLyrics": {
         "desc": "Album zentrieren ohne Text",
         "info": "Zentriert das Albumcover, wenn kein Text vorhanden ist oder geladen wird"

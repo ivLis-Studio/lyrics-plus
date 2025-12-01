@@ -765,6 +765,21 @@ window.LANG_ZH_TW = {
         "desc": "顯示曲目資訊",
         "info": "在全螢幕中顯示歌曲標題和藝術家"
       },
+      "translateMetadata": {
+        "desc": "翻譯標題/藝術家",
+        "info": "翻譯外語歌曲標題和藝術家名稱（需要 Gemini API 密鑰）"
+      },
+      "translateMetadataMode": {
+        "desc": "翻譯顯示方式",
+        "info": "選擇如何顯示標題和藝術家",
+        "options": {
+          "translated": "僅翻譯",
+          "romanized": "僅發音",
+          "originalTranslated": "原文 + 翻譯",
+          "originalRomanized": "原文 + 發音",
+          "all": "全部顯示"
+        }
+      },
       "centerWhenNoLyrics": {
         "desc": "無歌詞時置中顯示專輯",
         "info": "當歌詞不可用或正在載入時將專輯封面置中"

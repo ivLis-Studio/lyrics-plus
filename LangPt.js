@@ -765,6 +765,21 @@ window.LANG_PT = {
         "desc": "Mostrar Info da Faixa",
         "info": "Mostrar título da música e artista no modo tela cheia"
       },
+      "translateMetadata": {
+        "desc": "Traduzir título/artista",
+        "info": "Traduz títulos de músicas estrangeiras e nomes de artistas (requer chave API Gemini)"
+      },
+      "translateMetadataMode": {
+        "desc": "Modo de exibição",
+        "info": "Escolha como exibir o título e o artista",
+        "options": {
+          "translated": "Apenas tradução",
+          "romanized": "Apenas romanização",
+          "originalTranslated": "Original + tradução",
+          "originalRomanized": "Original + romanização",
+          "all": "Mostrar tudo"
+        }
+      },
       "centerWhenNoLyrics": {
         "desc": "Centralizar Álbum sem Letra",
         "info": "Posicionar capa do álbum no centro quando não houver letra ou estiver carregando"

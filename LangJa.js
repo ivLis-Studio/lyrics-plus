@@ -765,6 +765,21 @@ window.LANG_JA = {
         "desc": "トラック情報を表示",
         "info": "フルスクリーンで曲名とアーティストを表示"
       },
+      "translateMetadata": {
+        "desc": "タイトル/アーティスト翻訳",
+        "info": "外国語の曲名とアーティスト名を翻訳して表示します（Gemini APIキーが必要）"
+      },
+      "translateMetadataMode": {
+        "desc": "翻訳表示方法",
+        "info": "タイトルとアーティストの表示方法を選択します",
+        "options": {
+          "translated": "翻訳のみ",
+          "romanized": "発音のみ",
+          "originalTranslated": "原語 + 翻訳",
+          "originalRomanized": "原語 + 発音",
+          "all": "すべて表示"
+        }
+      },
       "centerWhenNoLyrics": {
         "desc": "歌詞がない場合にアルバムを中央に",
         "info": "歌詞が利用できないか読み込み中の場合にアルバムカバーを中央に配置"
