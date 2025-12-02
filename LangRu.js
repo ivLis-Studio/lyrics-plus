@@ -12,6 +12,7 @@ window.LANG_RU = {
     "providers": "Источники",
     "advanced": "Дополнительно",
     "fullscreen": "Полноэкранный режим",
+    "debug": "Отладка",
     "about": "О программе"
   },
   "sections": {
@@ -449,6 +450,8 @@ window.LANG_RU = {
     "installCommandCopied": "Команда установки скопирована",
     "copyFailed": "Ошибка копирования",
     "memoryCacheCleared": "✓ Кэш памяти очищен",
+    "localCacheCleared": "✓ Весь локальный кэш очищен",
+    "localCacheTrackCleared": "✓ Кэш текущего трека очищен",
     "exportSuccessDesc": "Файл настроек сохраняется в папку загрузок.",
     "exportFailed": "Ошибка экспорта настроек",
     "importSuccessDesc": "Страница обновится через несколько секунд...",
@@ -692,6 +695,13 @@ window.LANG_RU = {
         "label": "Очистить кэш памяти",
         "desc": "Загруженные тексты временно сохраняются в памяти для быстрой перезагрузки. Очистить кэш памяти без перезапуска Spotify",
         "button": "Очистить кэш"
+      },
+      "localCache": {
+        "label": "Локальный кэш (IndexedDB)",
+        "desc": "Тексты, переводы и произношение сохраняются локально для сокращения API-запросов при повторном воспроизведении",
+        "clearAll": "Очистить всё",
+        "clearCurrent": "Очистить текущий трек",
+        "stats": "Тексты: {lyrics}, Переводы: {translations}, Метаданные: {metadata}"
       }
     },
     "lyricsProviders": {
@@ -925,6 +935,22 @@ window.LANG_RU = {
       "checkGithubReleases": "Пожалуйста, проверьте страницу релизов на GitHub",
       "visitGithub": "Посетить репозиторий GitHub",
       "joinDiscord": "Присоединиться к серверу Discord"
+    },
+    "debugTab": {
+      "title": "Информация для отладки",
+      "subtitle": "Информация для отправки разработчикам при сообщении об ошибках",
+      "currentTrack": "Информация о текущем треке",
+      "trackInfo": "Информация о треке",
+      "lyricsInfo": "Информация о тексте",
+      "settingsInfo": "Информация о настройках",
+      "noLyrics": "Нет информации о тексте",
+      "loading": "Загрузка информации...",
+      "refresh": "Обновить",
+      "copyToClipboard": "Копировать в буфер обмена",
+      "copied": "Скопировано!",
+      "copyFailed": "Ошибка копирования",
+      "sendToDiscord": "Сообщить в Discord",
+      "rawJson": "JSON-данные"
     },
     "api": {
       "title": "Настройки API",

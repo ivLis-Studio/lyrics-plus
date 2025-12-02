@@ -12,6 +12,7 @@ window.LANG_VI = {
     "providers": "Nguồn lời bài hát",
     "advanced": "Nâng cao",
     "fullscreen": "Toàn màn hình",
+    "debug": "Gỡ lỗi",
     "about": "Giới thiệu"
   },
   "sections": {
@@ -449,6 +450,8 @@ window.LANG_VI = {
     "installCommandCopied": "Đã sao chép lệnh cài đặt",
     "copyFailed": "Sao chép thất bại",
     "memoryCacheCleared": "✓ Đã xóa bộ nhớ đệm",
+    "localCacheCleared": "✓ Đã xóa toàn bộ bộ nhớ đệm cục bộ",
+    "localCacheTrackCleared": "✓ Đã xóa bộ nhớ đệm bài hát hiện tại",
     "exportSuccessDesc": "Tệp cài đặt đã được lưu vào thư mục tải xuống.",
     "exportFailed": "Xuất cài đặt thất bại",
     "importSuccessDesc": "Trang sẽ được làm mới trong giây lát...",
@@ -692,6 +695,13 @@ window.LANG_VI = {
         "label": "Xóa bộ nhớ đệm",
         "desc": "Lời bài hát đã tải được lưu tạm trong bộ nhớ để tải lại nhanh. Xóa bộ nhớ đệm mà không cần khởi động lại Spotify",
         "button": "Xóa bộ nhớ đệm"
+      },
+      "localCache": {
+        "label": "Bộ nhớ đệm cục bộ (IndexedDB)",
+        "desc": "Lời bài hát, bản dịch và phát âm được lưu cục bộ để giảm cuộc gọi API khi phát lại",
+        "clearAll": "Xóa tất cả",
+        "clearCurrent": "Xóa bài hát hiện tại",
+        "stats": "Lời bài hát: {lyrics}, Bản dịch: {translations}, Metadata: {metadata}"
       }
     },
     "lyricsProviders": {
@@ -925,6 +935,22 @@ window.LANG_VI = {
       "checkGithubReleases": "Vui lòng kiểm tra trang GitHub Releases",
       "visitGithub": "Ghé thăm kho lưu trữ GitHub",
       "joinDiscord": "Tham gia máy chủ Discord"
+    },
+    "debugTab": {
+      "title": "Thông tin gỡ lỗi",
+      "subtitle": "Thông tin để chia sẻ với nhà phát triển khi báo lỗi",
+      "currentTrack": "Thông tin bài hát hiện tại",
+      "trackInfo": "Thông tin bài hát",
+      "lyricsInfo": "Thông tin lời bài hát",
+      "settingsInfo": "Thông tin cài đặt",
+      "noLyrics": "Không có thông tin lời bài hát",
+      "loading": "Đang tải thông tin...",
+      "refresh": "Làm mới",
+      "copyToClipboard": "Sao chép vào clipboard",
+      "copied": "Đã sao chép!",
+      "copyFailed": "Sao chép thất bại",
+      "sendToDiscord": "Báo cáo đến Discord",
+      "rawJson": "Dữ liệu JSON"
     },
     "api": {
       "title": "Cài đặt API",

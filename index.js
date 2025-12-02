@@ -2062,6 +2062,43 @@ class LyricsContainer extends react.Component {
     this.phoneticLoadingTimer = null;
     this.translationLoadingTimer = null;
 
+    // Mouse idle timer for auto-hiding controls
+    this.mouseIdleTimer = null;
+    this.isMouseActive = true;
+    
+    // Mouse event handlers for auto-hide controls (defined here so ref can use them)
+    this._handleMouseMove = () => {
+      this.isMouseActive = true;
+      const container = this.containerRef.current;
+      if (container) {
+        container.classList.remove('controls-hidden');
+      }
+      
+      // Clear existing timer
+      if (this.mouseIdleTimer) {
+        clearTimeout(this.mouseIdleTimer);
+      }
+      
+      // Set new timer - hide after 3 seconds of inactivity
+      this.mouseIdleTimer = setTimeout(() => {
+        this.isMouseActive = false;
+        const container = this.containerRef.current;
+        if (container) {
+          container.classList.add('controls-hidden');
+        }
+      }, 3000);
+    };
+    
+    this._handleMouseLeave = () => {
+      // Immediately hide when mouse leaves
+      if (this.mouseIdleTimer) clearTimeout(this.mouseIdleTimer);
+      this.isMouseActive = false;
+      const container = this.containerRef.current;
+      if (container) {
+        container.classList.add('controls-hidden');
+      }
+    };
+
     // Bind regenerate translation method
     this.regenerateTranslation = this.regenerateTranslation.bind(this);
   }
@@ -2215,10 +2252,32 @@ class LyricsContainer extends react.Component {
     const needPhonetic = mode1 === "gemini_romaji" || mode2 === "gemini_romaji";
     const needTranslation = mode1 === "gemini_ko" || mode2 === "gemini_ko";
 
+    // trackId 가져오기
+    const trackId = Spicetify.Player.data?.item?.uri?.split(':')[2];
+    if (!trackId) {
+      Spicetify.showNotification("No track playing", true, 2000);
+      return;
+    }
+
     try {
       this.startTranslationLoading();
 
       Spicetify.showNotification(I18n.t("notifications.regeneratingTranslation"), false, 2000);
+
+      // 먼저 로컬 캐시에서 해당 트랙의 번역 캐시 삭제
+      const userLang = I18n.getCurrentLanguage();
+      try {
+        // 번역 캐시 삭제 (발음과 번역 모두)
+        await Promise.all([
+          LyricsCache.clearTranslationForTrack(trackId),
+        ]);
+        // 메모리 캐시도 초기화
+        Translator.clearMemoryCache(trackId);
+        Translator.clearInflightRequests(trackId);
+        console.log(`[regenerateTranslation] Cleared local cache for ${trackId}`);
+      } catch (e) {
+        console.warn('[regenerateTranslation] Failed to clear cache:', e);
+      }
 
       // 원본 가사 가져오기 (번역되지 않은 원문)
       const lyricsState = this.state;
@@ -2251,7 +2310,7 @@ class LyricsContainer extends react.Component {
       // 발음 요청 (gemini_romaji)
       if (needPhonetic) {
         phoneticResponse = await Translator.callGemini({
-          apiKey: "no",
+          trackId,
           artist: this.state.artist || lyricsState.artist,
           title: this.state.title || lyricsState.title,
           text,
@@ -2264,7 +2323,7 @@ class LyricsContainer extends react.Component {
       // 번역 요청 (gemini_ko)
       if (needTranslation) {
         translationResponse = await Translator.callGemini({
-          apiKey: "no",
+          trackId,
           artist: this.state.artist || lyricsState.artist,
           title: this.state.title || lyricsState.title,
           text,
@@ -2585,22 +2644,34 @@ class LyricsContainer extends react.Component {
         }
       }
 
-      // Check if lyrics are instrumental (2 lines or less with "Instrumental" text)
-      const checkInstrumental = (lyrics) => {
-        if (!lyrics || lyrics.length <= 2) {
-          const text = lyrics?.map(line => line.text || '').join(' ').toLowerCase();
-          if (text && text.includes('instrumental')) {
-            return true;
-          }
+      // Check if lyrics indicate no lyrics / instrumental
+      // Conditions: 
+      // 1. Total lines <= 3
+      // 2. First line contains "no lyrics" or "instrumental"
+      const checkNoLyrics = (lyrics) => {
+        if (!lyrics || lyrics.length === 0) return false;
+        if (lyrics.length > 3) return false;
+        
+        // Check first non-empty line
+        const firstLine = lyrics[0]?.text?.toLowerCase()?.trim() || '';
+        if (firstLine.includes('no lyrics') || firstLine.includes('instrumental')) {
+          return true;
         }
+        
+        // Also check if all lines combined contain these keywords
+        const allText = lyrics.map(line => line.text || '').join(' ').toLowerCase();
+        if (allText.includes('no lyrics') || allText.includes('instrumental')) {
+          return true;
+        }
+        
         return false;
       };
 
-      // If all lyrics types are instrumental, treat as no lyrics
+      // If all lyrics types indicate no lyrics, treat as instrumental
       const isInstrumental =
-        checkInstrumental(tempState.karaoke) &&
-        checkInstrumental(tempState.synced) &&
-        checkInstrumental(tempState.unsynced);
+        checkNoLyrics(tempState.karaoke) ||
+        checkNoLyrics(tempState.synced) ||
+        checkNoLyrics(tempState.unsynced);
 
       if (isInstrumental) {
         tempState = {
@@ -4044,6 +4115,20 @@ class LyricsContainer extends react.Component {
     window.removeEventListener("lyrics-plus", this.handleConfigChange);
     window.removeEventListener("lyrics-plus:lyric-index-changed", this.handleLyricIndexChange);
 
+    // Mouse idle timer cleanup
+    if (this.mouseIdleTimer) {
+      clearTimeout(this.mouseIdleTimer);
+      this.mouseIdleTimer = null;
+    }
+    // Remove mouse event listeners from container
+    const container = this.containerRef.current;
+    if (container && this._handleMouseMove) {
+      container.removeEventListener('mousemove', this._handleMouseMove);
+      container.removeEventListener('mouseleave', this._handleMouseLeave);
+    }
+    this._handleMouseMove = null;
+    this._handleMouseLeave = null;
+
     // ESC 키 리스너 정리
     if (this._escHandler) {
       document.removeEventListener("keydown", this._escHandler);
@@ -4534,7 +4619,17 @@ class LyricsContainer extends react.Component {
         style: this.styleVariables,
         ref: (el) => {
           if (!el) return;
+          this.containerRef.current = el;
           el.onmousewheel = this.onFontSizeChange;
+          
+          // Attach mouse event listeners for auto-hide controls
+          if (!el._mouseEventsAttached) {
+            el._mouseEventsAttached = true;
+            el.addEventListener('mousemove', this._handleMouseMove);
+            el.addEventListener('mouseleave', this._handleMouseLeave);
+            // Start the idle timer
+            this._handleMouseMove();
+          }
         },
       },
       // Left panel for fullscreen mode

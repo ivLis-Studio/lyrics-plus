@@ -12,6 +12,7 @@ window.LANG_JA = {
     "providers": "プロバイダー",
     "advanced": "詳細",
     "fullscreen": "フルスクリーン",
+    "debug": "デバッグ",
     "about": "情報"
   },
   "sections": {
@@ -449,6 +450,8 @@ window.LANG_JA = {
     "installCommandCopied": "インストールコマンドがコピーされました",
     "copyFailed": "コピーに失敗しました",
     "memoryCacheCleared": "✓ メモリキャッシュがクリアされました",
+    "localCacheCleared": "✓ すべてのローカルキャッシュがクリアされました",
+    "localCacheTrackCleared": "✓ 現在のトラックのキャッシュがクリアされました",
     "exportSuccessDesc": "設定ファイルがダウンロードフォルダに保存されました。",
     "exportFailed": "設定のエクスポートに失敗しました",
     "importSuccessDesc": "ページがまもなく更新されます...",
@@ -692,6 +695,13 @@ window.LANG_JA = {
         "label": "メモリキャッシュをクリア",
         "desc": "読み込まれた歌詞は高速再読み込みのためにメモリに一時保存されます。Spotifyを再起動せずにメモリキャッシュをクリア可能",
         "button": "キャッシュをクリア"
+      },
+      "localCache": {
+        "label": "ローカルキャッシュ管理 (IndexedDB)",
+        "desc": "歌詞、翻訳、発音などがローカルに保存され、繰り返し再生時のAPI呼び出しを削減します",
+        "clearAll": "すべて削除",
+        "clearCurrent": "現在の曲を削除",
+        "stats": "歌詞: {lyrics}件、翻訳: {translations}件、メタデータ: {metadata}件"
       }
     },
     "lyricsProviders": {
@@ -925,6 +935,22 @@ window.LANG_JA = {
       "checkGithubReleases": "GitHubリリースページをご確認ください",
       "visitGithub": "GitHubリポジトリを訪問",
       "joinDiscord": "Discordサーバーに参加"
+    },
+    "debugTab": {
+      "title": "デバッグ情報",
+      "subtitle": "バグ報告時に開発者と共有する情報",
+      "currentTrack": "現在のトラック情報",
+      "trackInfo": "トラック情報",
+      "lyricsInfo": "歌詞情報",
+      "settingsInfo": "設定情報",
+      "noLyrics": "歌詞情報がありません",
+      "loading": "情報を読み込み中...",
+      "refresh": "更新",
+      "copyToClipboard": "クリップボードにコピー",
+      "copied": "コピーしました！",
+      "copyFailed": "コピーに失敗しました",
+      "sendToDiscord": "Discordに報告",
+      "rawJson": "JSONデータ"
     },
     "api": {
       "title": "API設定",

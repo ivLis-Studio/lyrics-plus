@@ -12,6 +12,7 @@ window.LANG_IT = {
     "providers": "Provider",
     "advanced": "Avanzate",
     "fullscreen": "Schermo Intero",
+    "debug": "Debug",
     "about": "Info"
   },
   "sections": {
@@ -449,6 +450,8 @@ window.LANG_IT = {
     "installCommandCopied": "Comando di installazione copiato",
     "copyFailed": "Copia fallita",
     "memoryCacheCleared": "✓ Cache memoria svuotata",
+    "localCacheCleared": "✓ Tutta la cache locale svuotata",
+    "localCacheTrackCleared": "✓ Cache del brano attuale svuotata",
     "exportSuccessDesc": "Salvataggio file impostazioni nella cartella download.",
     "exportFailed": "Esportazione impostazioni fallita",
     "importSuccessDesc": "La pagina si aggiornerà tra pochi istanti...",
@@ -692,6 +695,13 @@ window.LANG_IT = {
         "label": "Svuota Cache Memoria",
         "desc": "I testi caricati vengono salvati temporaneamente in memoria per ricaricamento rapido. Svuota cache memoria senza riavviare Spotify",
         "button": "Svuota Cache"
+      },
+      "localCache": {
+        "label": "Cache Locale (IndexedDB)",
+        "desc": "Testi, traduzioni e pronunce vengono salvati localmente per ridurre le chiamate API durante riproduzioni ripetute",
+        "clearAll": "Svuota tutto",
+        "clearCurrent": "Svuota brano attuale",
+        "stats": "Testi: {lyrics}, Traduzioni: {translations}, Metadati: {metadata}"
       }
     },
     "lyricsProviders": {
@@ -925,6 +935,22 @@ window.LANG_IT = {
       "checkGithubReleases": "Si prega di controllare la pagina delle release su GitHub",
       "visitGithub": "Visita repository GitHub",
       "joinDiscord": "Unisciti al server Discord"
+    },
+    "debugTab": {
+      "title": "Informazioni di Debug",
+      "subtitle": "Informazioni da condividere con gli sviluppatori quando si segnalano bug",
+      "currentTrack": "Info Traccia Corrente",
+      "trackInfo": "Info Traccia",
+      "lyricsInfo": "Info Testi",
+      "settingsInfo": "Info Impostazioni",
+      "noLyrics": "Nessuna informazione sui testi",
+      "loading": "Caricamento info...",
+      "refresh": "Aggiorna",
+      "copyToClipboard": "Copia negli Appunti",
+      "copied": "Copiato!",
+      "copyFailed": "Copia fallita",
+      "sendToDiscord": "Segnala su Discord",
+      "rawJson": "Dati JSON"
     },
     "api": {
       "title": "Impostazioni API",

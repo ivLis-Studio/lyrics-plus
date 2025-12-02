@@ -12,6 +12,7 @@ window.LANG_EN = {
     "providers": "Providers",
     "advanced": "Advanced",
     "fullscreen": "Fullscreen",
+    "debug": "Debug",
     "about": "About"
   },
   "sections": {
@@ -934,6 +935,22 @@ window.LANG_EN = {
       "checkGithubReleases": "Please check the GitHub releases page",
       "visitGithub": "Visit GitHub Repository",
       "joinDiscord": "Join Discord Server"
+    },
+    "debugTab": {
+      "title": "Debug Information",
+      "subtitle": "Information to share with developers when reporting bugs",
+      "currentTrack": "Current Track Info",
+      "trackInfo": "Track Info",
+      "lyricsInfo": "Lyrics Info",
+      "settingsInfo": "Settings Info",
+      "noLyrics": "No lyrics information",
+      "loading": "Loading info...",
+      "refresh": "Refresh",
+      "copyToClipboard": "Copy to Clipboard",
+      "copied": "Copied!",
+      "copyFailed": "Failed to copy",
+      "sendToDiscord": "Report to Discord",
+      "rawJson": "JSON Data"
     },
     "api": {
       "title": "API Settings",

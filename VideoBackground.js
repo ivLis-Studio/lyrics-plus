@@ -99,18 +99,60 @@ const VideoBackground = ({ trackUri, firstLyricTime, brightness, blurAmount, cov
                 return;
             }
             
-            // 3. 프리페치된 데이터가 없으면 직접 fetch (커뮤니티 우선)
+            // 3. 로컬 캐시 확인 (IndexedDB)
+            try {
+                const cachedYouTube = await LyricsCache.getYouTube(trackId);
+                if (cachedYouTube && isMounted) {
+                    console.log(`[VideoBackground] Using cached YouTube info for trackId: ${trackId}`);
+                    // 캐시 히트 로깅
+                    if (window.ApiTracker) {
+                        window.ApiTracker.logCacheHit('youtube', `youtube:${trackId}`, {
+                            videoId: cachedYouTube.youtubeVideoId,
+                            hasCaption: cachedYouTube.captionStartTime != null
+                        });
+                    }
+                    setIsLoading(false);
+                    setVideoInfo(cachedYouTube);
+                    setStatusMessage("");
+                    return;
+                }
+            } catch (e) {
+                console.warn('[VideoBackground] Cache check failed:', e);
+            }
+            
+            // 4. 캐시가 없으면 API 호출 (커뮤니티 우선)
             try {
                 const userHash = Utils.getUserHash();
-                const res = await fetch(`https://lyrics.api.ivl.is/lyrics/youtube?trackId=${trackId}&userHash=${userHash}&useCommunity=true`);
+                const youtubeUrl = `https://lyrics.api.ivl.is/lyrics/youtube?trackId=${trackId}&userHash=${userHash}&useCommunity=true`;
+                
+                // API 요청 로깅
+                let logId = null;
+                if (window.ApiTracker) {
+                    logId = window.ApiTracker.logRequest('youtube', youtubeUrl, { trackId, userHash });
+                }
+                
+                const res = await fetch(youtubeUrl);
                 const data = await res.json();
                 
                 if (!isMounted) return;
                 setIsLoading(false);
                 if (data.success) {
+                    // 성공 로깅
+                    if (window.ApiTracker && logId) {
+                        window.ApiTracker.logResponse(logId, { 
+                            videoId: data.data?.youtubeVideoId,
+                            hasCaption: data.data?.captionStartTime != null
+                        }, 'success');
+                    }
+                    // 로컬 캐시에 저장
+                    LyricsCache.setYouTube(trackId, data.data).catch(() => {});
                     setVideoInfo(data.data);
                     setStatusMessage("");
                 } else {
+                    // 실패 로깅
+                    if (window.ApiTracker && logId) {
+                        window.ApiTracker.logResponse(logId, null, 'error', 'Video not found');
+                    }
                     setStatusMessage(I18n.t("videoBackground.notFound"));
                     setVideoInfo(null);
                 }

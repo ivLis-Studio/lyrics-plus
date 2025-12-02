@@ -12,6 +12,7 @@ window.LANG_AR = {
     "providers": "المزودون",
     "advanced": "متقدم",
     "fullscreen": "ملء الشاشة",
+    "debug": "تصحيح الأخطاء",
     "about": "حول"
   },
   "sections": {
@@ -449,6 +450,8 @@ window.LANG_AR = {
     "installCommandCopied": "تم نسخ أمر التثبيت",
     "copyFailed": "فشل النسخ",
     "memoryCacheCleared": "✓ تم مسح ذاكرة التخزين المؤقت",
+    "localCacheCleared": "✓ تم مسح جميع الذاكرة المؤقتة المحلية",
+    "localCacheTrackCleared": "✓ تم مسح ذاكرة المسار الحالي المؤقتة",
     "exportSuccessDesc": "جاري حفظ ملف الإعدادات في مجلد التنزيلات.",
     "exportFailed": "فشل تصدير الإعدادات",
     "importSuccessDesc": "سيتم تحديث الصفحة في لحظات...",
@@ -692,6 +695,13 @@ window.LANG_AR = {
         "label": "مسح ذاكرة التخزين المؤقت",
         "desc": "يتم حفظ الكلمات المحملة مؤقتاً في الذاكرة للتحميل السريع. امسح الذاكرة دون إعادة تشغيل Spotify",
         "button": "مسح الذاكرة"
+      },
+      "localCache": {
+        "label": "الذاكرة المحلية (IndexedDB)",
+        "desc": "يتم حفظ الكلمات والترجمات والنطق محلياً لتقليل استدعاءات API عند التشغيل المتكرر",
+        "clearAll": "مسح الكل",
+        "clearCurrent": "مسح المسار الحالي",
+        "stats": "الكلمات: {lyrics}، الترجمات: {translations}، البيانات الوصفية: {metadata}"
       }
     },
     "lyricsProviders": {
@@ -925,6 +935,22 @@ window.LANG_AR = {
       "checkGithubReleases": "يرجى التحقق من صفحة إصدارات GitHub",
       "visitGithub": "زيارة مستودع GitHub",
       "joinDiscord": "انضم إلى خادم Discord"
+    },
+    "debugTab": {
+      "title": "معلومات التصحيح",
+      "subtitle": "معلومات لمشاركتها مع المطورين عند الإبلاغ عن الأخطاء",
+      "currentTrack": "معلومات المسار الحالي",
+      "trackInfo": "معلومات المسار",
+      "lyricsInfo": "معلومات الكلمات",
+      "settingsInfo": "معلومات الإعدادات",
+      "noLyrics": "لا توجد معلومات كلمات",
+      "loading": "جاري تحميل المعلومات...",
+      "refresh": "تحديث",
+      "copyToClipboard": "نسخ إلى الحافظة",
+      "copied": "تم النسخ!",
+      "copyFailed": "فشل النسخ",
+      "sendToDiscord": "الإبلاغ إلى Discord",
+      "rawJson": "بيانات JSON"
     },
     "api": {
       "title": "إعدادات API",

@@ -12,6 +12,7 @@ window.LANG_DE = {
     "providers": "Anbieter",
     "advanced": "Erweitert",
     "fullscreen": "Vollbild",
+    "debug": "Debug",
     "about": "Über"
   },
   "sections": {
@@ -449,6 +450,8 @@ window.LANG_DE = {
     "installCommandCopied": "Installationsbefehl kopiert",
     "copyFailed": "Kopieren fehlgeschlagen",
     "memoryCacheCleared": "✓ Speichercache geleert",
+    "localCacheCleared": "✓ Alle lokalen Caches gelöscht",
+    "localCacheTrackCleared": "✓ Cache des aktuellen Titels gelöscht",
     "exportSuccessDesc": "Einstellungsdatei wird im Download-Ordner gespeichert.",
     "exportFailed": "Export der Einstellungen fehlgeschlagen",
     "importSuccessDesc": "Die Seite wird in wenigen Augenblicken aktualisiert...",
@@ -692,6 +695,13 @@ window.LANG_DE = {
         "label": "Speichercache leeren",
         "desc": "Geladene Texte werden für schnelles Neuladen vorübergehend im Speicher abgelegt. Leeren Sie den Speichercache ohne Spotify neu zu starten",
         "button": "Cache leeren"
+      },
+      "localCache": {
+        "label": "Lokaler Cache (IndexedDB)",
+        "desc": "Songtexte, Übersetzungen und Aussprachen werden lokal gespeichert und reduzieren API-Aufrufe bei wiederholter Wiedergabe",
+        "clearAll": "Alle löschen",
+        "clearCurrent": "Aktuellen Titel löschen",
+        "stats": "Texte: {lyrics}, Übersetzungen: {translations}, Metadaten: {metadata}"
       }
     },
     "lyricsProviders": {
@@ -925,6 +935,22 @@ window.LANG_DE = {
       "checkGithubReleases": "Bitte überprüfen Sie die GitHub-Releases-Seite",
       "visitGithub": "GitHub-Repository besuchen",
       "joinDiscord": "Discord-Server beitreten"
+    },
+    "debugTab": {
+      "title": "Debug-Informationen",
+      "subtitle": "Informationen, die bei der Meldung von Fehlern mit Entwicklern geteilt werden können",
+      "currentTrack": "Aktuelle Titelinformationen",
+      "trackInfo": "Titelinformationen",
+      "lyricsInfo": "Songtextinformationen",
+      "settingsInfo": "Einstellungsinformationen",
+      "noLyrics": "Keine Songtextinformationen",
+      "loading": "Informationen werden geladen...",
+      "refresh": "Aktualisieren",
+      "copyToClipboard": "In Zwischenablage kopieren",
+      "copied": "Kopiert!",
+      "copyFailed": "Kopieren fehlgeschlagen",
+      "sendToDiscord": "An Discord melden",
+      "rawJson": "JSON-Daten"
     },
     "api": {
       "title": "API-Einstellungen",

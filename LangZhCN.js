@@ -12,6 +12,7 @@ window.LANG_ZH_CN = {
     "providers": "提供者",
     "advanced": "高级",
     "fullscreen": "全屏",
+    "debug": "调试",
     "about": "关于"
   },
   "sections": {
@@ -449,6 +450,8 @@ window.LANG_ZH_CN = {
     "installCommandCopied": "安装命令已复制",
     "copyFailed": "复制失败",
     "memoryCacheCleared": "✓ 内存缓存已清除",
+    "localCacheCleared": "✓ 所有本地缓存已清除",
+    "localCacheTrackCleared": "✓ 当前曲目缓存已清除",
     "exportSuccessDesc": "设置文件已保存到下载文件夹。",
     "exportFailed": "导出设置失败",
     "importSuccessDesc": "页面即将刷新...",
@@ -692,6 +695,13 @@ window.LANG_ZH_CN = {
         "label": "清除内存缓存",
         "desc": "加载的歌词临时存储在内存中以便快速重新加载。无需重启Spotify即可清除内存缓存",
         "button": "清除缓存"
+      },
+      "localCache": {
+        "label": "本地缓存管理 (IndexedDB)",
+        "desc": "歌词、翻译、发音等存储在本地，减少重复播放时的API调用",
+        "clearAll": "清除全部",
+        "clearCurrent": "清除当前曲目",
+        "stats": "歌词: {lyrics}个，翻译: {translations}个，元数据: {metadata}个"
       }
     },
     "lyricsProviders": {
@@ -925,6 +935,22 @@ window.LANG_ZH_CN = {
       "checkGithubReleases": "请查看GitHub发布页面",
       "visitGithub": "访问GitHub仓库",
       "joinDiscord": "加入Discord服务器"
+    },
+    "debugTab": {
+      "title": "调试信息",
+      "subtitle": "报告错误时与开发者共享的信息",
+      "currentTrack": "当前曲目信息",
+      "trackInfo": "曲目信息",
+      "lyricsInfo": "歌词信息",
+      "settingsInfo": "设置信息",
+      "noLyrics": "没有歌词信息",
+      "loading": "正在加载信息...",
+      "refresh": "刷新",
+      "copyToClipboard": "复制到剪贴板",
+      "copied": "已复制！",
+      "copyFailed": "复制失败",
+      "sendToDiscord": "报告到Discord",
+      "rawJson": "JSON数据"
     },
     "api": {
       "title": "API设置",

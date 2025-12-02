@@ -1038,26 +1038,28 @@ div.lyrics-tabBar-headerItemLink {
 	z-index: 10;
 
 	/* Auto-hide functionality */
+	opacity: 1;
+	transform: translateX(0);
+	transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Hide controls when mouse is idle */
+.lyrics-lyricsContainer-LyricsContainer.controls-hidden .lyrics-config-button-container {
 	opacity: 0;
 	transform: translateX(20px);
-	transition: opacity 0.3s ease, transform 0.3s ease;
+	pointer-events: none;
+}
+
+/* Keep controls visible when hovering directly on them */
+.lyrics-lyricsContainer-LyricsContainer.controls-hidden .lyrics-config-button-container:hover,
+.lyrics-lyricsContainer-LyricsContainer.controls-hidden .lyrics-config-button-container:focus-within {
+	opacity: 1;
+	transform: translateX(0);
+	pointer-events: auto;
 }
 
 .lyrics-config-button-container>* {
 	pointer-events: auto;
-}
-
-/* Show buttons when hovering near the bottom-right area */
-.lyrics-lyricsContainer-LyricsContainer:hover .lyrics-config-button-container,
-.lyrics-config-button-container:hover {
-	opacity: 1;
-	transform: translateX(0);
-}
-
-/* Ensure reveal on container hover */
-.lyrics-lyricsContainer-LyricsContainer:hover .lyrics-config-button-container {
-	opacity: 1;
-	transform: translateX(0);
 }
 
 @-webkit-keyframes spin {
@@ -1806,12 +1808,12 @@ ruby .lyrics-karaoke-char.sung {
 	/* Hide tab bar in fullscreen for clean look */
 }
 
-/* Menu buttons in fullscreen - hidden by default, show on hover */
+/* Menu buttons in fullscreen - hidden by default, show on mouse move */
 .lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-config-button-container {
-	opacity: 0;
-	transform: translateX(20px);
+	opacity: 1;
+	transform: translateX(0);
 	transition: opacity 0.3s ease, transform 0.3s ease;
-	pointer-events: none;
+	pointer-events: auto;
 	position: fixed;
 	bottom: 32px;
 	right: 32px;
@@ -1819,14 +1821,26 @@ ruby .lyrics-karaoke-char.sung {
 	z-index: 100;
 }
 
-.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-config-button-container > * {
+/* Hide controls and cursor in fullscreen when mouse is idle */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.controls-hidden {
+	cursor: none;
+}
+
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.controls-hidden .lyrics-config-button-container {
+	opacity: 0;
+	transform: translateX(20px);
+	pointer-events: none;
+}
+
+/* Keep controls visible when hovering directly on them in fullscreen */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.controls-hidden .lyrics-config-button-container:hover,
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active.controls-hidden .lyrics-config-button-container:focus-within {
+	opacity: 1;
+	transform: translateX(0);
 	pointer-events: auto;
 }
 
-.lyrics-lyricsContainer-LyricsContainer.fullscreen-active:hover .lyrics-config-button-container,
-.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-config-button-container:focus-within {
-	opacity: 1;
-	transform: translateX(0);
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-config-button-container > * {
 	pointer-events: auto;
 }
 

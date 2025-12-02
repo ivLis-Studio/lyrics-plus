@@ -154,8 +154,16 @@ class Translator {
     }
 
     const requestPromise = (async () => {
+      const url = "https://lyrics.api.ivl.is/lyrics/translate/metadata";
+      
+      // API 요청 로깅 시작
+      let logId = null;
+      if (window.ApiTracker) {
+        logId = window.ApiTracker.logRequest('metadata', url, { trackId: finalTrackId, title, artist, lang: userLang });
+      }
+      
       try {
-        const response = await fetch("https://lyrics.api.ivl.is/lyrics/translate/metadata", {
+        const response = await fetch(url, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -172,16 +180,31 @@ class Translator {
         });
 
         if (!response.ok) {
+          if (window.ApiTracker && logId) {
+            window.ApiTracker.logResponse(logId, { status: response.status }, 'error', `HTTP ${response.status}`);
+          }
           throw new Error(`HTTP ${response.status}`);
         }
 
         const data = await response.json();
 
         if (data.error) {
+          if (window.ApiTracker && logId) {
+            window.ApiTracker.logResponse(logId, data, 'error', data.message || "Translation failed");
+          }
           throw new Error(data.message || "Translation failed");
         }
 
         if (data.success && data.data) {
+          // 성공 로깅
+          if (window.ApiTracker && logId) {
+            window.ApiTracker.logResponse(logId, {
+              translatedTitle: data.data.translatedTitle,
+              translatedArtist: data.data.translatedArtist,
+              romanizedTitle: data.data.romanizedTitle,
+              romanizedArtist: data.data.romanizedArtist
+            }, 'success');
+          }
           // 메모리 캐시에 저장
           this._metadataCache.set(cacheKey, data.data);
           // 로컬 캐시(IndexedDB)에도 저장 (백그라운드)
@@ -189,8 +212,14 @@ class Translator {
           return data.data;
         }
 
+        if (window.ApiTracker && logId) {
+          window.ApiTracker.logResponse(logId, data, 'error', "No data returned");
+        }
         return null;
       } catch (error) {
+        if (window.ApiTracker && logId) {
+          window.ApiTracker.logResponse(logId, null, 'error', error.message);
+        }
         console.warn(`[Translator] Metadata translation failed:`, error.message);
         return null;
       } finally {
@@ -301,6 +330,14 @@ class Translator {
         const localCached = await LyricsCache.getTranslation(finalTrackId, userLang, wantSmartPhonetic);
         if (localCached) {
           console.log(`[Translator] Using local cache for ${finalTrackId}:${userLang}:${wantSmartPhonetic ? 'phonetic' : 'translation'}`);
+          // 캐시 히트 로깅
+          if (window.ApiTracker) {
+            window.ApiTracker.logCacheHit(
+              wantSmartPhonetic ? 'phonetic' : 'translation', 
+              `${finalTrackId}:${userLang}`, 
+              { lineCount: localCached.phonetic?.length || localCached.translation?.length || 0 }
+            );
+          }
           return localCached;
         }
       } catch (e) {
@@ -337,6 +374,20 @@ class Translator {
         lang: userLang,
         userHash,
       };
+
+      // API 요청 로깅 시작
+      const category = wantSmartPhonetic ? 'phonetic' : 'translation';
+      let logId = null;
+      if (window.ApiTracker) {
+        logId = window.ApiTracker.logRequest(category, endpoints[0], { 
+          trackId: finalTrackId, 
+          artist, 
+          title, 
+          lang: userLang,
+          wantSmartPhonetic,
+          textLength: text?.length || 0 
+        });
+      }
 
       const tryFetch = async (url) => {
         const controller = new AbortController();
@@ -472,15 +523,31 @@ class Translator {
           const errorConfig = API_ERROR_MESSAGES[400];
 
           if (errorConfig[errorCode]) {
-            throw new Error(errorConfig[errorCode]);
+            const errorMsg = errorConfig[errorCode];
+            if (window.ApiTracker && logId) {
+              window.ApiTracker.logResponse(logId, { error: errorCode }, 'error', errorMsg);
+            }
+            throw new Error(errorMsg);
           }
 
           // 기본 메시지
           const errorMessage = data.message || I18n.t("translator.translationFailed");
+          if (window.ApiTracker && logId) {
+            window.ApiTracker.logResponse(logId, { error: data.code || 'unknown' }, 'error', errorMessage);
+          }
           if (errorMessage.includes("API") || errorMessage.includes("키")) {
             throw new Error(I18n.t("translator.apiKeyError"));
           }
           throw new Error(errorMessage);
+        }
+
+        // API 성공 응답 로깅
+        if (window.ApiTracker && logId) {
+          const responseInfo = {
+            lineCount: data.phonetic?.length || data.translation?.length || 0,
+            cached: false
+          };
+          window.ApiTracker.logResponse(logId, responseInfo, 'success');
         }
 
         // 성공 시 로컬 캐시에 저장 (백그라운드)
@@ -488,6 +555,11 @@ class Translator {
 
         return data;
       } catch (error) {
+        // 에러 발생 시 로깅
+        if (window.ApiTracker && logId) {
+          const errorMsg = error.name === "AbortError" ? 'timeout' : error.message;
+          window.ApiTracker.logResponse(logId, null, 'error', errorMsg);
+        }
         if (error.name === "AbortError") {
           throw new Error(I18n.t("translator.requestTimeout"));
         }

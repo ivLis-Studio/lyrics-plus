@@ -1,24 +1,5 @@
-// Optimized CreditFooter with better memoization
-const CreditFooter = react.memo(({ provider, copyright }) => {
-	if (provider === "local" || !provider) return null;
-
-	const credit = useMemo(() => {
-		const credits = [Spicetify.Locale.get("web-player.lyrics.providedBy", provider)];
-		if (copyright) {
-			credits.push(...copyright.split("\n"));
-		}
-		return credits.join(" • ");
-	}, [provider, copyright]);
-
-	return react.createElement(
-		"p",
-		{
-			className: "lyrics-lyricsContainer-Provider main-type-mesto",
-			dir: "auto",
-		},
-		credit
-	);
-});
+// CreditFooter removed - debug info is now available in Settings > Debug tab
+const CreditFooter = react.memo(() => null);
 
 // Optimized IdlingIndicator with memoization and performance improvements
 const IdlingIndicator = react.memo(({ isActive = false, progress = 0, delay = 0 }) => {

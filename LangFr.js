@@ -12,6 +12,7 @@ window.LANG_FR = {
     "providers": "Fournisseurs",
     "advanced": "Avancé",
     "fullscreen": "Plein écran",
+    "debug": "Débogage",
     "about": "À propos"
   },
   "sections": {
@@ -449,6 +450,8 @@ window.LANG_FR = {
     "installCommandCopied": "Commande d'installation copiée",
     "copyFailed": "Échec de la copie",
     "memoryCacheCleared": "✓ Cache mémoire vidé",
+    "localCacheCleared": "✓ Tout le cache local effacé",
+    "localCacheTrackCleared": "✓ Cache de la piste actuelle effacé",
     "exportSuccessDesc": "Enregistrement du fichier de configuration dans le dossier de téléchargements.",
     "exportFailed": "Échec de l'exportation des paramètres",
     "importSuccessDesc": "La page s'actualisera dans quelques instants...",
@@ -692,6 +695,13 @@ window.LANG_FR = {
         "label": "Vider le cache mémoire",
         "desc": "Les paroles chargées sont temporairement enregistrées en mémoire pour un rechargement rapide. Videz le cache mémoire sans redémarrer Spotify",
         "button": "Vider le cache"
+      },
+      "localCache": {
+        "label": "Cache local (IndexedDB)",
+        "desc": "Les paroles, traductions et prononciations sont stockées localement pour réduire les appels API lors de lectures répétées",
+        "clearAll": "Tout effacer",
+        "clearCurrent": "Effacer la piste actuelle",
+        "stats": "Paroles : {lyrics}, Traductions : {translations}, Métadonnées : {metadata}"
       }
     },
     "lyricsProviders": {
@@ -925,6 +935,22 @@ window.LANG_FR = {
       "checkGithubReleases": "Veuillez consulter la page des versions GitHub",
       "visitGithub": "Visiter le dépôt GitHub",
       "joinDiscord": "Rejoindre le serveur Discord"
+    },
+    "debugTab": {
+      "title": "Informations de débogage",
+      "subtitle": "Informations à partager avec les développeurs lors du signalement de bugs",
+      "currentTrack": "Infos de la piste actuelle",
+      "trackInfo": "Infos de la piste",
+      "lyricsInfo": "Infos des paroles",
+      "settingsInfo": "Infos des paramètres",
+      "noLyrics": "Aucune information sur les paroles",
+      "loading": "Chargement des infos...",
+      "refresh": "Actualiser",
+      "copyToClipboard": "Copier dans le presse-papiers",
+      "copied": "Copié !",
+      "copyFailed": "Échec de la copie",
+      "sendToDiscord": "Signaler sur Discord",
+      "rawJson": "Données JSON"
     },
     "api": {
       "title": "Paramètres API",

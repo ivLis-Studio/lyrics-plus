@@ -2,11 +2,24 @@ const ProviderIvLyrics = (() => {
 	async function findLyrics(info) {
 		const trackId = info.uri.split(":")[2];
 		
+		// ApiTracker에 현재 트랙 설정
+		if (window.ApiTracker) {
+			window.ApiTracker.setCurrentTrack(trackId);
+		}
+		
 		// 1. 로컬 캐시 먼저 확인 (API 호출 절약)
 		try {
 			const cached = await LyricsCache.getLyrics(trackId);
 			if (cached) {
 				console.log(`[ProviderIvLyrics] Using local cache for ${trackId}`);
+				// 캐시 히트 로깅
+				if (window.ApiTracker) {
+					window.ApiTracker.logCacheHit('lyrics', `lyrics:${trackId}`, {
+						provider: cached.provider,
+						lyrics_type: cached.lyrics_type,
+						lineCount: cached.synced?.length || cached.unsynced?.length || 0
+					});
+				}
 				return cached;
 			}
 		} catch (e) {
@@ -16,33 +29,66 @@ const ProviderIvLyrics = (() => {
 		// 2. API 호출
 		const userHash = Utils.getUserHash();
 		const baseURL = `https://lyrics.api.ivl.is/lyrics?trackId=${trackId}&userHash=${userHash}`;
-
-		const body = await fetch(baseURL, {
-			headers: {
-				"User-Agent": `spicetify v${Spicetify.Config.version} (https://github.com/spicetify/cli)`,
-			},
-		});
-
-		if (body.status !== 200) {
-			return {
-				error: "Request error: Track wasn't found",
-				uri: info.uri,
-			};
-		}
-
-		const response = await body.json();
-
-		if (response.error) {
-			return {
-				error: response.error,
-				uri: info.uri,
-			};
-		}
 		
-		// 3. 로컬 캐시에 저장 (백그라운드)
-		LyricsCache.setLyrics(trackId, response).catch(() => {});
+		// API 요청 로깅 시작
+		let logId = null;
+		if (window.ApiTracker) {
+			logId = window.ApiTracker.logRequest('lyrics', baseURL, { trackId, userHash });
+		}
 
-		return response;
+		try {
+			const body = await fetch(baseURL, {
+				headers: {
+					"User-Agent": `spicetify v${Spicetify.Config.version} (https://github.com/spicetify/cli)`,
+				},
+			});
+
+			if (body.status !== 200) {
+				const errorResult = {
+					error: "Request error: Track wasn't found",
+					uri: info.uri,
+				};
+				// 에러 로깅
+				if (window.ApiTracker && logId) {
+					window.ApiTracker.logResponse(logId, { status: body.status }, 'error', `HTTP ${body.status}`);
+				}
+				return errorResult;
+			}
+
+			const response = await body.json();
+
+			if (response.error) {
+				// API 에러 로깅
+				if (window.ApiTracker && logId) {
+					window.ApiTracker.logResponse(logId, response, 'error', response.error);
+				}
+				return {
+					error: response.error,
+					uri: info.uri,
+				};
+			}
+			
+			// 성공 로깅
+			if (window.ApiTracker && logId) {
+				window.ApiTracker.logResponse(logId, {
+					provider: response.provider,
+					lyrics_type: response.lyrics_type,
+					source: response.source,
+					lineCount: response.synced?.length || response.unsynced?.length || 0
+				}, 'success');
+			}
+			
+			// 3. 로컬 캐시에 저장 (백그라운드)
+			LyricsCache.setLyrics(trackId, response).catch(() => {});
+
+			return response;
+		} catch (e) {
+			// 네트워크 에러 로깅
+			if (window.ApiTracker && logId) {
+				window.ApiTracker.logResponse(logId, null, 'error', e.message);
+			}
+			throw e;
+		}
 	}
 
 	function getUnsynced(body) {

@@ -12,6 +12,7 @@ window.LANG_KO = {
     "providers": "제공자",
     "advanced": "고급",
     "fullscreen": "전체화면",
+    "debug": "디버그",
     "about": "정보"
   },
   "sections": {
@@ -934,6 +935,22 @@ window.LANG_KO = {
       "checkGithubReleases": "GitHub 릴리스 페이지를 확인해주세요",
       "visitGithub": "GitHub 저장소 방문",
       "joinDiscord": "Discord 서버 참여"
+    },
+    "debugTab": {
+      "title": "디버그 정보",
+      "subtitle": "버그 리포트 시 개발자에게 전달할 정보입니다",
+      "currentTrack": "현재 트랙 정보",
+      "trackInfo": "트랙 정보",
+      "lyricsInfo": "가사 정보",
+      "settingsInfo": "설정 정보",
+      "noLyrics": "가사 정보 없음",
+      "loading": "정보를 불러오는 중...",
+      "refresh": "새로고침",
+      "copyToClipboard": "클립보드에 복사",
+      "copied": "복사됨!",
+      "copyFailed": "복사에 실패했습니다",
+      "sendToDiscord": "Discord로 보고하기",
+      "rawJson": "JSON 데이터"
     },
     "api": {
       "title": "API 설정",

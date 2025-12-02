@@ -12,6 +12,7 @@ window.LANG_HI = {
     "providers": "प्रदाता",
     "advanced": "उन्नत",
     "fullscreen": "फुल स्क्रीन",
+    "debug": "डीबग",
     "about": "के बारे में"
   },
   "sections": {
@@ -449,6 +450,8 @@ window.LANG_HI = {
     "installCommandCopied": "इंस्टॉल कमांड कॉपी किया गया",
     "copyFailed": "कॉपी विफल",
     "memoryCacheCleared": "✓ मेमोरी कैश साफ़ कर दिया गया",
+    "localCacheCleared": "✓ सभी लोकल कैश साफ़ कर दिया गया",
+    "localCacheTrackCleared": "✓ वर्तमान ट्रैक कैश साफ़ कर दिया गया",
     "exportSuccessDesc": "सेटिंग्स फ़ाइल डाउनलोड फ़ोल्डर में सहेज रहा है।",
     "exportFailed": "सेटिंग्स निर्यात विफल",
     "importSuccessDesc": "पृष्ठ कुछ ही क्षणों में रिफ्रेश होगा...",
@@ -925,6 +928,22 @@ window.LANG_HI = {
       "checkGithubReleases": "कृपया GitHub रिलीज़ पेज देखें",
       "visitGithub": "GitHub रिपॉजिटरी पर जाएं",
       "joinDiscord": "Discord सर्वर से जुड़ें"
+    },
+    "debugTab": {
+      "title": "डीबग जानकारी",
+      "subtitle": "बग रिपोर्ट करते समय डेवलपर्स के साथ साझा करने के लिए जानकारी",
+      "currentTrack": "वर्तमान ट्रैक जानकारी",
+      "trackInfo": "ट्रैक जानकारी",
+      "lyricsInfo": "लिरिक्स जानकारी",
+      "settingsInfo": "सेटिंग्स जानकारी",
+      "noLyrics": "कोई लिरिक्स जानकारी नहीं",
+      "loading": "जानकारी लोड हो रही है...",
+      "refresh": "रिफ्रेश",
+      "copyToClipboard": "क्लिपबोर्ड पर कॉपी करें",
+      "copied": "कॉपी हो गया!",
+      "copyFailed": "कॉपी विफल",
+      "sendToDiscord": "Discord पर रिपोर्ट करें",
+      "rawJson": "JSON डेटा"
     },
     "api": {
       "title": "API सेटिंग्स",

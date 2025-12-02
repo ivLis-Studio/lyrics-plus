@@ -12,6 +12,7 @@ window.LANG_BN = {
     "providers": "প্রদানকারী",
     "advanced": "উন্নত",
     "fullscreen": "পূর্ণ পর্দা",
+    "debug": "ডিবাগ",
     "about": "সম্পর্কে"
   },
   "sections": {
@@ -449,6 +450,8 @@ window.LANG_BN = {
     "installCommandCopied": "ইনস্টল কমান্ড কপি করা হয়েছে",
     "copyFailed": "কপি ব্যর্থ হয়েছে",
     "memoryCacheCleared": "✓ মেমরি ক্যাশ মুছে ফেলা হয়েছে",
+    "localCacheCleared": "✓ সমস্ত লোকাল ক্যাশ মুছে ফেলা হয়েছে",
+    "localCacheTrackCleared": "✓ বর্তমান গানের ক্যাশ মুছে ফেলা হয়েছে",
     "exportSuccessDesc": "ডাউনলোড ফোল্ডারে সেটিংস ফাইল সংরক্ষণ করা হচ্ছে।",
     "exportFailed": "সেটিংস এক্সপোর্ট ব্যর্থ হয়েছে",
     "importSuccessDesc": "পৃষ্ঠাটি কিছুক্ষণের মধ্যে রিফ্রেশ হবে...",
@@ -692,6 +695,13 @@ window.LANG_BN = {
         "label": "মেমরি ক্যাশ মুছুন",
         "desc": "লোড করা লিরিক্স দ্রুত রিলোড করার জন্য মেমরিতে অস্থায়ীভাবে সংরক্ষিত হয়। Spotify পুনরায় চালু না করেই মেমরি ক্যাশ মুছুন",
         "button": "ক্যাশ মুছুন"
+      },
+      "localCache": {
+        "label": "লোকাল ক্যাশ (IndexedDB)",
+        "desc": "লিরিক্স, অনুবাদ এবং উচ্চারণ স্থানীয়ভাবে সংরক্ষিত হয় যাতে বারবার প্লে করার সময় API কল কম হয়",
+        "clearAll": "সব মুছুন",
+        "clearCurrent": "বর্তমান গান মুছুন",
+        "stats": "লিরিক্স: {lyrics}, অনুবাদ: {translations}, মেটাডেটা: {metadata}"
       }
     },
     "lyricsProviders": {
@@ -925,6 +935,22 @@ window.LANG_BN = {
       "checkGithubReleases": "অনুগ্রহ করে GitHub রিলিজ পেজ দেখুন",
       "visitGithub": "GitHub রিপোজিটরি দেখুন",
       "joinDiscord": "Discord সার্ভারে যোগ দিন"
+    },
+    "debugTab": {
+      "title": "ডিবাগ তথ্য",
+      "subtitle": "বাগ রিপোর্ট করার সময় ডেভেলপারদের সাথে শেয়ার করার তথ্য",
+      "currentTrack": "বর্তমান ট্র্যাক তথ্য",
+      "trackInfo": "ট্র্যাক তথ্য",
+      "lyricsInfo": "গানের কথার তথ্য",
+      "settingsInfo": "সেটিংস তথ্য",
+      "noLyrics": "কোনো গানের কথার তথ্য নেই",
+      "loading": "তথ্য লোড হচ্ছে...",
+      "refresh": "রিফ্রেশ",
+      "copyToClipboard": "ক্লিপবোর্ডে কপি করুন",
+      "copied": "কপি হয়েছে!",
+      "copyFailed": "কপি ব্যর্থ হয়েছে",
+      "sendToDiscord": "Discord-এ রিপোর্ট করুন",
+      "rawJson": "JSON ডেটা"
     },
     "api": {
       "title": "API সেটিংস",

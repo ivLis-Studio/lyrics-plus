@@ -12,6 +12,7 @@ window.LANG_ID = {
     "providers": "Penyedia",
     "advanced": "Lanjutan",
     "fullscreen": "Layar Penuh",
+    "debug": "Debug",
     "about": "Tentang"
   },
   "sections": {
@@ -449,6 +450,8 @@ window.LANG_ID = {
     "installCommandCopied": "Perintah instalasi disalin",
     "copyFailed": "Gagal menyalin",
     "memoryCacheCleared": "✓ Cache memori dibersihkan",
+    "localCacheCleared": "✓ Semua cache lokal dibersihkan",
+    "localCacheTrackCleared": "✓ Cache lagu saat ini dibersihkan",
     "exportSuccessDesc": "File pengaturan disimpan ke folder unduhan.",
     "exportFailed": "Gagal mengekspor pengaturan",
     "importSuccessDesc": "Halaman akan disegarkan sebentar lagi...",
@@ -692,6 +695,13 @@ window.LANG_ID = {
         "label": "Bersihkan Cache Memori",
         "desc": "Lirik yang dimuat disimpan sementara di memori untuk pemuatan ulang cepat. Bersihkan cache memori tanpa me-restart Spotify",
         "button": "Bersihkan Cache"
+      },
+      "localCache": {
+        "label": "Cache Lokal (IndexedDB)",
+        "desc": "Lirik, terjemahan, dan pelafalan disimpan secara lokal untuk mengurangi panggilan API saat pemutaran berulang",
+        "clearAll": "Bersihkan semua",
+        "clearCurrent": "Bersihkan lagu saat ini",
+        "stats": "Lirik: {lyrics}, Terjemahan: {translations}, Metadata: {metadata}"
       }
     },
     "lyricsProviders": {
@@ -925,6 +935,22 @@ window.LANG_ID = {
       "checkGithubReleases": "Silakan periksa halaman Rilis GitHub",
       "visitGithub": "Kunjungi Repositori GitHub",
       "joinDiscord": "Gabung Server Discord"
+    },
+    "debugTab": {
+      "title": "Informasi Debug",
+      "subtitle": "Informasi untuk dibagikan dengan pengembang saat melaporkan bug",
+      "currentTrack": "Info Trek Saat Ini",
+      "trackInfo": "Info Trek",
+      "lyricsInfo": "Info Lirik",
+      "settingsInfo": "Info Pengaturan",
+      "noLyrics": "Tidak ada informasi lirik",
+      "loading": "Memuat info...",
+      "refresh": "Segarkan",
+      "copyToClipboard": "Salin ke Clipboard",
+      "copied": "Disalin!",
+      "copyFailed": "Gagal menyalin",
+      "sendToDiscord": "Laporkan ke Discord",
+      "rawJson": "Data JSON"
     },
     "api": {
       "title": "Pengaturan API",

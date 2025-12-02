@@ -12,6 +12,7 @@ window.LANG_ZH_TW = {
     "providers": "提供者",
     "advanced": "進階",
     "fullscreen": "全螢幕",
+    "debug": "除錯",
     "about": "關於"
   },
   "sections": {
@@ -449,6 +450,8 @@ window.LANG_ZH_TW = {
     "installCommandCopied": "安裝命令已複製",
     "copyFailed": "複製失敗",
     "memoryCacheCleared": "✓ 記憶體快取已清除",
+    "localCacheCleared": "✓ 所有本機快取已清除",
+    "localCacheTrackCleared": "✓ 當前曲目快取已清除",
     "exportSuccessDesc": "設定檔案已儲存到下載資料夾。",
     "exportFailed": "匯出設定失敗",
     "importSuccessDesc": "頁面即將重新整理...",
@@ -692,6 +695,13 @@ window.LANG_ZH_TW = {
         "label": "清除記憶體快取",
         "desc": "載入的歌詞暫時儲存在記憶體中以便快速重新載入。無需重新啟動Spotify即可清除記憶體快取",
         "button": "清除快取"
+      },
+      "localCache": {
+        "label": "本機快取管理 (IndexedDB)",
+        "desc": "歌詞、翻譯、發音等儲存在本機，減少重複播放時的API呼叫",
+        "clearAll": "清除全部",
+        "clearCurrent": "清除當前曲目",
+        "stats": "歌詞: {lyrics}個，翻譯: {translations}個，元資料: {metadata}個"
       }
     },
     "lyricsProviders": {
@@ -925,6 +935,22 @@ window.LANG_ZH_TW = {
       "checkGithubReleases": "請查看GitHub發佈頁面",
       "visitGithub": "造訪GitHub儲存庫",
       "joinDiscord": "加入Discord伺服器"
+    },
+    "debugTab": {
+      "title": "偵錯資訊",
+      "subtitle": "報告錯誤時與開發者共享的資訊",
+      "currentTrack": "目前曲目資訊",
+      "trackInfo": "曲目資訊",
+      "lyricsInfo": "歌詞資訊",
+      "settingsInfo": "設定資訊",
+      "noLyrics": "沒有歌詞資訊",
+      "loading": "正在載入資訊...",
+      "refresh": "重新整理",
+      "copyToClipboard": "複製到剪貼簿",
+      "copied": "已複製！",
+      "copyFailed": "複製失敗",
+      "sendToDiscord": "回報到Discord",
+      "rawJson": "JSON資料"
     },
     "api": {
       "title": "API設定",

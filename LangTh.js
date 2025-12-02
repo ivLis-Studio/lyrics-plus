@@ -12,6 +12,7 @@ window.LANG_TH = {
     "providers": "ผู้ให้บริการ",
     "advanced": "ขั้นสูง",
     "fullscreen": "เต็มหน้าจอ",
+    "debug": "ดีบัก",
     "about": "เกี่ยวกับ"
   },
   "sections": {
@@ -449,6 +450,8 @@ window.LANG_TH = {
     "installCommandCopied": "คัดลอกคำสั่งติดตั้งแล้ว",
     "copyFailed": "คัดลอกล้มเหลว",
     "memoryCacheCleared": "✓ ล้างแคชหน่วยความจำแล้ว",
+    "localCacheCleared": "✓ ล้างแคชภายในเครื่องทั้งหมดแล้ว",
+    "localCacheTrackCleared": "✓ ล้างแคชเพลงปัจจุบันแล้ว",
     "exportSuccessDesc": "ไฟล์การตั้งค่าถูกบันทึกลงในโฟลเดอร์ดาวน์โหลด",
     "exportFailed": "ส่งออกการตั้งค่าล้มเหลว",
     "importSuccessDesc": "หน้าเว็บจะรีเฟรชในไม่ช้า...",
@@ -692,6 +695,13 @@ window.LANG_TH = {
         "label": "ล้างแคชหน่วยความจำ",
         "desc": "เนื้อเพลงที่โหลดแล้วจะถูกเก็บไว้ในหน่วยความจำเพื่อการโหลดซ้ำที่รวดเร็ว ล้างแคชโดยไม่ต้องรีสตาร์ท Spotify",
         "button": "ล้างแคช"
+      },
+      "localCache": {
+        "label": "แคชภายในเครื่อง (IndexedDB)",
+        "desc": "เนื้อเพลง คำแปล และคำอ่านถูกเก็บไว้ในเครื่องเพื่อลดการเรียก API เมื่อเล่นซ้ำ",
+        "clearAll": "ล้างทั้งหมด",
+        "clearCurrent": "ล้างเพลงปัจจุบัน",
+        "stats": "เนื้อเพลง: {lyrics}, คำแปล: {translations}, เมตาดาต้า: {metadata}"
       }
     },
     "lyricsProviders": {
@@ -925,6 +935,22 @@ window.LANG_TH = {
       "checkGithubReleases": "โปรดตรวจสอบหน้า GitHub Releases",
       "visitGithub": "เยี่ยมชม GitHub Repository",
       "joinDiscord": "เข้าร่วม Discord Server"
+    },
+    "debugTab": {
+      "title": "ข้อมูลดีบัก",
+      "subtitle": "ข้อมูลสำหรับแชร์กับนักพัฒนาเมื่อรายงานบั๊ก",
+      "currentTrack": "ข้อมูลเพลงปัจจุบัน",
+      "trackInfo": "ข้อมูลเพลง",
+      "lyricsInfo": "ข้อมูลเนื้อเพลง",
+      "settingsInfo": "ข้อมูลการตั้งค่า",
+      "noLyrics": "ไม่มีข้อมูลเนื้อเพลง",
+      "loading": "กำลังโหลดข้อมูล...",
+      "refresh": "รีเฟรช",
+      "copyToClipboard": "คัดลอกไปยังคลิปบอร์ด",
+      "copied": "คัดลอกแล้ว!",
+      "copyFailed": "คัดลอกล้มเหลว",
+      "sendToDiscord": "รายงานไปยัง Discord",
+      "rawJson": "ข้อมูล JSON"
     },
     "api": {
       "title": "ตั้งค่า API",

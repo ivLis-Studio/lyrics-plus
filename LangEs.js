@@ -12,6 +12,7 @@ window.LANG_ES = {
     "providers": "Proveedores",
     "advanced": "Avanzado",
     "fullscreen": "Pantalla completa",
+    "debug": "Depuración",
     "about": "Acerca de"
   },
   "sections": {
@@ -449,6 +450,8 @@ window.LANG_ES = {
     "installCommandCopied": "Comando de instalación copiado",
     "copyFailed": "Fallo al copiar",
     "memoryCacheCleared": "✓ Caché de memoria borrada",
+    "localCacheCleared": "✓ Todo el caché local borrado",
+    "localCacheTrackCleared": "✓ Caché de la pista actual borrada",
     "exportSuccessDesc": "Guardando archivo de configuración en la carpeta de descargas.",
     "exportFailed": "Fallo al exportar configuración",
     "importSuccessDesc": "La página se actualizará en unos momentos...",
@@ -692,6 +695,13 @@ window.LANG_ES = {
         "label": "Borrar caché de memoria",
         "desc": "Las letras cargadas se guardan temporalmente en la memoria para una recarga rápida. Borra la caché de memoria sin reiniciar Spotify",
         "button": "Borrar caché"
+      },
+      "localCache": {
+        "label": "Caché local (IndexedDB)",
+        "desc": "Las letras, traducciones y pronunciaciones se almacenan localmente para reducir las llamadas API en reproducciones repetidas",
+        "clearAll": "Borrar todo",
+        "clearCurrent": "Borrar pista actual",
+        "stats": "Letras: {lyrics}, Traducciones: {translations}, Metadatos: {metadata}"
       }
     },
     "lyricsProviders": {
@@ -925,6 +935,22 @@ window.LANG_ES = {
       "checkGithubReleases": "Por favor revisa la página de lanzamientos de GitHub",
       "visitGithub": "Visitar repositorio de GitHub",
       "joinDiscord": "Unirse al servidor de Discord"
+    },
+    "debugTab": {
+      "title": "Información de depuración",
+      "subtitle": "Información para compartir con los desarrolladores al reportar errores",
+      "currentTrack": "Información de la pista actual",
+      "trackInfo": "Información de la pista",
+      "lyricsInfo": "Información de la letra",
+      "settingsInfo": "Información de configuración",
+      "noLyrics": "No hay información de letras",
+      "loading": "Cargando información...",
+      "refresh": "Actualizar",
+      "copyToClipboard": "Copiar al portapapeles",
+      "copied": "¡Copiado!",
+      "copyFailed": "Error al copiar",
+      "sendToDiscord": "Reportar en Discord",
+      "rawJson": "Datos JSON"
     },
     "api": {
       "title": "Configuración de API",

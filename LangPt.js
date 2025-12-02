@@ -12,6 +12,7 @@ window.LANG_PT = {
     "providers": "Provedores",
     "advanced": "Avançado",
     "fullscreen": "Tela Cheia",
+    "debug": "Depuração",
     "about": "Sobre"
   },
   "sections": {
@@ -449,6 +450,8 @@ window.LANG_PT = {
     "installCommandCopied": "Comando de instalação copiado",
     "copyFailed": "Falha ao copiar",
     "memoryCacheCleared": "✓ Cache de memória limpo",
+    "localCacheCleared": "✓ Todo o cache local limpo",
+    "localCacheTrackCleared": "✓ Cache da faixa atual limpo",
     "exportSuccessDesc": "Salvando arquivo de configurações na pasta de downloads.",
     "exportFailed": "Falha na exportação das configurações",
     "importSuccessDesc": "A página será atualizada em alguns instantes...",
@@ -692,6 +695,13 @@ window.LANG_PT = {
         "label": "Limpar Cache de Memória",
         "desc": "Letras carregadas são salvas temporariamente na memória para recarregamento rápido. Limpar cache de memória sem reiniciar o Spotify",
         "button": "Limpar Cache"
+      },
+      "localCache": {
+        "label": "Cache Local (IndexedDB)",
+        "desc": "Letras, traduções e pronúncias são armazenadas localmente para reduzir chamadas de API em reproduções repetidas",
+        "clearAll": "Limpar tudo",
+        "clearCurrent": "Limpar faixa atual",
+        "stats": "Letras: {lyrics}, Traduções: {translations}, Metadados: {metadata}"
       }
     },
     "lyricsProviders": {
@@ -925,6 +935,22 @@ window.LANG_PT = {
       "checkGithubReleases": "Por favor, verifique a página de lançamentos no GitHub",
       "visitGithub": "Visitar repositório GitHub",
       "joinDiscord": "Juntar-se ao servidor Discord"
+    },
+    "debugTab": {
+      "title": "Informações de Depuração",
+      "subtitle": "Informações para compartilhar com desenvolvedores ao relatar erros",
+      "currentTrack": "Informações da Faixa Atual",
+      "trackInfo": "Informações da Faixa",
+      "lyricsInfo": "Informações das Letras",
+      "settingsInfo": "Informações de Configurações",
+      "noLyrics": "Sem informações de letras",
+      "loading": "Carregando informações...",
+      "refresh": "Atualizar",
+      "copyToClipboard": "Copiar para Área de Transferência",
+      "copied": "Copiado!",
+      "copyFailed": "Falha ao copiar",
+      "sendToDiscord": "Relatar no Discord",
+      "rawJson": "Dados JSON"
     },
     "api": {
       "title": "Configurações de API",

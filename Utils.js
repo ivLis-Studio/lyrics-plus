@@ -33,12 +33,180 @@ class LRUCache {
 }
 
 // ============================================
+// API 요청/응답 추적 시스템 (Debug용)
+// ============================================
+const ApiTracker = {
+  _logs: [],
+  _maxLogs: 100,
+  _currentTrackId: null,
+  _listeners: [],
+  
+  /**
+   * 현재 트랙 설정 (새 트랙 재생 시 로그 초기화)
+   */
+  setCurrentTrack(trackId) {
+    if (this._currentTrackId !== trackId) {
+      this._logs = [];
+      this._currentTrackId = trackId;
+      this._notifyListeners();
+    }
+  },
+  
+  /**
+   * API 요청 로그 추가
+   */
+  logRequest(category, endpoint, request = null) {
+    const logEntry = {
+      id: Date.now() + Math.random(),
+      category,
+      endpoint,
+      request,
+      response: null,
+      status: 'pending',
+      startTime: Date.now(),
+      endTime: null,
+      duration: null,
+      error: null,
+      cached: false
+    };
+    
+    this._logs.push(logEntry);
+    
+    // 최대 로그 수 유지
+    if (this._logs.length > this._maxLogs) {
+      this._logs.shift();
+    }
+    
+    this._notifyListeners();
+    return logEntry.id;
+  },
+  
+  /**
+   * API 응답 로그 업데이트
+   */
+  logResponse(logId, response, status = 'success', error = null, cached = false) {
+    const entry = this._logs.find(l => l.id === logId);
+    if (entry) {
+      entry.response = response;
+      entry.status = status;
+      entry.error = error;
+      entry.cached = cached;
+      entry.endTime = Date.now();
+      entry.duration = entry.endTime - entry.startTime;
+      this._notifyListeners();
+    }
+  },
+  
+  /**
+   * 캐시 히트 로그 (API 호출 없이 캐시에서 가져온 경우)
+   */
+  logCacheHit(category, cacheKey, data) {
+    const logEntry = {
+      id: Date.now() + Math.random(),
+      category,
+      endpoint: `[CACHE] ${cacheKey}`,
+      request: null,
+      response: data,
+      status: 'cached',
+      startTime: Date.now(),
+      endTime: Date.now(),
+      duration: 0,
+      error: null,
+      cached: true
+    };
+    
+    this._logs.push(logEntry);
+    
+    if (this._logs.length > this._maxLogs) {
+      this._logs.shift();
+    }
+    
+    this._notifyListeners();
+  },
+  
+  /**
+   * 현재 트랙의 모든 로그 가져오기
+   */
+  getLogs() {
+    return [...this._logs];
+  },
+  
+  /**
+   * 카테고리별 로그 가져오기
+   */
+  getLogsByCategory(category) {
+    return this._logs.filter(l => l.category === category);
+  },
+  
+  /**
+   * 로그 초기화
+   */
+  clear() {
+    this._logs = [];
+    this._notifyListeners();
+  },
+  
+  /**
+   * 리스너 등록
+   */
+  addListener(callback) {
+    this._listeners.push(callback);
+    return () => {
+      this._listeners = this._listeners.filter(l => l !== callback);
+    };
+  },
+  
+  /**
+   * 리스너들에게 변경 알림
+   */
+  _notifyListeners() {
+    this._listeners.forEach(cb => {
+      try { cb(this._logs); } catch(e) {}
+    });
+  },
+  
+  /**
+   * 요약 정보 가져오기
+   */
+  getSummary() {
+    const summary = {
+      total: this._logs.length,
+      pending: 0,
+      success: 0,
+      error: 0,
+      cached: 0,
+      byCategory: {}
+    };
+    
+    this._logs.forEach(log => {
+      if (log.status === 'pending') summary.pending++;
+      else if (log.status === 'success') summary.success++;
+      else if (log.status === 'error') summary.error++;
+      if (log.cached) summary.cached++;
+      
+      if (!summary.byCategory[log.category]) {
+        summary.byCategory[log.category] = { total: 0, success: 0, error: 0, cached: 0 };
+      }
+      summary.byCategory[log.category].total++;
+      if (log.status === 'success') summary.byCategory[log.category].success++;
+      if (log.status === 'error') summary.byCategory[log.category].error++;
+      if (log.cached) summary.byCategory[log.category].cached++;
+    });
+    
+    return summary;
+  }
+};
+
+// 전역 접근 가능하도록 window에 등록
+window.ApiTracker = ApiTracker;
+
+// ============================================
 // IndexedDB 기반 로컬 캐시 시스템
 // API 호출 횟수를 90% 이상 줄여 비용 절감
 // ============================================
 const LyricsCache = {
   DB_NAME: 'LyricsPlusCache',
-  DB_VERSION: 2,
+  DB_VERSION: 3,  // sync 스토어 추가
   
   // 캐시 만료 시간 (일 단위)
   EXPIRY: {
@@ -99,6 +267,12 @@ const LyricsCache = {
         if (!db.objectStoreNames.contains('metadata')) {
           const metaStore = db.createObjectStore('metadata', { keyPath: 'cacheKey' });
           metaStore.createIndex('cachedAt', 'cachedAt', { unique: false });
+        }
+        
+        // 커뮤니티 싱크 오프셋 캐시 스토어
+        if (!db.objectStoreNames.contains('sync')) {
+          const syncStore = db.createObjectStore('sync', { keyPath: 'trackId' });
+          syncStore.createIndex('cachedAt', 'cachedAt', { unique: false });
         }
       };
     });
@@ -354,12 +528,79 @@ const LyricsCache = {
   },
   
   /**
+   * 커뮤니티 싱크 오프셋 캐시 조회
+   */
+  async getSync(trackId) {
+    try {
+      const db = await this._openDB();
+      
+      // sync 스토어가 없으면 null 반환 (DB 마이그레이션 전)
+      if (!db.objectStoreNames.contains('sync')) {
+        return null;
+      }
+      
+      const tx = db.transaction('sync', 'readonly');
+      const store = tx.objectStore('sync');
+      
+      const result = await new Promise((resolve, reject) => {
+        const request = store.get(trackId);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      
+      if (result && !this._isExpired(result.cachedAt, 'sync')) {
+        console.log(`[LyricsCache] Sync cache hit for ${trackId}`);
+        return result.data;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('[LyricsCache] getSync error:', error);
+      return null;
+    }
+  },
+  
+  /**
+   * 커뮤니티 싱크 오프셋 캐시 저장
+   */
+  async setSync(trackId, data) {
+    try {
+      const db = await this._openDB();
+      
+      // sync 스토어가 없으면 스킵 (DB 마이그레이션 전)
+      if (!db.objectStoreNames.contains('sync')) {
+        return false;
+      }
+      
+      const tx = db.transaction('sync', 'readwrite');
+      const store = tx.objectStore('sync');
+      
+      store.put({
+        trackId,
+        data,
+        cachedAt: Date.now()
+      });
+      
+      await new Promise((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+      
+      console.log(`[LyricsCache] Sync cached for ${trackId}`);
+      return true;
+    } catch (error) {
+      console.error('[LyricsCache] setSync error:', error);
+      return false;
+    }
+  },
+  
+  /**
    * 만료된 캐시 정리 (백그라운드에서 실행)
    */
   async cleanup() {
     try {
       const db = await this._openDB();
-      const stores = ['lyrics', 'translations', 'youtube', 'metadata'];
+      const stores = ['lyrics', 'translations', 'youtube', 'metadata', 'sync'];
       
       for (const storeName of stores) {
         const tx = db.transaction(storeName, 'readwrite');
@@ -388,47 +629,104 @@ const LyricsCache = {
   },
   
   /**
+   * 특정 트랙의 번역 캐시만 삭제 (발음 + 번역)
+   */
+  async clearTranslationForTrack(trackId) {
+    try {
+      const db = await this._openDB();
+      
+      // 번역 스토어에서 해당 트랙의 모든 번역 삭제
+      return new Promise((resolve, reject) => {
+        const transTx = db.transaction('translations', 'readwrite');
+        const transStore = transTx.objectStore('translations');
+        const transRequest = transStore.openCursor();
+        
+        transRequest.onsuccess = (event) => {
+          const cursor = event.target.result;
+          if (cursor) {
+            if (cursor.value.trackId === trackId) {
+              cursor.delete();
+            }
+            cursor.continue();
+          }
+        };
+        
+        transTx.oncomplete = () => {
+          console.log(`[LyricsCache] Cleared translation cache for ${trackId}`);
+          resolve(true);
+        };
+        transTx.onerror = () => reject(transTx.error);
+      });
+    } catch (error) {
+      console.error('[LyricsCache] clearTranslationForTrack error:', error);
+      return false;
+    }
+  },
+  
+  /**
    * 특정 트랙의 캐시 삭제
    */
   async clearTrack(trackId) {
     try {
       const db = await this._openDB();
       
+      // 모든 삭제 작업을 Promise로 관리
+      const deletePromises = [];
+      
       // 가사 삭제
-      const lyricsTx = db.transaction('lyrics', 'readwrite');
-      lyricsTx.objectStore('lyrics').delete(trackId);
+      deletePromises.push(new Promise((resolve, reject) => {
+        const lyricsTx = db.transaction('lyrics', 'readwrite');
+        lyricsTx.objectStore('lyrics').delete(trackId);
+        lyricsTx.oncomplete = () => resolve();
+        lyricsTx.onerror = () => reject(lyricsTx.error);
+      }));
       
       // 번역 삭제 (모든 언어)
-      const transTx = db.transaction('translations', 'readwrite');
-      const transStore = transTx.objectStore('translations');
-      const transRequest = transStore.openCursor();
-      transRequest.onsuccess = (event) => {
-        const cursor = event.target.result;
-        if (cursor) {
-          if (cursor.value.trackId === trackId) {
-            cursor.delete();
+      deletePromises.push(new Promise((resolve, reject) => {
+        const transTx = db.transaction('translations', 'readwrite');
+        const transStore = transTx.objectStore('translations');
+        const transRequest = transStore.openCursor();
+        transRequest.onsuccess = (event) => {
+          const cursor = event.target.result;
+          if (cursor) {
+            if (cursor.value.trackId === trackId) {
+              cursor.delete();
+            }
+            cursor.continue();
           }
-          cursor.continue();
-        }
-      };
+        };
+        transTx.oncomplete = () => resolve();
+        transTx.onerror = () => reject(transTx.error);
+      }));
       
       // YouTube 삭제
-      const ytTx = db.transaction('youtube', 'readwrite');
-      ytTx.objectStore('youtube').delete(trackId);
+      deletePromises.push(new Promise((resolve, reject) => {
+        const ytTx = db.transaction('youtube', 'readwrite');
+        ytTx.objectStore('youtube').delete(trackId);
+        ytTx.oncomplete = () => resolve();
+        ytTx.onerror = () => reject(ytTx.error);
+      }));
       
       // 메타데이터 삭제
-      const metaTx = db.transaction('metadata', 'readwrite');
-      const metaStore = metaTx.objectStore('metadata');
-      const metaRequest = metaStore.openCursor();
-      metaRequest.onsuccess = (event) => {
-        const cursor = event.target.result;
-        if (cursor) {
-          if (cursor.value.trackId === trackId) {
-            cursor.delete();
+      deletePromises.push(new Promise((resolve, reject) => {
+        const metaTx = db.transaction('metadata', 'readwrite');
+        const metaStore = metaTx.objectStore('metadata');
+        const metaRequest = metaStore.openCursor();
+        metaRequest.onsuccess = (event) => {
+          const cursor = event.target.result;
+          if (cursor) {
+            if (cursor.value.trackId === trackId) {
+              cursor.delete();
+            }
+            cursor.continue();
           }
-          cursor.continue();
-        }
-      };
+        };
+        metaTx.oncomplete = () => resolve();
+        metaTx.onerror = () => reject(metaTx.error);
+      }));
+      
+      // 모든 삭제 작업이 완료될 때까지 대기
+      await Promise.all(deletePromises);
       
       console.log(`[LyricsCache] Cleared cache for ${trackId}`);
       return true;
@@ -446,10 +744,17 @@ const LyricsCache = {
       const db = await this._openDB();
       const stores = ['lyrics', 'translations', 'youtube', 'metadata'];
       
-      for (const storeName of stores) {
-        const tx = db.transaction(storeName, 'readwrite');
-        tx.objectStore(storeName).clear();
-      }
+      // 모든 스토어의 삭제를 병렬로 처리하고 완료 대기
+      const clearPromises = stores.map(storeName => {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(storeName, 'readwrite');
+          tx.objectStore(storeName).clear();
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      });
+      
+      await Promise.all(clearPromises);
       
       console.log('[LyricsCache] All cache cleared');
       return true;
@@ -1344,7 +1649,7 @@ const Utils = {
   /**
    * Current version of the lyrics-plus app
    */
-  currentVersion: "2.3.1",
+  currentVersion: "2.3.2",
 
   /**
    * Check for updates from remote repository
@@ -1673,17 +1978,59 @@ const Utils = {
     const trackId = this.extractTrackId(trackUri);
     if (!trackId) return null;
 
+    // 1. 로컬 캐시 먼저 확인
+    try {
+      const cached = await LyricsCache.getSync(trackId);
+      if (cached !== null) {
+        console.log(`[Lyrics Plus] Using cached community offset for ${trackId}`);
+        // 캐시 히트 로깅
+        if (window.ApiTracker) {
+          window.ApiTracker.logCacheHit('sync', `sync:${trackId}`, {
+            offsetMs: cached.offsetMs,
+            voteCount: cached.voteCount
+          });
+        }
+        return cached;
+      }
+    } catch (e) {
+      console.warn('[Lyrics Plus] Sync cache check failed:', e);
+    }
+
+    // 2. API 호출
     const userHash = this.getUserHash();
+    const syncUrl = `https://lyrics.api.ivl.is/lyrics/sync?trackId=${trackId}&userHash=${userHash}`;
+
+    // API 요청 로깅
+    let logId = null;
+    if (window.ApiTracker) {
+      logId = window.ApiTracker.logRequest('sync', syncUrl, { trackId, userHash });
+    }
 
     try {
-      const response = await fetch(`https://lyrics.api.ivl.is/lyrics/sync?trackId=${trackId}&userHash=${userHash}`);
+      const response = await fetch(syncUrl);
       const data = await response.json();
       
       if (data.success && data.data) {
+        if (window.ApiTracker && logId) {
+          window.ApiTracker.logResponse(logId, { 
+            offsetMs: data.data.offsetMs,
+            voteCount: data.data.voteCount
+          }, 'success');
+        }
+        // 로컬 캐시에 저장
+        LyricsCache.setSync(trackId, data.data).catch(() => {});
         return data.data;
       }
+      if (window.ApiTracker && logId) {
+        window.ApiTracker.logResponse(logId, null, 'success', 'No offset found');
+      }
+      // 오프셋이 없는 경우도 캐시 (null 표시를 위한 빈 객체)
+      LyricsCache.setSync(trackId, { offsetMs: null, voteCount: 0 }).catch(() => {});
       return null;
     } catch (error) {
+      if (window.ApiTracker && logId) {
+        window.ApiTracker.logResponse(logId, null, 'error', error.message);
+      }
       console.error("[Lyrics Plus] Failed to get community offset:", error);
       return null;
     }
@@ -1697,9 +2044,16 @@ const Utils = {
     if (!trackId) return null;
 
     const userHash = this.getUserHash();
+    const syncUrl = 'https://lyrics.api.ivl.is/lyrics/sync';
+
+    // API 요청 로깅
+    let logId = null;
+    if (window.ApiTracker) {
+      logId = window.ApiTracker.logRequest('sync', syncUrl, { trackId, offsetMs, userHash, method: 'POST' });
+    }
 
     try {
-      const response = await fetch('https://lyrics.api.ivl.is/lyrics/sync', {
+      const response = await fetch(syncUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1711,11 +2065,20 @@ const Utils = {
       const data = await response.json();
       
       if (data.success) {
+        if (window.ApiTracker && logId) {
+          window.ApiTracker.logResponse(logId, { submitted: true }, 'success');
+        }
         console.log(`[Lyrics Plus] Community offset submitted: ${offsetMs}ms`);
         return data;
       }
+      if (window.ApiTracker && logId) {
+        window.ApiTracker.logResponse(logId, null, 'error', 'Submit failed');
+      }
       return null;
     } catch (error) {
+      if (window.ApiTracker && logId) {
+        window.ApiTracker.logResponse(logId, null, 'error', error.message);
+      }
       console.error("[Lyrics Plus] Failed to submit community offset:", error);
       return null;
     }
