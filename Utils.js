@@ -1679,7 +1679,7 @@ const Utils = {
   /**
    * Current version of the lyrics-plus app
    */
-  currentVersion: "2.3.2",
+  currentVersion: "2.3.4",
 
   /**
    * Check for updates from remote repository
@@ -2152,16 +2152,22 @@ const Utils = {
 
   /**
    * 커뮤니티 영상 목록 조회
+   * @param {string} trackUri - 트랙 URI
+   * @param {boolean} skipCache - 캐시 우회 여부 (등록/삭제 후 새 데이터 가져올 때)
    */
-  async getCommunityVideos(trackUri) {
+  async getCommunityVideos(trackUri, skipCache = false) {
     const trackId = this.extractTrackId(trackUri);
     if (!trackId) return null;
 
     const userHash = this.getUserHash();
 
     try {
+      // skipCache가 true이면 캐시 우회를 위한 타임스탬프 추가
+      const cacheParam = skipCache ? `&_t=${Date.now()}` : '';
       const response = await fetch(
-        `https://lyrics.api.ivl.is/lyrics/youtube/community?trackId=${trackId}&userId=${userHash}`
+        `https://lyrics.api.ivl.is/lyrics/youtube/community?trackId=${trackId}&userId=${userHash}${cacheParam}`,
+        // 항상 최신 데이터를 가져오도록 no-cache 설정 (서버 캐시 문제 방지)
+        { cache: 'no-cache' }
       );
       const data = await response.json();
       

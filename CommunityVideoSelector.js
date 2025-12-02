@@ -198,6 +198,102 @@ const SyncedVideoPreview = ({ videoId, startTime }) => {
     );
 };
 
+// 시간 입력 시 iframe 리로드 방지를 위한 단순 미리보기 컴포넌트
+const SimpleVideoPreview = ({ videoId, startTime }) => {
+    const { useEffect, useRef } = react;
+    const containerRef = useRef(null);
+    const playerRef = useRef(null);
+
+    useEffect(() => {
+        if (!videoId || !containerRef.current) return;
+
+        let isMounted = true;
+
+        const initPlayer = () => {
+            if (!window.YT || !window.YT.Player) {
+                setTimeout(initPlayer, 100);
+                return;
+            }
+
+            if (!isMounted) return;
+
+            // 고유 ID 생성
+            const playerId = `simple-preview-${videoId}-${Date.now()}`;
+            const playerDiv = document.createElement('div');
+            playerDiv.id = playerId;
+            containerRef.current.innerHTML = '';
+            containerRef.current.appendChild(playerDiv);
+
+            playerRef.current = new window.YT.Player(playerId, {
+                videoId: videoId,
+                width: '100%',
+                height: '180',
+                playerVars: {
+                    autoplay: 1,
+                    controls: 0,
+                    disablekb: 1,
+                    fs: 0,
+                    iv_load_policy: 3,
+                    modestbranding: 1,
+                    rel: 0,
+                    showinfo: 0,
+                    mute: 0,
+                    playsinline: 1,
+                    start: Math.floor(startTime),
+                    origin: window.location.origin
+                },
+                events: {
+                    onReady: (event) => {
+                        if (isMounted && playerRef.current) {
+                             playerRef.current.seekTo(startTime, true);
+                             playerRef.current.playVideo();
+                        }
+                    }
+                }
+            });
+        };
+
+        initPlayer();
+
+        return () => {
+            isMounted = false;
+            if (playerRef.current) {
+                try {
+                    playerRef.current.destroy();
+                } catch (e) {}
+                playerRef.current = null;
+            }
+        };
+    }, [videoId]);
+
+    useEffect(() => {
+        if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
+            playerRef.current.seekTo(startTime, true);
+            playerRef.current.playVideo();
+        }
+    }, [startTime]);
+
+    return react.createElement("div", {
+        className: "community-video-embed submit-preview",
+        style: { position: "relative" }
+    },
+        react.createElement("div", {
+            ref: containerRef,
+            style: { width: "100%", height: "180px", background: "#000" }
+        }),
+        react.createElement("div", {
+            style: {
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                cursor: "default"
+            }
+        })
+    );
+};
+
 const CommunityVideoSelector = ({ trackUri, currentVideoId, onVideoSelect, onClose }) => {
     const { useState, useEffect, useCallback, useRef } = react;
     
@@ -222,13 +318,13 @@ const CommunityVideoSelector = ({ trackUri, currentVideoId, onVideoSelect, onClo
     // 현재 사용자 해시 ID
     const currentUserHash = Utils.getCurrentUserHash();
     
-    // 영상 목록 로드
-    const loadVideos = useCallback(async () => {
+    // 영상 목록 로드 (skipCache: 등록/삭제 후 캐시 우회)
+    const loadVideos = useCallback(async (skipCache = false) => {
         setIsLoading(true);
         setError(null);
         
         try {
-            const data = await Utils.getCommunityVideos(trackUri);
+            const data = await Utils.getCommunityVideos(trackUri, skipCache);
             if (data && data.videos) {
                 setVideos(data.videos);
             } else {
@@ -366,7 +462,8 @@ const CommunityVideoSelector = ({ trackUri, currentVideoId, onVideoSelect, onClo
                 setSubmitStartTime(0);
                 setSubmitVideoTitle('');
                 setFormPreviewVideoId(null);
-                loadVideos();
+                // 캐시를 우회하여 새 데이터 가져오기
+                loadVideos(true);
             }
         } catch (e) {
             Spicetify.showNotification(I18n.t("communityVideo.submitError"), true);
@@ -663,18 +760,10 @@ const CommunityVideoSelector = ({ trackUri, currentVideoId, onVideoSelect, onClo
                     ),
                     
                     // Embed 미리보기 (등록 폼) - 폼용 별도 상태 사용
-                    formPreviewVideoId && showSubmitForm && react.createElement("div", {
-                        className: "community-video-embed submit-preview"
-                    },
-                        react.createElement("iframe", {
-                            src: getEmbedUrl(formPreviewVideoId, submitStartTime),
-                            width: "100%",
-                            height: "180",
-                            frameBorder: "0",
-                            allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
-                            allowFullScreen: true
-                        })
-                    ),
+                    formPreviewVideoId && showSubmitForm && react.createElement(SimpleVideoPreview, {
+                        videoId: formPreviewVideoId,
+                        startTime: submitStartTime
+                    }),
                     
                     react.createElement("div", {
                         className: "form-group"

@@ -35,7 +35,7 @@ For bug reports and feature suggestions, please contact us via GitHub Issues or 
 - Various font, color, and layout customization options
 
 ### Supported Languages
-Korean, English, Japanese, Chinese (Simplified/Traditional), Spanish, French, German, Italian, Portuguese, Russian, Arabic, Hindi, Bengali, Thai, Vietnamese, Indonesian
+Korean, English, Japanese, Chinese (Simplified/Traditional), Spanish, French, German, Italian, Portuguese, Russian, Arabic, Persian, Hindi, Bengali, Thai, Vietnamese, Indonesian
 
 ---
 

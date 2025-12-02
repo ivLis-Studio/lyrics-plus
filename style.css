@@ -2207,7 +2207,6 @@ ruby .lyrics-karaoke-char.sung {
 .fullscreen-control-volume-row {
 	margin-top: 8px;
 	padding-top: 8px;
-	border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Control buttons */

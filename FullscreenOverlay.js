@@ -292,6 +292,9 @@ const FullscreenOverlay = (() => {
         const [isLiked, setIsLiked] = useState(false);
         const [volume, setVolume] = useState(Spicetify.Player.getVolume?.() ?? 1);
         const [isMuted, setIsMuted] = useState(false);
+        const [isVolumeHovered, setIsVolumeHovered] = useState(false);
+        const [isVolumeChanging, setIsVolumeChanging] = useState(false);
+        const volumeChangeTimeoutRef = useRef(null);
 
         // 재생 상태를 Spicetify.Player.data.isPaused에서 직접 가져옴
         useEffect(() => {
@@ -373,6 +376,26 @@ const FullscreenOverlay = (() => {
             setVolume(newVolume);
             Spicetify.Player.setVolume(newVolume);
             setIsMuted(newVolume === 0);
+            
+            setIsVolumeChanging(true);
+            if (volumeChangeTimeoutRef.current) clearTimeout(volumeChangeTimeoutRef.current);
+            volumeChangeTimeoutRef.current = setTimeout(() => setIsVolumeChanging(false), 1000);
+        };
+
+        const handleVolumeWheel = (e) => {
+            if (!isVolumeHovered) return;
+            e.preventDefault();
+            const step = 0.05;
+            const delta = e.deltaY > 0 ? -step : step;
+            const newVolume = Math.min(1, Math.max(0, volume + delta));
+            
+            setVolume(newVolume);
+            Spicetify.Player.setVolume(newVolume);
+            setIsMuted(newVolume === 0);
+
+            setIsVolumeChanging(true);
+            if (volumeChangeTimeoutRef.current) clearTimeout(volumeChangeTimeoutRef.current);
+            volumeChangeTimeoutRef.current = setTimeout(() => setIsVolumeChanging(false), 1000);
         };
 
         const toggleMute = () => {
@@ -507,7 +530,12 @@ const FullscreenOverlay = (() => {
             ),
             // Volume row
             showVolume && react.createElement("div", { className: "fullscreen-control-row fullscreen-control-volume-row" },
-                react.createElement("div", { className: "fullscreen-volume-wrapper" },
+                react.createElement("div", { 
+                    className: "fullscreen-volume-wrapper",
+                    onMouseEnter: () => setIsVolumeHovered(true),
+                    onMouseLeave: () => setIsVolumeHovered(false),
+                    onWheel: handleVolumeWheel
+                },
                     react.createElement("button", {
                         className: "fullscreen-control-btn",
                         style: smallButtonStyle,
@@ -534,7 +562,17 @@ const FullscreenOverlay = (() => {
                         step: 0.01,
                         value: volume,
                         onChange: handleVolumeChange
-                    })
+                    }),
+                    (isVolumeChanging || isVolumeHovered) && react.createElement("span", {
+                        className: "fullscreen-volume-percent",
+                        style: { 
+                            marginLeft: "8px",
+                            minWidth: "35px", 
+                            textAlign: "left",
+                            fontSize: "12px",
+                            opacity: 0.8
+                        }
+                    }, `${Math.round(volume * 100)}%`)
                 )
             )
         );

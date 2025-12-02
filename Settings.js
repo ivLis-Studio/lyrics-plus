@@ -3176,6 +3176,7 @@ const ConfigModal = () => {
                 es: "Español",
                 fr: "Français",
                 ar: "العربية",
+                fa: "فارسی",
                 de: "Deutsch",
                 ru: "Русский",
                 pt: "Português",
