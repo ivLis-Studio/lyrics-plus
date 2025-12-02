@@ -1021,6 +1021,11 @@ const SyncAdjustButton = react.memo(
       setIsSubmitting(true);
       try {
         await Utils.submitCommunityOffset(trackUri, offset);
+        // 로컬 캐시 삭제하여 새 데이터 반영
+        const trackId = Utils.extractTrackId(trackUri);
+        if (trackId) {
+          await LyricsCache.deleteSync(trackId);
+        }
         Spicetify.showNotification(I18n.t("syncAdjust.submitSuccess"), false, 2000);
         loadCommunityData();
       } catch (error) {
@@ -1614,14 +1619,14 @@ const SyncAdjustButton = react.memo(
                           "span",
                           {
                             className: "stat-value",
-                            style: { color: getConfidenceColor(communityData.confidence) },
+                            style: { color: getConfidenceColor(communityData.confidence ?? 0) },
                           },
-                          `${Math.round(communityData.confidence * 100)}%`
+                          `${Math.round((communityData.confidence ?? 0) * 100)}%`
                         ),
                         react.createElement(
                           "span",
                           { className: "stat-label" },
-                          getConfidenceLevel(communityData.confidence)
+                          getConfidenceLevel(communityData.confidence ?? 0)
                         )
                       )
                     ),

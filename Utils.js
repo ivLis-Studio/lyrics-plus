@@ -595,6 +595,36 @@ const LyricsCache = {
   },
   
   /**
+   * 커뮤니티 싱크 오프셋 캐시 삭제
+   */
+  async deleteSync(trackId) {
+    try {
+      const db = await this._openDB();
+      
+      // sync 스토어가 없으면 스킵
+      if (!db.objectStoreNames.contains('sync')) {
+        return false;
+      }
+      
+      const tx = db.transaction('sync', 'readwrite');
+      const store = tx.objectStore('sync');
+      
+      store.delete(trackId);
+      
+      await new Promise((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+      
+      console.log(`[LyricsCache] Sync cache deleted for ${trackId}`);
+      return true;
+    } catch (error) {
+      console.error('[LyricsCache] deleteSync error:', error);
+      return false;
+    }
+  },
+  
+  /**
    * 만료된 캐시 정리 (백그라운드에서 실행)
    */
   async cleanup() {
@@ -1649,7 +1679,7 @@ const Utils = {
   /**
    * Current version of the lyrics-plus app
    */
-  currentVersion: "2.3.3",
+  currentVersion: "2.3.2",
 
   /**
    * Check for updates from remote repository
