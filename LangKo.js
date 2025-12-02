@@ -449,6 +449,8 @@ window.LANG_KO = {
     "installCommandCopied": "설치 명령어가 복사되었습니다",
     "copyFailed": "복사에 실패했습니다",
     "memoryCacheCleared": "✓ 메모리 캐시가 초기화되었습니다",
+    "localCacheCleared": "✓ 로컬 캐시가 모두 삭제되었습니다",
+    "localCacheTrackCleared": "✓ 현재 곡의 로컬 캐시가 삭제되었습니다",
     "exportSuccessDesc": "설정파일을 다운로드 폴더에 저장합니다.",
     "exportFailed": "설정 내보내기 실패",
     "importSuccessDesc": "잠시 후 페이지가 새로고침됩니다...",
@@ -692,6 +694,13 @@ window.LANG_KO = {
         "label": "메모리 캐시 초기화",
         "desc": "로드된 가사는 빠른 재로드를 위해 메모리에 임시 저장됩니다. Spotify를 재시작하지 않고 메모리 캐시를 비웁니다",
         "button": "캐시 비우기"
+      },
+      "localCache": {
+        "label": "로컬 캐시 관리 (IndexedDB)",
+        "desc": "가사, 번역, 발음 등이 로컬에 저장되어 반복 청취 시 API 호출을 줄입니다",
+        "clearAll": "전체 삭제",
+        "clearCurrent": "현재 곡 삭제",
+        "stats": "가사: {lyrics}개, 번역: {translations}개, 메타데이터: {metadata}개"
       }
     },
     "lyricsProviders": {

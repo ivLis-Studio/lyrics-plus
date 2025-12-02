@@ -32,6 +32,464 @@ class LRUCache {
   }
 }
 
+// ============================================
+// IndexedDB 기반 로컬 캐시 시스템
+// API 호출 횟수를 90% 이상 줄여 비용 절감
+// ============================================
+const LyricsCache = {
+  DB_NAME: 'LyricsPlusCache',
+  DB_VERSION: 2,
+  
+  // 캐시 만료 시간 (일 단위)
+  EXPIRY: {
+    lyrics: 7,        // 가사: 7일
+    translation: 30,  // 번역: 30일
+    phonetic: 30,     // 발음: 30일
+    metadata: 30,     // 메타데이터: 30일
+    sync: 7,          // 싱크 오프셋: 7일
+    youtube: 7        // YouTube 정보: 7일
+  },
+  
+  _db: null,
+  _dbPromise: null,
+  
+  /**
+   * IndexedDB 열기
+   */
+  async _openDB() {
+    if (this._db) return this._db;
+    if (this._dbPromise) return this._dbPromise;
+    
+    this._dbPromise = new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
+      
+      request.onerror = () => {
+        console.error('[LyricsCache] Failed to open database:', request.error);
+        this._dbPromise = null;
+        reject(request.error);
+      };
+      
+      request.onsuccess = () => {
+        this._db = request.result;
+        resolve(this._db);
+      };
+      
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        
+        // 가사 캐시 스토어
+        if (!db.objectStoreNames.contains('lyrics')) {
+          const lyricsStore = db.createObjectStore('lyrics', { keyPath: 'trackId' });
+          lyricsStore.createIndex('cachedAt', 'cachedAt', { unique: false });
+        }
+        
+        // 번역 캐시 스토어
+        if (!db.objectStoreNames.contains('translations')) {
+          const transStore = db.createObjectStore('translations', { keyPath: 'cacheKey' });
+          transStore.createIndex('cachedAt', 'cachedAt', { unique: false });
+        }
+        
+        // YouTube 정보 캐시 스토어
+        if (!db.objectStoreNames.contains('youtube')) {
+          const ytStore = db.createObjectStore('youtube', { keyPath: 'trackId' });
+          ytStore.createIndex('cachedAt', 'cachedAt', { unique: false });
+        }
+        
+        // 메타데이터 번역 캐시 스토어
+        if (!db.objectStoreNames.contains('metadata')) {
+          const metaStore = db.createObjectStore('metadata', { keyPath: 'cacheKey' });
+          metaStore.createIndex('cachedAt', 'cachedAt', { unique: false });
+        }
+      };
+    });
+    
+    return this._dbPromise;
+  },
+  
+  /**
+   * 만료 여부 확인
+   */
+  _isExpired(cachedAt, type) {
+    if (!cachedAt) return true;
+    const expiryDays = this.EXPIRY[type] || 7;
+    const expiryMs = expiryDays * 24 * 60 * 60 * 1000;
+    return Date.now() - cachedAt > expiryMs;
+  },
+  
+  /**
+   * 가사 캐시 조회
+   */
+  async getLyrics(trackId) {
+    try {
+      const db = await this._openDB();
+      const tx = db.transaction('lyrics', 'readonly');
+      const store = tx.objectStore('lyrics');
+      
+      const result = await new Promise((resolve, reject) => {
+        const request = store.get(trackId);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      
+      if (result && !this._isExpired(result.cachedAt, 'lyrics')) {
+        console.log(`[LyricsCache] Lyrics cache hit for ${trackId}`);
+        return result.data;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('[LyricsCache] getLyrics error:', error);
+      return null;
+    }
+  },
+  
+  /**
+   * 가사 캐시 저장
+   */
+  async setLyrics(trackId, data) {
+    try {
+      const db = await this._openDB();
+      const tx = db.transaction('lyrics', 'readwrite');
+      const store = tx.objectStore('lyrics');
+      
+      store.put({
+        trackId,
+        data,
+        cachedAt: Date.now()
+      });
+      
+      await new Promise((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+      
+      console.log(`[LyricsCache] Lyrics cached for ${trackId}`);
+      return true;
+    } catch (error) {
+      console.error('[LyricsCache] setLyrics error:', error);
+      return false;
+    }
+  },
+  
+  /**
+   * 번역 캐시 키 생성
+   */
+  _getTranslationKey(trackId, lang, isPhonetic) {
+    return `${trackId}:${lang}:${isPhonetic ? 'phonetic' : 'translation'}`;
+  },
+  
+  /**
+   * 번역 캐시 조회
+   */
+  async getTranslation(trackId, lang, isPhonetic = false) {
+    try {
+      const db = await this._openDB();
+      const tx = db.transaction('translations', 'readonly');
+      const store = tx.objectStore('translations');
+      const cacheKey = this._getTranslationKey(trackId, lang, isPhonetic);
+      
+      const result = await new Promise((resolve, reject) => {
+        const request = store.get(cacheKey);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      
+      const type = isPhonetic ? 'phonetic' : 'translation';
+      if (result && !this._isExpired(result.cachedAt, type)) {
+        console.log(`[LyricsCache] Translation cache hit for ${cacheKey}`);
+        return result.data;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('[LyricsCache] getTranslation error:', error);
+      return null;
+    }
+  },
+  
+  /**
+   * 번역 캐시 저장
+   */
+  async setTranslation(trackId, lang, isPhonetic, data) {
+    try {
+      const db = await this._openDB();
+      const tx = db.transaction('translations', 'readwrite');
+      const store = tx.objectStore('translations');
+      const cacheKey = this._getTranslationKey(trackId, lang, isPhonetic);
+      
+      store.put({
+        cacheKey,
+        trackId,
+        lang,
+        isPhonetic,
+        data,
+        cachedAt: Date.now()
+      });
+      
+      await new Promise((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+      
+      console.log(`[LyricsCache] Translation cached for ${cacheKey}`);
+      return true;
+    } catch (error) {
+      console.error('[LyricsCache] setTranslation error:', error);
+      return false;
+    }
+  },
+  
+  /**
+   * 메타데이터 번역 캐시 조회
+   */
+  async getMetadata(trackId, lang) {
+    try {
+      const db = await this._openDB();
+      const tx = db.transaction('metadata', 'readonly');
+      const store = tx.objectStore('metadata');
+      const cacheKey = `${trackId}:${lang}`;
+      
+      const result = await new Promise((resolve, reject) => {
+        const request = store.get(cacheKey);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      
+      if (result && !this._isExpired(result.cachedAt, 'metadata')) {
+        console.log(`[LyricsCache] Metadata cache hit for ${cacheKey}`);
+        return result.data;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('[LyricsCache] getMetadata error:', error);
+      return null;
+    }
+  },
+  
+  /**
+   * 메타데이터 번역 캐시 저장
+   */
+  async setMetadata(trackId, lang, data) {
+    try {
+      const db = await this._openDB();
+      const tx = db.transaction('metadata', 'readwrite');
+      const store = tx.objectStore('metadata');
+      const cacheKey = `${trackId}:${lang}`;
+      
+      store.put({
+        cacheKey,
+        trackId,
+        lang,
+        data,
+        cachedAt: Date.now()
+      });
+      
+      await new Promise((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+      
+      console.log(`[LyricsCache] Metadata cached for ${cacheKey}`);
+      return true;
+    } catch (error) {
+      console.error('[LyricsCache] setMetadata error:', error);
+      return false;
+    }
+  },
+  
+  /**
+   * YouTube 정보 캐시 조회
+   */
+  async getYouTube(trackId) {
+    try {
+      const db = await this._openDB();
+      const tx = db.transaction('youtube', 'readonly');
+      const store = tx.objectStore('youtube');
+      
+      const result = await new Promise((resolve, reject) => {
+        const request = store.get(trackId);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      
+      if (result && !this._isExpired(result.cachedAt, 'youtube')) {
+        console.log(`[LyricsCache] YouTube cache hit for ${trackId}`);
+        return result.data;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('[LyricsCache] getYouTube error:', error);
+      return null;
+    }
+  },
+  
+  /**
+   * YouTube 정보 캐시 저장
+   */
+  async setYouTube(trackId, data) {
+    try {
+      const db = await this._openDB();
+      const tx = db.transaction('youtube', 'readwrite');
+      const store = tx.objectStore('youtube');
+      
+      store.put({
+        trackId,
+        data,
+        cachedAt: Date.now()
+      });
+      
+      await new Promise((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+      
+      console.log(`[LyricsCache] YouTube cached for ${trackId}`);
+      return true;
+    } catch (error) {
+      console.error('[LyricsCache] setYouTube error:', error);
+      return false;
+    }
+  },
+  
+  /**
+   * 만료된 캐시 정리 (백그라운드에서 실행)
+   */
+  async cleanup() {
+    try {
+      const db = await this._openDB();
+      const stores = ['lyrics', 'translations', 'youtube', 'metadata'];
+      
+      for (const storeName of stores) {
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+        
+        const request = store.openCursor();
+        request.onsuccess = (event) => {
+          const cursor = event.target.result;
+          if (cursor) {
+            const type = storeName === 'translations' 
+              ? (cursor.value.isPhonetic ? 'phonetic' : 'translation')
+              : storeName;
+            
+            if (this._isExpired(cursor.value.cachedAt, type)) {
+              cursor.delete();
+            }
+            cursor.continue();
+          }
+        };
+      }
+      
+      console.log('[LyricsCache] Cleanup completed');
+    } catch (error) {
+      console.error('[LyricsCache] cleanup error:', error);
+    }
+  },
+  
+  /**
+   * 특정 트랙의 캐시 삭제
+   */
+  async clearTrack(trackId) {
+    try {
+      const db = await this._openDB();
+      
+      // 가사 삭제
+      const lyricsTx = db.transaction('lyrics', 'readwrite');
+      lyricsTx.objectStore('lyrics').delete(trackId);
+      
+      // 번역 삭제 (모든 언어)
+      const transTx = db.transaction('translations', 'readwrite');
+      const transStore = transTx.objectStore('translations');
+      const transRequest = transStore.openCursor();
+      transRequest.onsuccess = (event) => {
+        const cursor = event.target.result;
+        if (cursor) {
+          if (cursor.value.trackId === trackId) {
+            cursor.delete();
+          }
+          cursor.continue();
+        }
+      };
+      
+      // YouTube 삭제
+      const ytTx = db.transaction('youtube', 'readwrite');
+      ytTx.objectStore('youtube').delete(trackId);
+      
+      // 메타데이터 삭제
+      const metaTx = db.transaction('metadata', 'readwrite');
+      const metaStore = metaTx.objectStore('metadata');
+      const metaRequest = metaStore.openCursor();
+      metaRequest.onsuccess = (event) => {
+        const cursor = event.target.result;
+        if (cursor) {
+          if (cursor.value.trackId === trackId) {
+            cursor.delete();
+          }
+          cursor.continue();
+        }
+      };
+      
+      console.log(`[LyricsCache] Cleared cache for ${trackId}`);
+      return true;
+    } catch (error) {
+      console.error('[LyricsCache] clearTrack error:', error);
+      return false;
+    }
+  },
+  
+  /**
+   * 전체 캐시 삭제
+   */
+  async clearAll() {
+    try {
+      const db = await this._openDB();
+      const stores = ['lyrics', 'translations', 'youtube', 'metadata'];
+      
+      for (const storeName of stores) {
+        const tx = db.transaction(storeName, 'readwrite');
+        tx.objectStore(storeName).clear();
+      }
+      
+      console.log('[LyricsCache] All cache cleared');
+      return true;
+    } catch (error) {
+      console.error('[LyricsCache] clearAll error:', error);
+      return false;
+    }
+  },
+  
+  /**
+   * 캐시 통계 조회
+   */
+  async getStats() {
+    try {
+      const db = await this._openDB();
+      const stores = ['lyrics', 'translations', 'youtube', 'metadata'];
+      const stats = {};
+      
+      for (const storeName of stores) {
+        const tx = db.transaction(storeName, 'readonly');
+        const store = tx.objectStore(storeName);
+        
+        stats[storeName] = await new Promise((resolve, reject) => {
+          const request = store.count();
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+      }
+      
+      return stats;
+    } catch (error) {
+      console.error('[LyricsCache] getStats error:', error);
+      return null;
+    }
+  }
+};
+
+// 시작 시 만료된 캐시 정리 (5초 후 백그라운드에서)
+setTimeout(() => LyricsCache.cleanup(), 5000);
+
 // Optimized Utils with performance improvements and caching
 const Utils = {
   // LRU caches for frequently used operations (최적화 #10 - LRU 캐시 적용)
@@ -886,7 +1344,7 @@ const Utils = {
   /**
    * Current version of the lyrics-plus app
    */
-  currentVersion: "2.3.1",
+  currentVersion: "2.3.2",
 
   /**
    * Check for updates from remote repository

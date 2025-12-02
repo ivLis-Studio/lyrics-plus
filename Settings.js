@@ -45,35 +45,135 @@ const SwapButton = ({ icon, disabled, onClick }) => {
   );
 };
 
-const CacheButton = () => {
-  let lyrics = {};
 
-  try {
-    const localLyrics = JSON.parse(
-      StorageManager.getItem("lyrics-plus:local-lyrics")
-    );
-    if (!localLyrics || typeof localLyrics !== "object") {
-      throw "";
+
+// 로컬 캐시 관리 컴포넌트 (IndexedDB)
+const LocalCacheManager = () => {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // 캐시 통계 로드
+  const loadStats = async () => {
+    try {
+      const cacheStats = await LyricsCache.getStats();
+      setStats(cacheStats);
+    } catch (e) {
+      console.error('[LocalCacheManager] Failed to load stats:', e);
+      setStats(null);
     }
-    lyrics = localLyrics;
-  } catch {
-    lyrics = {};
-  }
+    setLoading(false);
+  };
 
-  const [count, setCount] = useState(Object.keys(lyrics).length);
-  const text = count ? I18n.t("settings.cache.deleteAll") : I18n.t("settings.cache.noCache");
+  // 컴포넌트 마운트 시 통계 로드
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  // 전체 캐시 삭제
+  const handleClearAll = async () => {
+    try {
+      // 메모리 캐시도 함께 초기화
+      Translator.clearAllMemoryCache();
+      Translator.clearAllInflightRequests();
+      
+      await LyricsCache.clearAll();
+      await loadStats();
+      
+      // 캐시는 이미 지웠으므로 clearCache=false로 호출
+      reloadLyrics?.(false);
+      Spicetify.showNotification(
+        I18n.t("notifications.localCacheCleared"),
+        false,
+        2000
+      );
+    } catch (e) {
+      console.error('[LocalCacheManager] Clear all failed:', e);
+    }
+  };
+
+  // 현재 곡 캐시 삭제
+  const handleClearCurrent = async () => {
+    const trackId = Spicetify.Player.data?.item?.uri?.split(':')[2];
+    if (!trackId) {
+      Spicetify.showNotification("No track playing", true, 2000);
+      return;
+    }
+    
+    try {
+      // 번역 메모리 캐시도 함께 초기화
+      Translator.clearMemoryCache(trackId);
+      Translator.clearInflightRequests(trackId);
+      
+      await LyricsCache.clearTrack(trackId);
+      await loadStats();
+      
+      // 캐시는 이미 지웠으므로 clearCache=false로 호출
+      reloadLyrics?.(false);
+      Spicetify.showNotification(
+        I18n.t("notifications.localCacheTrackCleared"),
+        false,
+        2000
+      );
+    } catch (e) {
+      console.error('[LocalCacheManager] Clear track failed:', e);
+    }
+  };
+
+  // 통계 문자열 생성
+  const getStatsText = () => {
+    if (loading) return "Loading...";
+    if (!stats) return "Cache not available";
+    
+    return I18n.t("settingsAdvanced.cacheManagement.localCache.stats")
+      .replace("{lyrics}", stats.lyrics || 0)
+      .replace("{translations}", stats.translations || 0)
+      .replace("{metadata}", stats.metadata || 0);
+  };
+
+  const totalCount = stats ? (stats.lyrics || 0) + (stats.translations || 0) + (stats.metadata || 0) + (stats.youtube || 0) : 0;
 
   return react.createElement(
-    "button",
-    {
-      className: "btn",
-      onClick: () => {
-        StorageManager.setItem("lyrics-plus:local-lyrics");
-        setCount(0);
-      },
-      disabled: !count,
-    },
-    text
+    "div",
+    { className: "setting-row" },
+    react.createElement(
+      "div",
+      { className: "setting-row-content" },
+      react.createElement(
+        "div",
+        { className: "setting-row-left" },
+        react.createElement("div", { className: "setting-name" }, 
+          I18n.t("settingsAdvanced.cacheManagement.localCache.label")
+        ),
+        react.createElement("div", { className: "setting-description" }, 
+          I18n.t("settingsAdvanced.cacheManagement.localCache.desc")
+        ),
+        react.createElement("div", { 
+          className: "setting-description",
+          style: { marginTop: "4px", opacity: 0.7 }
+        }, getStatsText())
+      ),
+      react.createElement(
+        "div",
+        { className: "setting-row-right", style: { display: "flex", gap: "8px" } },
+        react.createElement(
+          "button",
+          {
+            className: "btn",
+            onClick: handleClearCurrent,
+          },
+          I18n.t("settingsAdvanced.cacheManagement.localCache.clearCurrent")
+        ),
+        react.createElement(
+          "button",
+          {
+            className: "btn",
+            onClick: handleClearAll,
+            disabled: totalCount === 0,
+          },
+          I18n.t("settingsAdvanced.cacheManagement.localCache.clearAll")
+        )
+      )
+    )
   );
 };
 
@@ -839,12 +939,8 @@ const ConfigHotkey = ({ name, defaultValue, onChange = () => { } }) => {
 };
 
 const ServiceAction = ({ item, setTokenCallback }) => {
-  switch (item.name) {
-    case "local":
-      return react.createElement(CacheButton);
-    default:
-      return null;
-  }
+  // CacheButton은 LocalCacheManager로 통합되어 제거됨
+  return null;
 };
 
 const ServiceOption = react.memo(
@@ -3579,26 +3675,8 @@ const ConfigModal = () => {
           title: I18n.t("settingsAdvanced.cacheManagement.title"),
           subtitle: I18n.t("settingsAdvanced.cacheManagement.subtitle"),
         }),
-        react.createElement(OptionList, {
-          items: [
-            {
-              desc: I18n.t("settingsAdvanced.cacheManagement.memoryCache.label"),
-              info: I18n.t("settingsAdvanced.cacheManagement.memoryCache.desc"),
-              key: "clear-memory-cache",
-              text: I18n.t("settingsAdvanced.cacheManagement.memoryCache.button"),
-              type: ConfigButton,
-              onChange: () => {
-                reloadLyrics?.();
-                Spicetify.showNotification(
-                  I18n.t("notifications.memoryCacheCleared"),
-                  false,
-                  2000
-                );
-              },
-            },
-          ],
-          onChange: () => { },
-        })
+        // 로컬 캐시 관리 (IndexedDB) - 메모리 캐시와 통합됨
+        react.createElement(LocalCacheManager)
       ),
       // 번역 탭 (가사 제공자 포함)
       react.createElement(

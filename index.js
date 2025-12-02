@@ -3891,8 +3891,23 @@ class LyricsContainer extends react.Component {
       this.forceUpdate();
     };
 
-    reloadLyrics = () => {
+    reloadLyrics = async (clearCache = true) => {
+      // 메모리 캐시는 항상 초기화
       CACHE = {};
+      
+      // clearCache가 true이고 트랙 정보가 있으면 로컬 캐시도 삭제
+      if (clearCache) {
+        const item = Spicetify.Player.data?.item;
+        if (item?.uri) {
+          const trackId = item.uri.split(":").pop();
+          if (trackId) {
+            await LyricsCache.clearTrack(trackId);
+            Translator.clearMemoryCache(trackId);
+            Translator.clearInflightRequests(trackId);
+          }
+        }
+      }
+      
       this.updateVisualOnConfigChange();
       this.forceUpdate();
       this.fetchLyrics(
@@ -4629,133 +4644,6 @@ class LyricsContainer extends react.Component {
           },
         }),
         react.createElement(SettingsMenu),
-        react.createElement(
-          Spicetify.ReactComponent.TooltipWrapper,
-          {
-            label: this.state.isCached ? "Lyrics cached" : "Cache lyrics",
-          },
-          react.createElement(
-            "button",
-            {
-              className: "lyrics-config-button",
-              onClick: () => {
-                const { synced, unsynced, karaoke } = this.state;
-                if (!synced && !unsynced && !karaoke) {
-                  Spicetify.showNotification(
-                    "No lyrics available to cache",
-                    true,
-                    2000
-                  );
-                  return;
-                }
-
-                if (this.state.isCached) {
-                  this.deleteLocalLyrics(this.currentTrackUri);
-                  Spicetify.showNotification(
-                    "✓ Lyrics cache deleted",
-                    false,
-                    2000
-                  );
-                } else {
-                  this.saveLocalLyrics(this.currentTrackUri, {
-                    synced,
-                    unsynced,
-                    karaoke,
-                  });
-                  Spicetify.showNotification(
-                    "✓ Lyrics cached successfully",
-                    false,
-                    2000
-                  );
-                }
-              },
-            },
-            react.createElement("svg", {
-              width: 16,
-              height: 16,
-              viewBox: "0 0 16 16",
-              fill: "currentColor",
-              dangerouslySetInnerHTML: {
-                __html:
-                  Spicetify.SVGIcons[
-                  this.state.isCached ? "downloaded" : "download"
-                  ],
-              },
-            })
-          )
-        ),
-        react.createElement(
-          Spicetify.ReactComponent.TooltipWrapper,
-          {
-            label: "Load lyrics from file",
-          },
-          react.createElement(
-            "button",
-            {
-              className: "lyrics-config-button",
-              onClick: () => {
-                const fileInput =
-                  this._domCache?.fileInput ??
-                  (this._domCache &&
-                    (this._domCache.fileInput =
-                      document.getElementById("lyrics-file-input")));
-                fileInput?.click();
-              },
-            },
-            react.createElement("input", {
-              type: "file",
-              id: "lyrics-file-input",
-              accept: ".lrc,.txt",
-              onChange: this.processLyricsFromFile.bind(this),
-              style: {
-                display: "none",
-              },
-            }),
-            react.createElement("svg", {
-              width: 16,
-              height: 16,
-              viewBox: "0 0 16 16",
-              fill: "currentColor",
-              dangerouslySetInnerHTML: {
-                __html: Spicetify.SVGIcons["plus-alt"],
-              },
-            })
-          )
-        ),
-        // Reset Translation button - show when there are lyrics and potential translations
-        (() => {
-          const hasLyrics = this.state.synced || this.state.unsynced;
-          return hasLyrics;
-        })() &&
-        react.createElement(
-          Spicetify.ReactComponent.TooltipWrapper,
-          {
-            label: "Reset translation cache",
-          },
-          react.createElement(
-            "button",
-            {
-              className: "lyrics-config-button",
-              onClick: () => {
-                this.resetTranslationCache(this.currentTrackUri);
-              },
-            },
-            react.createElement("svg", {
-              width: 16,
-              height: 16,
-              viewBox: "0 0 16 16",
-              fill: "currentColor",
-              dangerouslySetInnerHTML: {
-                __html:
-                  Spicetify.SVGIcons["x"] ||
-                  Spicetify.SVGIcons["close"] ||
-                  Spicetify.SVGIcons["cross"] ||
-                  // Simple X icon as fallback for reset
-                  '<path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>',
-              },
-            })
-          )
-        ),
         // Fullscreen toggle button
         (() => !document.getElementById("fad-lyrics-plus-container"))() && react.createElement(
           Spicetify.ReactComponent.TooltipWrapper,

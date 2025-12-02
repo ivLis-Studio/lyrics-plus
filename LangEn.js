@@ -449,6 +449,8 @@ window.LANG_EN = {
     "installCommandCopied": "Install command copied",
     "copyFailed": "Copy failed",
     "memoryCacheCleared": "✓ Memory cache cleared",
+    "localCacheCleared": "✓ All local cache cleared",
+    "localCacheTrackCleared": "✓ Current track cache cleared",
     "exportSuccessDesc": "Settings file saved to Downloads folder.",
     "exportFailed": "Settings export failed",
     "importSuccessDesc": "Page will refresh shortly...",
@@ -692,6 +694,13 @@ window.LANG_EN = {
         "label": "Clear Memory Cache",
         "desc": "Loaded lyrics are temporarily stored in memory for quick reload. Clear memory cache without restarting Spotify",
         "button": "Clear Cache"
+      },
+      "localCache": {
+        "label": "Local Cache Management (IndexedDB)",
+        "desc": "Lyrics, translations, and phonetics are stored locally to reduce API calls on repeated plays",
+        "clearAll": "Clear All",
+        "clearCurrent": "Clear Current Track",
+        "stats": "Lyrics: {lyrics}, Translations: {translations}, Metadata: {metadata}"
       }
     },
     "lyricsProviders": {

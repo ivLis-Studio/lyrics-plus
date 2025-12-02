@@ -81,6 +81,21 @@ class Translator {
     _pendingRetries.clear();
   }
 
+  // 메모리 캐시 초기화 (특정 trackId)
+  static clearMemoryCache(trackId) {
+    if (!trackId) return;
+    for (const key of this._metadataCache.keys()) {
+      if (key.startsWith(`${trackId}:`)) {
+        this._metadataCache.delete(key);
+      }
+    }
+  }
+
+  // 모든 메모리 캐시 초기화
+  static clearAllMemoryCache() {
+    this._metadataCache.clear();
+  }
+
   /**
    * 메타데이터 번역 (제목/아티스트)
    * @param {Object} options - 옵션
@@ -117,6 +132,20 @@ class Translator {
     // 메모리 캐시 확인
     if (!ignoreCache && this._metadataCache.has(cacheKey)) {
       return this._metadataCache.get(cacheKey);
+    }
+    
+    // 로컬 캐시 (IndexedDB) 확인
+    if (!ignoreCache) {
+      try {
+        const localCached = await LyricsCache.getMetadata(finalTrackId, userLang);
+        if (localCached) {
+          console.log(`[Translator] Using local metadata cache for ${cacheKey}`);
+          this._metadataCache.set(cacheKey, localCached);
+          return localCached;
+        }
+      } catch (e) {
+        console.warn('[Translator] Local metadata cache check failed:', e);
+      }
     }
 
     // 중복 요청 방지
@@ -155,6 +184,8 @@ class Translator {
         if (data.success && data.data) {
           // 메모리 캐시에 저장
           this._metadataCache.set(cacheKey, data.data);
+          // 로컬 캐시(IndexedDB)에도 저장 (백그라운드)
+          LyricsCache.setMetadata(finalTrackId, userLang, data.data).catch(() => {});
           return data.data;
         }
 
@@ -263,6 +294,19 @@ class Translator {
 
     // 사용자의 현재 언어 가져오기
     const userLang = I18n.getCurrentLanguage();
+    
+    // 1. 로컬 캐시 먼저 확인 (ignoreCache가 아닌 경우)
+    if (!ignoreCache) {
+      try {
+        const localCached = await LyricsCache.getTranslation(finalTrackId, userLang, wantSmartPhonetic);
+        if (localCached) {
+          console.log(`[Translator] Using local cache for ${finalTrackId}:${userLang}:${wantSmartPhonetic ? 'phonetic' : 'translation'}`);
+          return localCached;
+        }
+      } catch (e) {
+        console.warn('[Translator] Local cache check failed:', e);
+      }
+    }
     
     // 중복 요청 방지: 동일한 trackId + type + lang 조합에 대한 요청이 진행 중이면 해당 Promise 반환
     const requestKey = getRequestKey(finalTrackId, wantSmartPhonetic, userLang);
@@ -438,6 +482,9 @@ class Translator {
           }
           throw new Error(errorMessage);
         }
+
+        // 성공 시 로컬 캐시에 저장 (백그라운드)
+        LyricsCache.setTranslation(finalTrackId, userLang, wantSmartPhonetic, data).catch(() => {});
 
         return data;
       } catch (error) {

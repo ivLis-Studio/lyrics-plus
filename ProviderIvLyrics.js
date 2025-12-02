@@ -1,6 +1,19 @@
 const ProviderIvLyrics = (() => {
 	async function findLyrics(info) {
 		const trackId = info.uri.split(":")[2];
+		
+		// 1. 로컬 캐시 먼저 확인 (API 호출 절약)
+		try {
+			const cached = await LyricsCache.getLyrics(trackId);
+			if (cached) {
+				console.log(`[ProviderIvLyrics] Using local cache for ${trackId}`);
+				return cached;
+			}
+		} catch (e) {
+			console.warn('[ProviderIvLyrics] Cache check failed:', e);
+		}
+		
+		// 2. API 호출
 		const userHash = Utils.getUserHash();
 		const baseURL = `https://lyrics.api.ivl.is/lyrics?trackId=${trackId}&userHash=${userHash}`;
 
@@ -25,6 +38,9 @@ const ProviderIvLyrics = (() => {
 				uri: info.uri,
 			};
 		}
+		
+		// 3. 로컬 캐시에 저장 (백그라운드)
+		LyricsCache.setLyrics(trackId, response).catch(() => {});
 
 		return response;
 	}
