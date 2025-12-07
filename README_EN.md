@@ -9,6 +9,8 @@
 
 ---
 
+<img src="https://api.star-history.com/svg?repos=ivLis-Studio/lyrics-plus&type=date" width="420px" align="right" style="display: inline-block;"/>
+
 ### Lyrics Plus - Enjoy Music, with your Language.
 
 A lyrics extension for Spicetify. Supports pronunciation display and translation for various languages using the Google Gemini API.
@@ -150,5 +152,6 @@ If you experience issues with settings or lyrics display:
 If you'd like to support development, please buy me a coffee.
 
 <a href="https://www.buymeacoffee.com/ivlis" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 
 
