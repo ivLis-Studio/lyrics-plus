@@ -797,6 +797,10 @@ window.LANG_AR = {
       "twoColumnLayout": {
         "desc": "استخدام تخطيط عمودين"
       },
+      "overlay": {
+        "label": "طبقة شفافة",
+        "desc": "إظهار طبقة شفافة على شاشة الأغنية"
+      },
       "browserFullscreen": {
         "desc": "استخدام ملء الشاشة لـ Spotify",
         "info": "عند الدخول في وضع ملء الشاشة، يتحول Spotify إلى ملء الشاشة لملء الشاشة بالكامل"

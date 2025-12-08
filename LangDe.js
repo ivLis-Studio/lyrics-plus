@@ -49,7 +49,23 @@ window.LANG_DE = {
     "contributors": "Mitwirkende",
     "fadWarningTitle": "⚠️ Full Screen Erweiterung aktiv",
     "fadWarningDesc": "Nicht unterstützt während die Full Screen Erweiterung verwendet wird.",
-    "fadWarningTip": "Bitte ändern Sie die Ausrichtung in den Full Screen Einstellungen."
+    "fadWarningTip": "Bitte ändern Sie die Ausrichtung in den Full Screen Einstellungen.",
+    "desktopOverlay": "Desktop-Overlay",
+    "desktopOverlaySubtitle": "Songtexte als Desktop-Overlay anzeigen"
+  },
+  "overlay": {
+    "enabled": {
+      "label": "Desktop-Overlay aktivieren",
+      "desc": "Songtexte an die Desktop-Overlay-App senden"
+    },
+    "status": {
+      "connected": "✓ Verbunden",
+      "disconnected": "Nicht verbunden",
+      "checking": "Prüfe..."
+    },
+    "openApp": "App öffnen",
+    "download": "App herunterladen",
+    "downloadDesc": "Laden Sie die Overlay-App herunter, falls sie nicht installiert ist"
   },
   "settings": {
     "language": {

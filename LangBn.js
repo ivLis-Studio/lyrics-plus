@@ -797,6 +797,10 @@ window.LANG_BN = {
       "twoColumnLayout": {
         "desc": "২-কলাম লেআউট ব্যবহার করুন"
       },
+      "overlay": {
+        "label": "ওভারলে",
+        "desc": "গান পর্দায় ওভারলে দেখান"
+      },
       "browserFullscreen": {
         "desc": "Spotify ফুল স্ক্রিন ব্যবহার করুন",
         "info": "ফুল স্ক্রিন মোডে প্রবেশ করলে Spotify পুরো মনিটর ভরতে ফুল স্ক্রিন হয়"

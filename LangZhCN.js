@@ -49,7 +49,23 @@ window.LANG_ZH_CN = {
     "contributors": "贡献者",
     "fadWarningTitle": "⚠️ 全屏扩展程序已激活",
     "fadWarningDesc": "在全屏扩展程序激活时不支持此功能。",
-    "fadWarningTip": "请在全屏扩展程序的设置中更改对齐方式。"
+    "fadWarningTip": "请在全屏扩展程序的设置中更改对齐方式。",
+    "desktopOverlay": "桌面悬浮窗",
+    "desktopOverlaySubtitle": "将歌词显示为桌面悬浮窗"
+  },
+  "overlay": {
+    "enabled": {
+      "label": "启用桌面悬浮窗",
+      "desc": "将歌词发送到桌面悬浮窗应用"
+    },
+    "status": {
+      "connected": "✓ 已连接",
+      "disconnected": "未连接",
+      "checking": "检查中..."
+    },
+    "openApp": "打开应用",
+    "download": "下载应用",
+    "downloadDesc": "如果未安装悬浮窗应用，请下载"
   },
   "settings": {
     "language": {

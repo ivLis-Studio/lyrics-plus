@@ -797,6 +797,10 @@ window.LANG_ID = {
       "twoColumnLayout": {
         "desc": "Gunakan Tata Letak 2 Kolom"
       },
+      "overlay": {
+        "label": "Overlay",
+        "desc": "Tampilkan overlay di layar lirik"
+      },
       "browserFullscreen": {
         "desc": "Gunakan Spotify Layar Penuh",
         "info": "Ubah Spotify ke layar penuh monitor saat masuk mode layar penuh"

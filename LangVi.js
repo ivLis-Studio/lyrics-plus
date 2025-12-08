@@ -797,6 +797,10 @@ window.LANG_VI = {
       "twoColumnLayout": {
         "desc": "Sử dụng bố cục 2 cột"
       },
+      "overlay": {
+        "label": "Lớp phủ",
+        "desc": "Hiện lớp phủ trên màn hình lời bài hát"
+      },
       "browserFullscreen": {
         "desc": "Sử dụng Spotify toàn màn hình",
         "info": "Chuyển Spotify sang chế độ toàn màn hình màn hình khi vào chế độ toàn màn hình"

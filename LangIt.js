@@ -797,6 +797,10 @@ window.LANG_IT = {
       "twoColumnLayout": {
         "desc": "Usa Layout a 2 Colonne"
       },
+      "overlay": {
+        "label": "Overlay",
+        "desc": "Mostra overlay sulla schermata dei testi"
+      },
       "browserFullscreen": {
         "desc": "Usa Schermo Intero Spotify",
         "info": "Quando si entra in modalità schermo intero, Spotify passa a schermo intero per riempire l'intero monitor"

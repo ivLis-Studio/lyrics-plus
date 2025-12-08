@@ -49,7 +49,23 @@ window.LANG_ES = {
     "contributors": "Colaboradores",
     "fadWarningTitle": "⚠️ Extensión Full Screen en uso",
     "fadWarningDesc": "No es compatible mientras se usa la extensión Full Screen.",
-    "fadWarningTip": "Por favor, cambia la alineación en la configuración de Full Screen."
+    "fadWarningTip": "Por favor, cambia la alineación en la configuración de Full Screen.",
+    "desktopOverlay": "Superposición de escritorio",
+    "desktopOverlaySubtitle": "Mostrar letras como superposición en el escritorio"
+  },
+  "overlay": {
+    "enabled": {
+      "label": "Habilitar superposición de escritorio",
+      "desc": "Enviar letras a la aplicación de superposición de escritorio"
+    },
+    "status": {
+      "connected": "✓ Conectado",
+      "disconnected": "No conectado",
+      "checking": "Comprobando..."
+    },
+    "openApp": "Abrir app",
+    "download": "Descargar app",
+    "downloadDesc": "Descarga la aplicación de superposición si no está instalada"
   },
   "settings": {
     "language": {

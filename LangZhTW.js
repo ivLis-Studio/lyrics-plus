@@ -49,7 +49,23 @@ window.LANG_ZH_TW = {
     "contributors": "貢獻者",
     "fadWarningTitle": "⚠️ 全螢幕擴充功能已啟用",
     "fadWarningDesc": "全螢幕擴充功能啟用時不支援此功能。",
-    "fadWarningTip": "請在全螢幕擴充功能的設定中更改對齊方式。"
+    "fadWarningTip": "請在全螢幕擴充功能的設定中更改對齊方式。",
+    "desktopOverlay": "桌面懸浮視窗",
+    "desktopOverlaySubtitle": "將歌詞顯示為桌面懸浮視窗"
+  },
+  "overlay": {
+    "enabled": {
+      "label": "啟用桌面懸浮視窗",
+      "desc": "將歌詞傳送到桌面懸浮視窗應用程式"
+    },
+    "status": {
+      "connected": "✓ 已連線",
+      "disconnected": "未連線",
+      "checking": "檢查中..."
+    },
+    "openApp": "開啟應用程式",
+    "download": "下載應用程式",
+    "downloadDesc": "如果未安裝懸浮視窗應用程式，請下載"
   },
   "settings": {
     "language": {

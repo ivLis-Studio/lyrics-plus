@@ -49,7 +49,23 @@ window.LANG_JA = {
     "contributors": "コントリビューター",
     "fadWarningTitle": "⚠️ フルスクリーン拡張機能が有効です",
     "fadWarningDesc": "フルスクリーン拡張機能が有効な場合、この機能はサポートされません。",
-    "fadWarningTip": "フルスクリーン拡張機能の設定で配置を変更してください。"
+    "fadWarningTip": "フルスクリーン拡張機能の設定で配置を変更してください。",
+    "desktopOverlay": "デスクトップオーバーレイ",
+    "desktopOverlaySubtitle": "歌詞をデスクトップにオーバーレイ表示します"
+  },
+  "overlay": {
+    "enabled": {
+      "label": "デスクトップオーバーレイを使用",
+      "desc": "歌詞をデスクトップオーバーレイアプリに送信します"
+    },
+    "status": {
+      "connected": "✓ 接続済み",
+      "disconnected": "未接続",
+      "checking": "確認中..."
+    },
+    "openApp": "アプリを開く",
+    "download": "アプリをダウンロード",
+    "downloadDesc": "オーバーレイアプリがインストールされていない場合はダウンロードしてください"
   },
   "settings": {
     "language": {

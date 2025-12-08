@@ -49,7 +49,23 @@ window.LANG_FR = {
     "contributors": "Contributeurs",
     "fadWarningTitle": "⚠️ Extension Full Screen en cours d'utilisation",
     "fadWarningDesc": "Non pris en charge lors de l'utilisation de l'extension Full Screen.",
-    "fadWarningTip": "Veuillez modifier l'alignement dans les paramètres de Full Screen."
+    "fadWarningTip": "Veuillez modifier l'alignement dans les paramètres de Full Screen.",
+    "desktopOverlay": "Overlay de bureau",
+    "desktopOverlaySubtitle": "Afficher les paroles en overlay sur le bureau"
+  },
+  "overlay": {
+    "enabled": {
+      "label": "Activer l'overlay de bureau",
+      "desc": "Envoyer les paroles à l'application d'overlay de bureau"
+    },
+    "status": {
+      "connected": "✓ Connecté",
+      "disconnected": "Non connecté",
+      "checking": "Vérification..."
+    },
+    "openApp": "Ouvrir l'app",
+    "download": "Télécharger l'app",
+    "downloadDesc": "Téléchargez l'application d'overlay si elle n'est pas installée"
   },
   "settings": {
     "language": {

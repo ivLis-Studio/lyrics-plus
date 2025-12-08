@@ -797,6 +797,10 @@ window.LANG_TH = {
       "twoColumnLayout": {
         "desc": "ใช้เลย์เอาต์ 2 คอลัมน์"
       },
+      "overlay": {
+        "label": "โอเวอร์เลย์",
+        "desc": "แสดงโอเวอร์เลย์บนหน้าจอเนื้อเพลง"
+      },
       "browserFullscreen": {
         "desc": "ใช้ Spotify เต็มหน้าจอ",
         "info": "เปลี่ยน Spotify ให้เต็มหน้าจอจอภาพเมื่อเข้าสู่โหมดเต็มหน้าจอ"
