@@ -114,8 +114,7 @@ const OverlaySettings = () => {
 
   return react.createElement(
     "div",
-    { className: "setting-row", style: { flexDirection: "column", alignItems: "stretch" } },
-    // 토글 행
+    { className: "setting-row" }, // Flex container
     react.createElement(
       "div",
       { className: "setting-row-content" },
@@ -123,7 +122,21 @@ const OverlaySettings = () => {
         "div",
         { className: "setting-row-left" },
         react.createElement("div", { className: "setting-name" },
-          I18n.t("overlay.enabled.label")
+          I18n.t("overlay.enabled.label"),
+          // Status Tag (Connected / Disconnected / Checking) only when enabled
+          enabled && react.createElement("span", {
+            style: {
+              marginLeft: "10px",
+              fontSize: "10px",
+              padding: "2px 8px",
+              borderRadius: "12px",
+              backgroundColor: isConnected ? "rgba(74, 222, 128, 0.2)" : "rgba(239, 68, 68, 0.2)",
+              color: isConnected ? "#4ade80" : "#ef4444",
+              border: `1px solid ${isConnected ? "rgba(74, 222, 128, 0.3)" : "rgba(239, 68, 68, 0.3)"}`,
+              fontWeight: "600",
+              verticalAlign: "middle"
+            }
+          }, getStatusText())
         ),
         react.createElement("div", { className: "setting-description" },
           I18n.t("overlay.enabled.desc")
@@ -131,7 +144,18 @@ const OverlaySettings = () => {
       ),
       react.createElement(
         "div",
-        { className: "setting-row-right" },
+        { className: "setting-row-right", style: { display: "flex", alignItems: "center", gap: "10px" } },
+        // Download Button (Only if enabled AND disconnected)
+        enabled && !isConnected && react.createElement(
+          "button",
+          {
+            className: "btn",
+            onClick: handleDownload,
+            style: { fontSize: "11px", padding: "4px 8px", height: "auto" }
+          },
+          I18n.t("overlay.download")
+        ),
+        // Toggle Switch
         react.createElement(
           "button",
           {
@@ -151,76 +175,6 @@ const OverlaySettings = () => {
                 : '<path fill-rule="evenodd" d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"/>',
             },
           })
-        )
-      )
-    ),
-    // 연결 상태 및 버튼들 (enabled일 때만 표시)
-    enabled && react.createElement(
-      "div",
-      {
-        style: {
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginTop: "12px",
-          padding: "12px",
-          background: "rgba(255, 255, 255, 0.03)",
-          borderRadius: "8px",
-          border: "1px solid rgba(255, 255, 255, 0.08)"
-        }
-      },
-      // 상태 표시
-      react.createElement(
-        "div",
-        { style: { display: "flex", alignItems: "center", gap: "8px" } },
-        react.createElement("div", {
-          style: {
-            width: "8px",
-            height: "8px",
-            borderRadius: "50%",
-            backgroundColor: getStatusColor(),
-            animation: checking ? "pulse 1s infinite" : "none"
-          }
-        }),
-        react.createElement("span", {
-          style: {
-            fontSize: "13px",
-            color: getStatusColor(),
-            fontWeight: "500"
-          }
-        }, getStatusText())
-      ),
-      // 버튼들
-      react.createElement(
-        "div",
-        { style: { display: "flex", gap: "8px" } },
-        react.createElement(
-          "button",
-          {
-            className: "btn",
-            onClick: handleCheckConnection,
-            disabled: checking,
-            style: { fontSize: "12px", padding: "6px 12px" }
-          },
-          "🔄"
-        ),
-        react.createElement(
-          "button",
-          {
-            className: "btn",
-            onClick: handleOpenApp,
-            style: { fontSize: "12px", padding: "6px 12px" }
-          },
-          I18n.t("overlay.openApp")
-        ),
-        react.createElement(
-          "button",
-          {
-            className: "btn",
-            onClick: handleDownload,
-            style: { fontSize: "12px", padding: "6px 12px" }
-          },
-          I18n.t("overlay.download")
         )
       )
     )

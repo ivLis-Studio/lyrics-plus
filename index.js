@@ -414,15 +414,30 @@ const OverlaySender = {
     return -offset;
   },
 
+  // 가사 전송 요청 순서 추적
+  _reqId: 0,
+  _lastReqId: 0,
+
   // 가사 전송
   async sendLyrics(trackInfo, lyrics, forceResend = false) {
     if (!trackInfo || !lyrics || !Array.isArray(lyrics)) return;
     if (!this.enabled) return;
 
+    // 요청 ID 발급 (동기적으로 실행되어 순서 보장)
+    const currentReqId = ++this._reqId;
+
     this._lastTrackInfo = trackInfo;
     this._lastLyrics = lyrics;
 
     const offset = await this.getSyncOffset(trackInfo.uri);
+
+    // 비동기 작업 후, 더 최신 요청이 이미 처리되었는지 확인
+    if (currentReqId < this._lastReqId) {
+      console.log(`[OverlaySender] 오래된 요청 무시됨 (#${currentReqId} < #${this._lastReqId})`);
+      return;
+    }
+    this._lastReqId = currentReqId;
+
     const lyricsHash = JSON.stringify(lyrics);
 
     if (!forceResend &&
@@ -474,11 +489,31 @@ const OverlaySender = {
     }
   },
 
+  _worker: null,
+
   startProgressSync() {
-    if (this.progressInterval) return;
+    if (this._worker) return;
     if (!this.enabled) return;
 
-    this.progressInterval = setInterval(() => {
+    // Web Worker로 타이머 실행 (백그라운드 스로틀링 방지)
+    const blob = new Blob([`
+      let interval = null;
+      self.onmessage = function(e) {
+        if (e.data === 'start') {
+          if (interval) clearInterval(interval);
+          interval = setInterval(() => {
+            self.postMessage('tick');
+          }, 100);
+        } else if (e.data === 'stop') {
+          if (interval) clearInterval(interval);
+          interval = null;
+        }
+      };
+    `], { type: 'application/javascript' });
+
+    this._worker = new Worker(URL.createObjectURL(blob));
+
+    this._worker.onmessage = () => {
       if (!this.enabled) return;
 
       // 전역 딜레이 변경 체크
@@ -496,13 +531,15 @@ const OverlaySender = {
         position: Spicetify.Player.getProgress() || 0,
         isPlaying: Spicetify.Player.isPlaying() || false
       });
-    }, 100);
+    };
+
+    this._worker.postMessage('start');
   },
 
   stopProgressSync() {
-    if (this.progressInterval) {
-      clearInterval(this.progressInterval);
-      this.progressInterval = null;
+    if (this._worker) {
+      this._worker.terminate(); // 워커 완전히 종료
+      this._worker = null;
     }
   },
 
