@@ -49,7 +49,23 @@ window.LANG_EN = {
     "contributors": "Contributors",
     "fadWarningTitle": "⚠️ Full Screen Extension Active",
     "fadWarningDesc": "Not supported while Full Screen extension is active.",
-    "fadWarningTip": "Change alignment in Full Screen's own settings."
+    "fadWarningTip": "Change alignment in Full Screen's own settings.",
+    "desktopOverlay": "Desktop Overlay",
+    "desktopOverlaySubtitle": "Display lyrics as a desktop overlay"
+  },
+  "overlay": {
+    "enabled": {
+      "label": "Enable Desktop Overlay",
+      "desc": "Send lyrics to the desktop overlay app"
+    },
+    "status": {
+      "connected": "✓ Connected",
+      "disconnected": "Not connected",
+      "checking": "Checking..."
+    },
+    "openApp": "Open App",
+    "download": "Download App",
+    "downloadDesc": "Download the overlay app if it's not installed"
   },
   "settings": {
     "language": {

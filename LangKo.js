@@ -49,7 +49,23 @@ window.LANG_KO = {
     "contributors": "기여자",
     "fadWarningTitle": "⚠️ Full Screen 확장 프로그램 사용 중",
     "fadWarningDesc": "Full Screen 확장 프로그램 사용 중에는 지원하지 않습니다.",
-    "fadWarningTip": "정렬 방식은 Full Screen 자체 설정에서 변경하십시오."
+    "fadWarningTip": "정렬 방식은 Full Screen 자체 설정에서 변경하십시오.",
+    "desktopOverlay": "데스크탑 오버레이",
+    "desktopOverlaySubtitle": "가사를 데스크탑에 오버레이로 표시합니다"
+  },
+  "overlay": {
+    "enabled": {
+      "label": "데스크탑 오버레이 사용",
+      "desc": "가사를 데스크탑 오버레이 앱으로 전송합니다"
+    },
+    "status": {
+      "connected": "✓ 연결됨",
+      "disconnected": "연결 안됨",
+      "checking": "확인 중..."
+    },
+    "openApp": "앱 열기",
+    "download": "앱 다운로드",
+    "downloadDesc": "오버레이 앱이 설치되어 있지 않다면 다운로드하세요"
   },
   "settings": {
     "language": {

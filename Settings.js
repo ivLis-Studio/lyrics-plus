@@ -47,6 +47,186 @@ const SwapButton = ({ icon, disabled, onClick }) => {
 
 
 
+// 데스크탑 오버레이 설정 컴포넌트
+const OverlaySettings = () => {
+  const [enabled, setEnabled] = useState(window.OverlaySender?.enabled ?? true);
+  const [isConnected, setIsConnected] = useState(window.OverlaySender?.isConnected ?? false);
+  const [checking, setChecking] = useState(false);
+
+  // 연결 상태 이벤트 리스너
+  useEffect(() => {
+    const handleConnection = (e) => {
+      setIsConnected(e.detail.connected);
+    };
+    window.addEventListener('lyrics-plus:overlay-connection', handleConnection);
+
+    // 초기 연결 상태 확인
+    if (window.OverlaySender) {
+      setIsConnected(window.OverlaySender.isConnected);
+    }
+
+    return () => {
+      window.removeEventListener('lyrics-plus:overlay-connection', handleConnection);
+    };
+  }, []);
+
+  // 토글 핸들러
+  const handleToggle = () => {
+    const newValue = !enabled;
+    setEnabled(newValue);
+    if (window.OverlaySender) {
+      window.OverlaySender.enabled = newValue;
+    }
+  };
+
+  // 연결 확인
+  const handleCheckConnection = async () => {
+    if (!window.OverlaySender) return;
+    setChecking(true);
+    await window.OverlaySender.checkConnection();
+    setIsConnected(window.OverlaySender.isConnected);
+    setChecking(false);
+  };
+
+  // 앱 열기
+  const handleOpenApp = () => {
+    window.OverlaySender?.openOverlayApp?.();
+  };
+
+  // 다운로드 URL
+  const handleDownload = () => {
+    const url = window.OverlaySender?.getDownloadUrl?.() || 'https://github.com/ivLis-Studio/lyrics-plus-overlay/releases/latest';
+    window.open(url, '_blank');
+  };
+
+  // 상태 텍스트
+  const getStatusText = () => {
+    if (checking) return I18n.t("overlay.status.checking");
+    if (isConnected) return I18n.t("overlay.status.connected");
+    return I18n.t("overlay.status.disconnected");
+  };
+
+  const getStatusColor = () => {
+    if (checking) return "#fbbf24";
+    if (isConnected) return "#4ade80";
+    return "#ef4444";
+  };
+
+  return react.createElement(
+    "div",
+    { className: "setting-row", style: { flexDirection: "column", alignItems: "stretch" } },
+    // 토글 행
+    react.createElement(
+      "div",
+      { className: "setting-row-content" },
+      react.createElement(
+        "div",
+        { className: "setting-row-left" },
+        react.createElement("div", { className: "setting-name" },
+          I18n.t("overlay.enabled.label")
+        ),
+        react.createElement("div", { className: "setting-description" },
+          I18n.t("overlay.enabled.desc")
+        )
+      ),
+      react.createElement(
+        "div",
+        { className: "setting-row-right" },
+        react.createElement(
+          "button",
+          {
+            className: `switch-checkbox${enabled ? " active" : ""}`,
+            onClick: handleToggle,
+            "aria-checked": enabled,
+            role: "checkbox",
+          },
+          react.createElement("svg", {
+            width: 12,
+            height: 12,
+            viewBox: "0 0 16 16",
+            fill: "currentColor",
+            dangerouslySetInnerHTML: {
+              __html: enabled
+                ? '<path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/>'
+                : '<path fill-rule="evenodd" d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"/>',
+            },
+          })
+        )
+      )
+    ),
+    // 연결 상태 및 버튼들 (enabled일 때만 표시)
+    enabled && react.createElement(
+      "div",
+      {
+        style: {
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginTop: "12px",
+          padding: "12px",
+          background: "rgba(255, 255, 255, 0.03)",
+          borderRadius: "8px",
+          border: "1px solid rgba(255, 255, 255, 0.08)"
+        }
+      },
+      // 상태 표시
+      react.createElement(
+        "div",
+        { style: { display: "flex", alignItems: "center", gap: "8px" } },
+        react.createElement("div", {
+          style: {
+            width: "8px",
+            height: "8px",
+            borderRadius: "50%",
+            backgroundColor: getStatusColor(),
+            animation: checking ? "pulse 1s infinite" : "none"
+          }
+        }),
+        react.createElement("span", {
+          style: {
+            fontSize: "13px",
+            color: getStatusColor(),
+            fontWeight: "500"
+          }
+        }, getStatusText())
+      ),
+      // 버튼들
+      react.createElement(
+        "div",
+        { style: { display: "flex", gap: "8px" } },
+        react.createElement(
+          "button",
+          {
+            className: "btn",
+            onClick: handleCheckConnection,
+            disabled: checking,
+            style: { fontSize: "12px", padding: "6px 12px" }
+          },
+          "🔄"
+        ),
+        react.createElement(
+          "button",
+          {
+            className: "btn",
+            onClick: handleOpenApp,
+            style: { fontSize: "12px", padding: "6px 12px" }
+          },
+          I18n.t("overlay.openApp")
+        ),
+        react.createElement(
+          "button",
+          {
+            className: "btn",
+            onClick: handleDownload,
+            style: { fontSize: "12px", padding: "6px 12px" }
+          },
+          I18n.t("overlay.download")
+        )
+      )
+    )
+  );
+};
+
 // 로컬 캐시 관리 컴포넌트 (IndexedDB)
 const LocalCacheManager = () => {
   const [stats, setStats] = useState(null);
@@ -75,10 +255,10 @@ const LocalCacheManager = () => {
       // 메모리 캐시도 함께 초기화
       Translator.clearAllMemoryCache();
       Translator.clearAllInflightRequests();
-      
+
       await LyricsCache.clearAll();
       await loadStats();
-      
+
       // 캐시는 이미 지웠으므로 clearCache=false로 호출
       reloadLyrics?.(false);
       Spicetify.showNotification(
@@ -98,15 +278,15 @@ const LocalCacheManager = () => {
       Spicetify.showNotification("No track playing", true, 2000);
       return;
     }
-    
+
     try {
       // 번역 메모리 캐시도 함께 초기화
       Translator.clearMemoryCache(trackId);
       Translator.clearInflightRequests(trackId);
-      
+
       await LyricsCache.clearTrack(trackId);
       await loadStats();
-      
+
       // 캐시는 이미 지웠으므로 clearCache=false로 호출
       reloadLyrics?.(false);
       Spicetify.showNotification(
@@ -123,7 +303,7 @@ const LocalCacheManager = () => {
   const getStatsText = () => {
     if (loading) return "Loading...";
     if (!stats) return "Cache not available";
-    
+
     return I18n.t("settingsAdvanced.cacheManagement.localCache.stats")
       .replace("{lyrics}", stats.lyrics || 0)
       .replace("{translations}", stats.translations || 0)
@@ -141,13 +321,13 @@ const LocalCacheManager = () => {
       react.createElement(
         "div",
         { className: "setting-row-left" },
-        react.createElement("div", { className: "setting-name" }, 
+        react.createElement("div", { className: "setting-name" },
           I18n.t("settingsAdvanced.cacheManagement.localCache.label")
         ),
-        react.createElement("div", { className: "setting-description" }, 
+        react.createElement("div", { className: "setting-description" },
           I18n.t("settingsAdvanced.cacheManagement.localCache.desc")
         ),
-        react.createElement("div", { 
+        react.createElement("div", {
           className: "setting-description",
           style: { marginTop: "4px", opacity: 0.7 }
         }, getStatsText())
@@ -189,7 +369,7 @@ const DebugInfoPanel = () => {
     try {
       const playerData = Spicetify.Player.data;
       const track = playerData?.item;
-      
+
       if (!track) {
         return {
           error: "No track currently playing",
@@ -199,18 +379,18 @@ const DebugInfoPanel = () => {
 
       const trackId = track.uri?.split(':')[2];
       const trackUri = track.uri;
-      
+
       // CACHE에서 가사 정보 가져오기
       const cachedLyrics = window.CACHE?.[trackUri];
-      
+
       // CONFIG 정보
       const providersOrder = CONFIG.providersOrder || [];
       const enabledProviders = providersOrder.filter(p => CONFIG.providers[p]?.on);
-      
+
       // 번역 설정
       const translateSource = CONFIG.visual["translate:translated-lyrics-source"];
       const targetLang = CONFIG.visual["translate:target-language"];
-      
+
       // 가사 상태 정보
       let lyricsInfo = null;
       if (cachedLyrics) {
@@ -265,15 +445,15 @@ const DebugInfoPanel = () => {
   // 컴포넌트 마운트 시 및 갱신 시 디버그 정보 수집
   useEffect(() => {
     setDebugInfo(collectDebugInfo());
-    
+
     // ApiTracker에서 로그 가져오기
     if (window.ApiTracker) {
       setApiLogs(window.ApiTracker.getLogs());
-      
+
       // 리스너 등록
       const updateLogs = (logs) => setApiLogs([...logs]);
       window.ApiTracker.addListener(updateLogs);
-      
+
       return () => {
         // 리스너 제거 (ApiTracker에 removeListener가 있다면)
         const listenerIndex = window.ApiTracker._listeners?.indexOf(updateLogs);
@@ -316,15 +496,15 @@ const DebugInfoPanel = () => {
   // 클립보드에 복사
   const handleCopy = async () => {
     if (!debugInfo) return;
-    
+
     const fullDebug = getFullDebugInfo();
     const debugText = JSON.stringify(fullDebug, null, 2);
-    
+
     try {
       await navigator.clipboard.writeText(debugText);
       setCopied(true);
       Spicetify.showNotification(I18n.t("settingsAdvanced.debugTab.copied"), false, 2000);
-      
+
       // 3초 후 copied 상태 리셋
       setTimeout(() => setCopied(false), 3000);
     } catch (e) {
@@ -412,7 +592,7 @@ const DebugInfoPanel = () => {
       react.createElement(
         "div",
         null,
-        react.createElement("h3", { 
+        react.createElement("h3", {
           style: { margin: "0 0 4px", fontSize: "16px", color: "#ffffff", fontWeight: "600" }
         }, I18n.t("settingsAdvanced.debugTab.currentTrack")),
         react.createElement("p", {
@@ -457,15 +637,15 @@ const DebugInfoPanel = () => {
         style: { fontSize: "11px", color: "rgba(255,255,255,0.4)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" }
       }, I18n.t("settingsAdvanced.debugTab.trackInfo")),
       react.createElement("div", {
-        style: { 
-          background: "rgba(0,0,0,0.25)", 
-          borderRadius: "8px", 
+        style: {
+          background: "rgba(0,0,0,0.25)",
+          borderRadius: "8px",
           padding: "12px",
           fontSize: "13px",
           lineHeight: "1.6"
         }
       },
-        react.createElement("div", null, 
+        react.createElement("div", null,
           react.createElement("span", { style: { color: "rgba(255,255,255,0.5)" } }, "Title: "),
           react.createElement("span", { style: { color: "#fff" } }, debugInfo.track.title)
         ),
@@ -479,8 +659,8 @@ const DebugInfoPanel = () => {
         ),
         react.createElement("div", null,
           react.createElement("span", { style: { color: "rgba(255,255,255,0.5)" } }, "Track ID: "),
-          react.createElement("code", { 
-            style: { color: "#fbbf24", fontFamily: "monospace", fontSize: "12px" } 
+          react.createElement("code", {
+            style: { color: "#fbbf24", fontFamily: "monospace", fontSize: "12px" }
           }, debugInfo.track.id)
         )
       )
@@ -490,146 +670,146 @@ const DebugInfoPanel = () => {
       "div",
       { style: { marginBottom: "16px" } },
       react.createElement("div", {
-        style: { 
-          fontSize: "11px", 
-          color: "rgba(255,255,255,0.4)", 
-          marginBottom: "6px", 
-          textTransform: "uppercase", 
+        style: {
+          fontSize: "11px",
+          color: "rgba(255,255,255,0.4)",
+          marginBottom: "6px",
+          textTransform: "uppercase",
           letterSpacing: "0.5px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center"
         }
-      }, 
+      },
         react.createElement("span", null, `API 요청 로그 (${apiLogs.length})`),
         window.ApiTracker && react.createElement("span", { style: { color: "rgba(255,255,255,0.3)" } },
           `Total: ${window.ApiTracker.getSummary()?.totalRequests || 0} requests`
         )
       ),
       react.createElement("div", {
-        style: { 
-          background: "rgba(0,0,0,0.25)", 
-          borderRadius: "8px", 
+        style: {
+          background: "rgba(0,0,0,0.25)",
+          borderRadius: "8px",
           padding: "8px",
           maxHeight: "300px",
           overflowY: "auto"
         }
       },
-        apiLogs.length === 0 
-          ? react.createElement("div", { 
-              style: { textAlign: "center", padding: "20px", color: "rgba(255,255,255,0.4)" }
-            }, "아직 API 요청이 없습니다. 곡을 재생하면 여기에 표시됩니다.")
+        apiLogs.length === 0
+          ? react.createElement("div", {
+            style: { textAlign: "center", padding: "20px", color: "rgba(255,255,255,0.4)" }
+          }, "아직 API 요청이 없습니다. 곡을 재생하면 여기에 표시됩니다.")
           : apiLogs.map((log, idx) => react.createElement(
+            "div",
+            {
+              key: log.id || idx,
+              style: {
+                background: "rgba(0,0,0,0.3)",
+                borderRadius: "6px",
+                padding: "10px",
+                marginBottom: idx < apiLogs.length - 1 ? "8px" : 0,
+                borderLeft: `3px solid ${getCategoryColor(log.category)}`
+              }
+            },
+            // 로그 헤더 (클릭 가능)
+            react.createElement(
               "div",
               {
-                key: log.id || idx,
+                onClick: () => toggleApiDetail(log.id),
                 style: {
-                  background: "rgba(0,0,0,0.3)",
-                  borderRadius: "6px",
-                  padding: "10px",
-                  marginBottom: idx < apiLogs.length - 1 ? "8px" : 0,
-                  borderLeft: `3px solid ${getCategoryColor(log.category)}`
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  cursor: "pointer"
                 }
               },
-              // 로그 헤더 (클릭 가능)
-              react.createElement(
-                "div",
-                {
-                  onClick: () => toggleApiDetail(log.id),
-                  style: {
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    cursor: "pointer"
-                  }
-                },
-                react.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px" } },
-                  // 카테고리 뱃지
-                  react.createElement("span", {
-                    style: {
-                      background: getCategoryColor(log.category),
-                      color: "#000",
-                      padding: "2px 6px",
-                      borderRadius: "4px",
-                      fontSize: "10px",
-                      fontWeight: "700",
-                      textTransform: "uppercase"
-                    }
-                  }, log.category),
-                  // 상태 표시
-                  react.createElement("span", {
-                    style: {
-                      color: getStatusColor(log.status),
-                      fontSize: "11px",
-                      fontWeight: "600"
-                    }
-                  }, log.cached ? "📦 CACHED" : log.status?.toUpperCase() || "PENDING"),
-                  // 소요 시간
-                  log.duration && react.createElement("span", {
-                    style: { color: "rgba(255,255,255,0.4)", fontSize: "11px" }
-                  }, `${log.duration}ms`)
-                ),
-                // 타임스탬프
+              react.createElement("div", { style: { display: "flex", alignItems: "center", gap: "8px" } },
+                // 카테고리 뱃지
                 react.createElement("span", {
-                  style: { color: "rgba(255,255,255,0.3)", fontSize: "10px" }
-                }, new Date(log.timestamp).toLocaleTimeString())
+                  style: {
+                    background: getCategoryColor(log.category),
+                    color: "#000",
+                    padding: "2px 6px",
+                    borderRadius: "4px",
+                    fontSize: "10px",
+                    fontWeight: "700",
+                    textTransform: "uppercase"
+                  }
+                }, log.category),
+                // 상태 표시
+                react.createElement("span", {
+                  style: {
+                    color: getStatusColor(log.status),
+                    fontSize: "11px",
+                    fontWeight: "600"
+                  }
+                }, log.cached ? "📦 CACHED" : log.status?.toUpperCase() || "PENDING"),
+                // 소요 시간
+                log.duration && react.createElement("span", {
+                  style: { color: "rgba(255,255,255,0.4)", fontSize: "11px" }
+                }, `${log.duration}ms`)
               ),
-              // 엔드포인트 URL (축약)
-              react.createElement("div", {
-                style: { 
-                  fontSize: "11px", 
-                  color: "rgba(255,255,255,0.6)", 
-                  marginTop: "6px",
-                  fontFamily: "monospace",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }
-              }, log.endpoint?.replace(/https?:\/\/[^\/]+/, '') || '-'),
-              // 상세 정보 (토글)
-              showApiDetails[log.id] && react.createElement(
-                "div",
-                { style: { marginTop: "10px", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "10px" } },
-                // 요청 정보
-                log.request && react.createElement("div", { style: { marginBottom: "8px" } },
-                  react.createElement("div", { 
-                    style: { fontSize: "10px", color: "rgba(255,255,255,0.4)", marginBottom: "4px" }
-                  }, "REQUEST:"),
-                  react.createElement("pre", {
-                    style: {
-                      background: "rgba(0,0,0,0.4)",
-                      padding: "8px",
-                      borderRadius: "4px",
-                      fontSize: "10px",
-                      fontFamily: "monospace",
-                      color: "rgba(255,255,255,0.7)",
-                      margin: 0,
-                      overflow: "auto",
-                      maxHeight: "100px"
-                    }
-                  }, JSON.stringify(log.request, null, 2))
-                ),
-                // 응답 정보
-                log.response && react.createElement("div", null,
-                  react.createElement("div", { 
-                    style: { fontSize: "10px", color: "rgba(255,255,255,0.4)", marginBottom: "4px" }
-                  }, "RESPONSE:"),
-                  react.createElement("pre", {
-                    style: {
-                      background: "rgba(0,0,0,0.4)",
-                      padding: "8px",
-                      borderRadius: "4px",
-                      fontSize: "10px",
-                      fontFamily: "monospace",
-                      color: log.status === 'error' ? "#ef4444" : "rgba(255,255,255,0.7)",
-                      margin: 0,
-                      overflow: "auto",
-                      maxHeight: "100px"
-                    }
-                  }, log.error || JSON.stringify(log.response, null, 2))
-                )
+              // 타임스탬프
+              react.createElement("span", {
+                style: { color: "rgba(255,255,255,0.3)", fontSize: "10px" }
+              }, new Date(log.timestamp).toLocaleTimeString())
+            ),
+            // 엔드포인트 URL (축약)
+            react.createElement("div", {
+              style: {
+                fontSize: "11px",
+                color: "rgba(255,255,255,0.6)",
+                marginTop: "6px",
+                fontFamily: "monospace",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis"
+              }
+            }, log.endpoint?.replace(/https?:\/\/[^\/]+/, '') || '-'),
+            // 상세 정보 (토글)
+            showApiDetails[log.id] && react.createElement(
+              "div",
+              { style: { marginTop: "10px", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "10px" } },
+              // 요청 정보
+              log.request && react.createElement("div", { style: { marginBottom: "8px" } },
+                react.createElement("div", {
+                  style: { fontSize: "10px", color: "rgba(255,255,255,0.4)", marginBottom: "4px" }
+                }, "REQUEST:"),
+                react.createElement("pre", {
+                  style: {
+                    background: "rgba(0,0,0,0.4)",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    fontSize: "10px",
+                    fontFamily: "monospace",
+                    color: "rgba(255,255,255,0.7)",
+                    margin: 0,
+                    overflow: "auto",
+                    maxHeight: "100px"
+                  }
+                }, JSON.stringify(log.request, null, 2))
+              ),
+              // 응답 정보
+              log.response && react.createElement("div", null,
+                react.createElement("div", {
+                  style: { fontSize: "10px", color: "rgba(255,255,255,0.4)", marginBottom: "4px" }
+                }, "RESPONSE:"),
+                react.createElement("pre", {
+                  style: {
+                    background: "rgba(0,0,0,0.4)",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    fontSize: "10px",
+                    fontFamily: "monospace",
+                    color: log.status === 'error' ? "#ef4444" : "rgba(255,255,255,0.7)",
+                    margin: 0,
+                    overflow: "auto",
+                    maxHeight: "100px"
+                  }
+                }, log.error || JSON.stringify(log.response, null, 2))
               )
-            ))
+            )
+          ))
       )
     ),
     // 가사 정보
@@ -640,9 +820,9 @@ const DebugInfoPanel = () => {
         style: { fontSize: "11px", color: "rgba(255,255,255,0.4)", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" }
       }, I18n.t("settingsAdvanced.debugTab.lyricsInfo")),
       react.createElement("div", {
-        style: { 
-          background: "rgba(0,0,0,0.25)", 
-          borderRadius: "8px", 
+        style: {
+          background: "rgba(0,0,0,0.25)",
+          borderRadius: "8px",
           padding: "12px",
           fontSize: "13px",
           lineHeight: "1.6"
@@ -653,26 +833,26 @@ const DebugInfoPanel = () => {
           null,
           react.createElement("div", null,
             react.createElement("span", { style: { color: "rgba(255,255,255,0.5)" } }, "Provider: "),
-            react.createElement("span", { 
-              style: { 
-                color: "#4ade80", 
+            react.createElement("span", {
+              style: {
+                color: "#4ade80",
                 fontWeight: "600",
                 padding: "2px 8px",
                 background: "rgba(74, 222, 128, 0.15)",
                 borderRadius: "4px"
-              } 
+              }
             }, debugInfo.lyrics.provider)
           ),
           react.createElement("div", { style: { marginTop: "8px" } },
             react.createElement("span", { style: { color: "rgba(255,255,255,0.5)" } }, "Type: "),
-            debugInfo.lyrics.hasKaraoke && react.createElement("span", { 
-              style: { color: "#f472b6", marginRight: "8px" } 
+            debugInfo.lyrics.hasKaraoke && react.createElement("span", {
+              style: { color: "#f472b6", marginRight: "8px" }
             }, `Karaoke (${debugInfo.lyrics.karaokeLineCount} lines)`),
-            debugInfo.lyrics.hasSynced && react.createElement("span", { 
-              style: { color: "#60a5fa", marginRight: "8px" } 
+            debugInfo.lyrics.hasSynced && react.createElement("span", {
+              style: { color: "#60a5fa", marginRight: "8px" }
             }, `Synced (${debugInfo.lyrics.syncedLineCount} lines)`),
-            debugInfo.lyrics.hasUnsynced && react.createElement("span", { 
-              style: { color: "#fbbf24" } 
+            debugInfo.lyrics.hasUnsynced && react.createElement("span", {
+              style: { color: "#fbbf24" }
             }, `Unsynced (${debugInfo.lyrics.unsyncedLineCount} lines)`)
           ),
           debugInfo.lyrics.error && react.createElement("div", { style: { marginTop: "8px" } },
@@ -713,7 +893,7 @@ const DebugInfoPanel = () => {
           viewBox: "0 0 16 16",
           fill: "currentColor",
           dangerouslySetInnerHTML: {
-            __html: copied 
+            __html: copied
               ? '<path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/>'
               : '<path fill-rule="evenodd" d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/><path fill-rule="evenodd" d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/>'
           }
@@ -3201,6 +3381,12 @@ const ConfigModal = () => {
             location.reload();
           },
         }),
+        // 데스크탑 오버레이 섹션
+        react.createElement(SectionTitle, {
+          title: I18n.t("sections.desktopOverlay"),
+          subtitle: I18n.t("sections.desktopOverlaySubtitle"),
+        }),
+        react.createElement(OverlaySettings),
         react.createElement(SectionTitle, {
           title: I18n.t("sections.visualEffects"),
           subtitle: I18n.t("sections.visualEffectsSubtitle"),
