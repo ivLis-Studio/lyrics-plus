@@ -482,13 +482,32 @@ const OverlaySender = {
       }
     } catch (e) { }
 
-    const mappedLines = lyrics.map(l => ({
-      startTime: (l.startTime || 0) + offset,
-      endTime: l.endTime ? l.endTime + offset : null,
-      text: l.originalText || l.text || '',
-      pronText: (l.text && l.text !== l.originalText) ? l.text : null,
-      transText: l.text2 || l.translation || null
-    }));
+    const mappedLines = lyrics.map(l => {
+      // 원어 텍스트 (originalText가 있으면 사용, 없으면 text)
+      const originalText = l.originalText || l.text || '';
+
+      // 발음 텍스트 (text와 originalText가 다르면 text가 발음)
+      const pronText = (l.text && l.text !== l.originalText && l.text !== originalText) ? l.text : null;
+
+      // 번역 텍스트 - 여러 필드에서 찾기 (text2가 가장 우선)
+      let transText = l.text2 || l.translation || l.translationText || null;
+      // 빈 문자열이면 null로 처리
+      if (transText && typeof transText === 'string' && transText.trim() === '') {
+        transText = null;
+      }
+      // 원어와 같으면 표시할 필요 없음
+      if (transText && transText === originalText) {
+        transText = null;
+      }
+
+      return {
+        startTime: (l.startTime || 0) + offset,
+        endTime: l.endTime ? l.endTime + offset : null,
+        text: originalText,
+        pronText: pronText,
+        transText: transText
+      };
+    });
 
     console.log('[OverlaySender] 가사 전송:', { lines: mappedLines.length, offset });
 
