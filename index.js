@@ -556,9 +556,41 @@ const OverlaySender = {
 
       this._isSendingProgress = true;
       try {
+        const position = Spicetify.Player.getProgress() || 0;
+        const duration = Spicetify.Player.getDuration() || 0;
+        const remaining = (duration - position) / 1000; // seconds
+
+        // 다음 곡 정보 가져오기
+        let nextTrack = null;
+        try {
+          const queue = Spicetify.Queue;
+          if (queue?.nextTracks?.length > 0) {
+            const next = queue.nextTracks[0];
+            if (next?.contextTrack?.metadata) {
+              const imageUrl = next.contextTrack.metadata.image_url || next.contextTrack.metadata.image_xlarge_url;
+              let albumArt = null;
+              if (imageUrl && imageUrl.indexOf('localfile') === -1) {
+                if (imageUrl.startsWith('spotify:image:')) {
+                  albumArt = `https://i.scdn.co/image/${imageUrl.substring(imageUrl.lastIndexOf(':') + 1)}`;
+                } else if (imageUrl.startsWith('http')) {
+                  albumArt = imageUrl;
+                }
+              }
+              nextTrack = {
+                title: next.contextTrack.metadata.title || '',
+                artist: next.contextTrack.metadata.artist_name || '',
+                albumArt: albumArt
+              };
+            }
+          }
+        } catch (e) { }
+
         await this.sendToEndpoint('/progress', {
-          position: Spicetify.Player.getProgress() || 0,
-          isPlaying: Spicetify.Player.isPlaying() || false
+          position: position,
+          isPlaying: Spicetify.Player.isPlaying() || false,
+          duration: duration,
+          remaining: remaining,
+          nextTrack: nextTrack
         });
       } finally {
         this._isSendingProgress = false;
