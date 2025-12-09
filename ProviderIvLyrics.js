@@ -1,12 +1,12 @@
 const ProviderIvLyrics = (() => {
 	async function findLyrics(info) {
 		const trackId = info.uri.split(":")[2];
-		
+
 		// ApiTracker에 현재 트랙 설정
 		if (window.ApiTracker) {
 			window.ApiTracker.setCurrentTrack(trackId);
 		}
-		
+
 		// 1. 로컬 캐시 먼저 확인 (API 호출 절약)
 		try {
 			const cached = await LyricsCache.getLyrics(trackId);
@@ -25,11 +25,11 @@ const ProviderIvLyrics = (() => {
 		} catch (e) {
 			console.warn('[ProviderIvLyrics] Cache check failed:', e);
 		}
-		
+
 		// 2. API 호출
 		const userHash = Utils.getUserHash();
 		const baseURL = `https://lyrics.api.ivl.is/lyrics?trackId=${trackId}&userHash=${userHash}`;
-		
+
 		// API 요청 로깅 시작
 		let logId = null;
 		if (window.ApiTracker) {
@@ -41,6 +41,7 @@ const ProviderIvLyrics = (() => {
 				headers: {
 					"User-Agent": `spicetify v${Spicetify.Config.version} (https://github.com/spicetify/cli)`,
 				},
+				cache: "no-cache",  // 브라우저 HTTP 캐시 우회
 			});
 
 			if (body.status !== 200) {
@@ -67,7 +68,7 @@ const ProviderIvLyrics = (() => {
 					uri: info.uri,
 				};
 			}
-			
+
 			// 성공 로깅
 			if (window.ApiTracker && logId) {
 				window.ApiTracker.logResponse(logId, {
@@ -77,9 +78,9 @@ const ProviderIvLyrics = (() => {
 					lineCount: response.synced?.length || response.unsynced?.length || 0
 				}, 'success');
 			}
-			
+
 			// 3. 로컬 캐시에 저장 (백그라운드)
-			LyricsCache.setLyrics(trackId, response).catch(() => {});
+			LyricsCache.setLyrics(trackId, response).catch(() => { });
 
 			return response;
 		} catch (e) {

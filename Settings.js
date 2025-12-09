@@ -214,6 +214,11 @@ const LocalCacheManager = () => {
       Translator.clearAllMemoryCache();
       Translator.clearAllInflightRequests();
 
+      // CacheManager (Gemini 번역 메모리 캐시)도 함께 초기화
+      if (typeof CacheManager !== 'undefined' && CacheManager.clear) {
+        CacheManager.clear();
+      }
+
       await LyricsCache.clearAll();
       await loadStats();
 
@@ -231,7 +236,8 @@ const LocalCacheManager = () => {
 
   // 현재 곡 캐시 삭제
   const handleClearCurrent = async () => {
-    const trackId = Spicetify.Player.data?.item?.uri?.split(':')[2];
+    const trackUri = Spicetify.Player.data?.item?.uri;
+    const trackId = trackUri?.split(':')[2];
     if (!trackId) {
       Spicetify.showNotification("No track playing", true, 2000);
       return;
@@ -241,6 +247,11 @@ const LocalCacheManager = () => {
       // 번역 메모리 캐시도 함께 초기화
       Translator.clearMemoryCache(trackId);
       Translator.clearInflightRequests(trackId);
+
+      // CacheManager (Gemini 번역 메모리 캐시)도 함께 초기화
+      if (typeof CacheManager !== 'undefined' && CacheManager.clearByUri) {
+        CacheManager.clearByUri(trackUri);
+      }
 
       await LyricsCache.clearTrack(trackId);
       await loadStats();

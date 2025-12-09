@@ -4401,17 +4401,21 @@ class LyricsContainer extends react.Component {
       // 메모리 캐시는 항상 초기화
       CACHE = {};
 
+      // 현재 트랙 정보
+      const item = Spicetify.Player.data?.item;
+      const trackUri = item?.uri;
+      const trackId = trackUri?.split(":").pop();
+
+      // CacheManager (Gemini 번역 메모리 캐시)도 항상 현재 트랙에 대해 초기화
+      if (trackUri) {
+        CacheManager.clearByUri(trackUri);
+      }
+
       // clearCache가 true이고 트랙 정보가 있으면 로컬 캐시도 삭제
-      if (clearCache) {
-        const item = Spicetify.Player.data?.item;
-        if (item?.uri) {
-          const trackId = item.uri.split(":").pop();
-          if (trackId) {
-            await LyricsCache.clearTrack(trackId);
-            Translator.clearMemoryCache(trackId);
-            Translator.clearInflightRequests(trackId);
-          }
-        }
+      if (clearCache && trackId) {
+        await LyricsCache.clearTrack(trackId);
+        Translator.clearMemoryCache(trackId);
+        Translator.clearInflightRequests(trackId);
       }
 
       this.updateVisualOnConfigChange();
