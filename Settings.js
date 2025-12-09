@@ -63,10 +63,14 @@ const OverlaySettings = () => {
     // 초기 연결 상태 확인
     if (window.OverlaySender) {
       setIsConnected(window.OverlaySender.isConnected);
+      // 설정창 열림 알림 (폴링 모드 활성화)
+      window.OverlaySender.setSettingsOpen?.(true);
     }
 
     return () => {
       window.removeEventListener('lyrics-plus:overlay-connection', handleConnection);
+      // 설정창 닫힘 알림
+      window.OverlaySender?.setSettingsOpen?.(false);
     };
   }, []);
 
@@ -1650,6 +1654,80 @@ const ConfigHotkey = ({ name, defaultValue, onChange = () => { } }) => {
   );
 };
 
+const ConfigKeyList = ({ name, defaultValue, onChange = () => { } }) => {
+  const [keys, setKeys] = useState(() => {
+    try {
+      if (!defaultValue) return [""];
+      // If it starts with [, treat as JSON array
+      if (typeof defaultValue === 'string' && defaultValue.trim().startsWith('[')) {
+        const parsed = JSON.parse(defaultValue);
+        return Array.isArray(parsed) && parsed.length > 0 ? parsed : [""];
+      }
+      // Otherwise treat as single key
+      return [defaultValue];
+    } catch (e) {
+      return [defaultValue || ""];
+    }
+  });
+
+  const updateKeys = (newKeys) => {
+    setKeys(newKeys);
+    // Save as JSON string
+    onChange(JSON.stringify(newKeys.filter(k => k.trim() !== "")));
+  };
+
+  const addKey = () => {
+    updateKeys([...keys, ""]);
+  };
+
+  const removeKey = (index) => {
+    const newKeys = keys.filter((_, i) => i !== index);
+    if (newKeys.length === 0) newKeys.push(""); // Keep at least one input
+    updateKeys(newKeys);
+  };
+
+  const updateKey = (index, value) => {
+    const newKeys = [...keys];
+    newKeys[index] = value;
+    updateKeys(newKeys);
+  };
+
+  return react.createElement(
+    "div",
+    {
+      className: "setting-row",
+    },
+    react.createElement(
+      "div",
+      { className: "setting-row-content", style: { flexDirection: "column", alignItems: "stretch", gap: "10px" } },
+      react.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
+        react.createElement("div", { className: "setting-name" }, name),
+        react.createElement("button", {
+          className: "btn",
+          onClick: addKey,
+          style: { width: "auto", minWidth: "60px", padding: "4px 12px", fontSize: "12px" }
+        }, I18n.t("buttons.add"))
+      ),
+      keys.map((key, index) =>
+        react.createElement("div", { key: index, style: { display: "flex", gap: "8px" } },
+          react.createElement("input", {
+            type: "text",
+            value: key,
+            placeholder: `${I18n.t("settingsAdvanced.api.geminiKey.desc")} ${index + 1}`,
+            onChange: (e) => updateKey(index, e.target.value),
+            style: { flex: 1 }
+          }),
+          keys.length > 1 && react.createElement("button", {
+            className: "btn",
+            onClick: () => removeKey(index),
+            style: { background: "#e91e63", borderColor: "#c2185b", minWidth: "36px", width: "36px", padding: 0 }
+          }, "X")
+        )
+      )
+    )
+  );
+};
+
 const ServiceAction = ({ item, setTokenCallback }) => {
   // CacheButton은 LocalCacheManager로 통합되어 제거됨
   return null;
@@ -1870,7 +1948,8 @@ const OptionList = ({ type, items, onChange }) => {
       item.type === ConfigButton ||
       item.type === ConfigInput ||
       item.type === ConfigHotkey ||
-      item.type === ConfigWarning
+      item.type === ConfigWarning ||
+      item.type === ConfigKeyList
     ) {
       return react.createElement(item.type, {
         ...item,
@@ -4527,7 +4606,7 @@ const ConfigModal = () => {
               desc: I18n.t("settingsAdvanced.api.geminiKey.desc"),
               info: I18n.t("settingsAdvanced.api.geminiKey.info"),
               key: "gemini-api-key",
-              type: ConfigInput,
+              type: ConfigKeyList,
             },
           ],
           onChange: (name, value) => {

@@ -40,7 +40,7 @@ const ApiTracker = {
   _maxLogs: 100,
   _currentTrackId: null,
   _listeners: [],
-  
+
   /**
    * 현재 트랙 설정 (새 트랙 재생 시 로그 초기화)
    */
@@ -51,7 +51,7 @@ const ApiTracker = {
       this._notifyListeners();
     }
   },
-  
+
   /**
    * API 요청 로그 추가
    */
@@ -69,18 +69,18 @@ const ApiTracker = {
       error: null,
       cached: false
     };
-    
+
     this._logs.push(logEntry);
-    
+
     // 최대 로그 수 유지
     if (this._logs.length > this._maxLogs) {
       this._logs.shift();
     }
-    
+
     this._notifyListeners();
     return logEntry.id;
   },
-  
+
   /**
    * API 응답 로그 업데이트
    */
@@ -96,7 +96,7 @@ const ApiTracker = {
       this._notifyListeners();
     }
   },
-  
+
   /**
    * 캐시 히트 로그 (API 호출 없이 캐시에서 가져온 경우)
    */
@@ -114,30 +114,30 @@ const ApiTracker = {
       error: null,
       cached: true
     };
-    
+
     this._logs.push(logEntry);
-    
+
     if (this._logs.length > this._maxLogs) {
       this._logs.shift();
     }
-    
+
     this._notifyListeners();
   },
-  
+
   /**
    * 현재 트랙의 모든 로그 가져오기
    */
   getLogs() {
     return [...this._logs];
   },
-  
+
   /**
    * 카테고리별 로그 가져오기
    */
   getLogsByCategory(category) {
     return this._logs.filter(l => l.category === category);
   },
-  
+
   /**
    * 로그 초기화
    */
@@ -145,7 +145,7 @@ const ApiTracker = {
     this._logs = [];
     this._notifyListeners();
   },
-  
+
   /**
    * 리스너 등록
    */
@@ -155,16 +155,16 @@ const ApiTracker = {
       this._listeners = this._listeners.filter(l => l !== callback);
     };
   },
-  
+
   /**
    * 리스너들에게 변경 알림
    */
   _notifyListeners() {
     this._listeners.forEach(cb => {
-      try { cb(this._logs); } catch(e) {}
+      try { cb(this._logs); } catch (e) { }
     });
   },
-  
+
   /**
    * 요약 정보 가져오기
    */
@@ -177,13 +177,13 @@ const ApiTracker = {
       cached: 0,
       byCategory: {}
     };
-    
+
     this._logs.forEach(log => {
       if (log.status === 'pending') summary.pending++;
       else if (log.status === 'success') summary.success++;
       else if (log.status === 'error') summary.error++;
       if (log.cached) summary.cached++;
-      
+
       if (!summary.byCategory[log.category]) {
         summary.byCategory[log.category] = { total: 0, success: 0, error: 0, cached: 0 };
       }
@@ -192,7 +192,7 @@ const ApiTracker = {
       if (log.status === 'error') summary.byCategory[log.category].error++;
       if (log.cached) summary.byCategory[log.category].cached++;
     });
-    
+
     return summary;
   }
 };
@@ -207,7 +207,7 @@ window.ApiTracker = ApiTracker;
 const LyricsCache = {
   DB_NAME: 'LyricsPlusCache',
   DB_VERSION: 3,  // sync 스토어 추가
-  
+
   // 캐시 만료 시간 (일 단위)
   EXPIRY: {
     lyrics: 7,        // 가사: 7일
@@ -217,58 +217,58 @@ const LyricsCache = {
     sync: 7,          // 싱크 오프셋: 7일
     youtube: 7        // YouTube 정보: 7일
   },
-  
+
   _db: null,
   _dbPromise: null,
-  
+
   /**
    * IndexedDB 열기
    */
   async _openDB() {
     if (this._db) return this._db;
     if (this._dbPromise) return this._dbPromise;
-    
+
     this._dbPromise = new Promise((resolve, reject) => {
       const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
-      
+
       request.onerror = () => {
         console.error('[LyricsCache] Failed to open database:', request.error);
         this._dbPromise = null;
         reject(request.error);
       };
-      
+
       request.onsuccess = () => {
         this._db = request.result;
         resolve(this._db);
       };
-      
+
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
-        
+
         // 가사 캐시 스토어
         if (!db.objectStoreNames.contains('lyrics')) {
           const lyricsStore = db.createObjectStore('lyrics', { keyPath: 'trackId' });
           lyricsStore.createIndex('cachedAt', 'cachedAt', { unique: false });
         }
-        
+
         // 번역 캐시 스토어
         if (!db.objectStoreNames.contains('translations')) {
           const transStore = db.createObjectStore('translations', { keyPath: 'cacheKey' });
           transStore.createIndex('cachedAt', 'cachedAt', { unique: false });
         }
-        
+
         // YouTube 정보 캐시 스토어
         if (!db.objectStoreNames.contains('youtube')) {
           const ytStore = db.createObjectStore('youtube', { keyPath: 'trackId' });
           ytStore.createIndex('cachedAt', 'cachedAt', { unique: false });
         }
-        
+
         // 메타데이터 번역 캐시 스토어
         if (!db.objectStoreNames.contains('metadata')) {
           const metaStore = db.createObjectStore('metadata', { keyPath: 'cacheKey' });
           metaStore.createIndex('cachedAt', 'cachedAt', { unique: false });
         }
-        
+
         // 커뮤니티 싱크 오프셋 캐시 스토어
         if (!db.objectStoreNames.contains('sync')) {
           const syncStore = db.createObjectStore('sync', { keyPath: 'trackId' });
@@ -276,10 +276,10 @@ const LyricsCache = {
         }
       };
     });
-    
+
     return this._dbPromise;
   },
-  
+
   /**
    * 만료 여부 확인
    */
@@ -289,7 +289,7 @@ const LyricsCache = {
     const expiryMs = expiryDays * 24 * 60 * 60 * 1000;
     return Date.now() - cachedAt > expiryMs;
   },
-  
+
   /**
    * 가사 캐시 조회
    */
@@ -298,25 +298,25 @@ const LyricsCache = {
       const db = await this._openDB();
       const tx = db.transaction('lyrics', 'readonly');
       const store = tx.objectStore('lyrics');
-      
+
       const result = await new Promise((resolve, reject) => {
         const request = store.get(trackId);
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
       });
-      
+
       if (result && !this._isExpired(result.cachedAt, 'lyrics')) {
         console.log(`[LyricsCache] Lyrics cache hit for ${trackId}`);
         return result.data;
       }
-      
+
       return null;
     } catch (error) {
       console.error('[LyricsCache] getLyrics error:', error);
       return null;
     }
   },
-  
+
   /**
    * 가사 캐시 저장
    */
@@ -325,18 +325,18 @@ const LyricsCache = {
       const db = await this._openDB();
       const tx = db.transaction('lyrics', 'readwrite');
       const store = tx.objectStore('lyrics');
-      
+
       store.put({
         trackId,
         data,
         cachedAt: Date.now()
       });
-      
+
       await new Promise((resolve, reject) => {
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
       });
-      
+
       console.log(`[LyricsCache] Lyrics cached for ${trackId}`);
       return true;
     } catch (error) {
@@ -344,14 +344,14 @@ const LyricsCache = {
       return false;
     }
   },
-  
+
   /**
    * 번역 캐시 키 생성
    */
   _getTranslationKey(trackId, lang, isPhonetic) {
     return `${trackId}:${lang}:${isPhonetic ? 'phonetic' : 'translation'}`;
   },
-  
+
   /**
    * 번역 캐시 조회
    */
@@ -361,26 +361,26 @@ const LyricsCache = {
       const tx = db.transaction('translations', 'readonly');
       const store = tx.objectStore('translations');
       const cacheKey = this._getTranslationKey(trackId, lang, isPhonetic);
-      
+
       const result = await new Promise((resolve, reject) => {
         const request = store.get(cacheKey);
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
       });
-      
+
       const type = isPhonetic ? 'phonetic' : 'translation';
       if (result && !this._isExpired(result.cachedAt, type)) {
         console.log(`[LyricsCache] Translation cache hit for ${cacheKey}`);
         return result.data;
       }
-      
+
       return null;
     } catch (error) {
       console.error('[LyricsCache] getTranslation error:', error);
       return null;
     }
   },
-  
+
   /**
    * 번역 캐시 저장
    */
@@ -390,7 +390,7 @@ const LyricsCache = {
       const tx = db.transaction('translations', 'readwrite');
       const store = tx.objectStore('translations');
       const cacheKey = this._getTranslationKey(trackId, lang, isPhonetic);
-      
+
       store.put({
         cacheKey,
         trackId,
@@ -399,12 +399,12 @@ const LyricsCache = {
         data,
         cachedAt: Date.now()
       });
-      
+
       await new Promise((resolve, reject) => {
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
       });
-      
+
       console.log(`[LyricsCache] Translation cached for ${cacheKey}`);
       return true;
     } catch (error) {
@@ -412,7 +412,7 @@ const LyricsCache = {
       return false;
     }
   },
-  
+
   /**
    * 메타데이터 번역 캐시 조회
    */
@@ -422,25 +422,25 @@ const LyricsCache = {
       const tx = db.transaction('metadata', 'readonly');
       const store = tx.objectStore('metadata');
       const cacheKey = `${trackId}:${lang}`;
-      
+
       const result = await new Promise((resolve, reject) => {
         const request = store.get(cacheKey);
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
       });
-      
+
       if (result && !this._isExpired(result.cachedAt, 'metadata')) {
         console.log(`[LyricsCache] Metadata cache hit for ${cacheKey}`);
         return result.data;
       }
-      
+
       return null;
     } catch (error) {
       console.error('[LyricsCache] getMetadata error:', error);
       return null;
     }
   },
-  
+
   /**
    * 메타데이터 번역 캐시 저장
    */
@@ -450,7 +450,7 @@ const LyricsCache = {
       const tx = db.transaction('metadata', 'readwrite');
       const store = tx.objectStore('metadata');
       const cacheKey = `${trackId}:${lang}`;
-      
+
       store.put({
         cacheKey,
         trackId,
@@ -458,12 +458,12 @@ const LyricsCache = {
         data,
         cachedAt: Date.now()
       });
-      
+
       await new Promise((resolve, reject) => {
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
       });
-      
+
       console.log(`[LyricsCache] Metadata cached for ${cacheKey}`);
       return true;
     } catch (error) {
@@ -471,7 +471,7 @@ const LyricsCache = {
       return false;
     }
   },
-  
+
   /**
    * YouTube 정보 캐시 조회
    */
@@ -480,25 +480,25 @@ const LyricsCache = {
       const db = await this._openDB();
       const tx = db.transaction('youtube', 'readonly');
       const store = tx.objectStore('youtube');
-      
+
       const result = await new Promise((resolve, reject) => {
         const request = store.get(trackId);
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
       });
-      
+
       if (result && !this._isExpired(result.cachedAt, 'youtube')) {
         console.log(`[LyricsCache] YouTube cache hit for ${trackId}`);
         return result.data;
       }
-      
+
       return null;
     } catch (error) {
       console.error('[LyricsCache] getYouTube error:', error);
       return null;
     }
   },
-  
+
   /**
    * YouTube 정보 캐시 저장
    */
@@ -507,18 +507,18 @@ const LyricsCache = {
       const db = await this._openDB();
       const tx = db.transaction('youtube', 'readwrite');
       const store = tx.objectStore('youtube');
-      
+
       store.put({
         trackId,
         data,
         cachedAt: Date.now()
       });
-      
+
       await new Promise((resolve, reject) => {
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
       });
-      
+
       console.log(`[LyricsCache] YouTube cached for ${trackId}`);
       return true;
     } catch (error) {
@@ -526,66 +526,66 @@ const LyricsCache = {
       return false;
     }
   },
-  
+
   /**
    * 커뮤니티 싱크 오프셋 캐시 조회
    */
   async getSync(trackId) {
     try {
       const db = await this._openDB();
-      
+
       // sync 스토어가 없으면 null 반환 (DB 마이그레이션 전)
       if (!db.objectStoreNames.contains('sync')) {
         return null;
       }
-      
+
       const tx = db.transaction('sync', 'readonly');
       const store = tx.objectStore('sync');
-      
+
       const result = await new Promise((resolve, reject) => {
         const request = store.get(trackId);
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
       });
-      
+
       if (result && !this._isExpired(result.cachedAt, 'sync')) {
         console.log(`[LyricsCache] Sync cache hit for ${trackId}`);
         return result.data;
       }
-      
+
       return null;
     } catch (error) {
       console.error('[LyricsCache] getSync error:', error);
       return null;
     }
   },
-  
+
   /**
    * 커뮤니티 싱크 오프셋 캐시 저장
    */
   async setSync(trackId, data) {
     try {
       const db = await this._openDB();
-      
+
       // sync 스토어가 없으면 스킵 (DB 마이그레이션 전)
       if (!db.objectStoreNames.contains('sync')) {
         return false;
       }
-      
+
       const tx = db.transaction('sync', 'readwrite');
       const store = tx.objectStore('sync');
-      
+
       store.put({
         trackId,
         data,
         cachedAt: Date.now()
       });
-      
+
       await new Promise((resolve, reject) => {
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
       });
-      
+
       console.log(`[LyricsCache] Sync cached for ${trackId}`);
       return true;
     } catch (error) {
@@ -593,29 +593,29 @@ const LyricsCache = {
       return false;
     }
   },
-  
+
   /**
    * 커뮤니티 싱크 오프셋 캐시 삭제
    */
   async deleteSync(trackId) {
     try {
       const db = await this._openDB();
-      
+
       // sync 스토어가 없으면 스킵
       if (!db.objectStoreNames.contains('sync')) {
         return false;
       }
-      
+
       const tx = db.transaction('sync', 'readwrite');
       const store = tx.objectStore('sync');
-      
+
       store.delete(trackId);
-      
+
       await new Promise((resolve, reject) => {
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
       });
-      
+
       console.log(`[LyricsCache] Sync cache deleted for ${trackId}`);
       return true;
     } catch (error) {
@@ -623,7 +623,7 @@ const LyricsCache = {
       return false;
     }
   },
-  
+
   /**
    * 만료된 캐시 정리 (백그라운드에서 실행)
    */
@@ -631,19 +631,19 @@ const LyricsCache = {
     try {
       const db = await this._openDB();
       const stores = ['lyrics', 'translations', 'youtube', 'metadata', 'sync'];
-      
+
       for (const storeName of stores) {
         const tx = db.transaction(storeName, 'readwrite');
         const store = tx.objectStore(storeName);
-        
+
         const request = store.openCursor();
         request.onsuccess = (event) => {
           const cursor = event.target.result;
           if (cursor) {
-            const type = storeName === 'translations' 
+            const type = storeName === 'translations'
               ? (cursor.value.isPhonetic ? 'phonetic' : 'translation')
               : storeName;
-            
+
             if (this._isExpired(cursor.value.cachedAt, type)) {
               cursor.delete();
             }
@@ -651,26 +651,26 @@ const LyricsCache = {
           }
         };
       }
-      
+
       console.log('[LyricsCache] Cleanup completed');
     } catch (error) {
       console.error('[LyricsCache] cleanup error:', error);
     }
   },
-  
+
   /**
    * 특정 트랙의 번역 캐시만 삭제 (발음 + 번역)
    */
   async clearTranslationForTrack(trackId) {
     try {
       const db = await this._openDB();
-      
+
       // 번역 스토어에서 해당 트랙의 모든 번역 삭제
       return new Promise((resolve, reject) => {
         const transTx = db.transaction('translations', 'readwrite');
         const transStore = transTx.objectStore('translations');
         const transRequest = transStore.openCursor();
-        
+
         transRequest.onsuccess = (event) => {
           const cursor = event.target.result;
           if (cursor) {
@@ -680,7 +680,7 @@ const LyricsCache = {
             cursor.continue();
           }
         };
-        
+
         transTx.oncomplete = () => {
           console.log(`[LyricsCache] Cleared translation cache for ${trackId}`);
           resolve(true);
@@ -692,17 +692,17 @@ const LyricsCache = {
       return false;
     }
   },
-  
+
   /**
    * 특정 트랙의 캐시 삭제
    */
   async clearTrack(trackId) {
     try {
       const db = await this._openDB();
-      
+
       // 모든 삭제 작업을 Promise로 관리
       const deletePromises = [];
-      
+
       // 가사 삭제
       deletePromises.push(new Promise((resolve, reject) => {
         const lyricsTx = db.transaction('lyrics', 'readwrite');
@@ -710,7 +710,7 @@ const LyricsCache = {
         lyricsTx.oncomplete = () => resolve();
         lyricsTx.onerror = () => reject(lyricsTx.error);
       }));
-      
+
       // 번역 삭제 (모든 언어)
       deletePromises.push(new Promise((resolve, reject) => {
         const transTx = db.transaction('translations', 'readwrite');
@@ -728,7 +728,7 @@ const LyricsCache = {
         transTx.oncomplete = () => resolve();
         transTx.onerror = () => reject(transTx.error);
       }));
-      
+
       // YouTube 삭제
       deletePromises.push(new Promise((resolve, reject) => {
         const ytTx = db.transaction('youtube', 'readwrite');
@@ -736,7 +736,7 @@ const LyricsCache = {
         ytTx.oncomplete = () => resolve();
         ytTx.onerror = () => reject(ytTx.error);
       }));
-      
+
       // 메타데이터 삭제
       deletePromises.push(new Promise((resolve, reject) => {
         const metaTx = db.transaction('metadata', 'readwrite');
@@ -754,10 +754,10 @@ const LyricsCache = {
         metaTx.oncomplete = () => resolve();
         metaTx.onerror = () => reject(metaTx.error);
       }));
-      
+
       // 모든 삭제 작업이 완료될 때까지 대기
       await Promise.all(deletePromises);
-      
+
       console.log(`[LyricsCache] Cleared cache for ${trackId}`);
       return true;
     } catch (error) {
@@ -765,7 +765,7 @@ const LyricsCache = {
       return false;
     }
   },
-  
+
   /**
    * 전체 캐시 삭제
    */
@@ -773,7 +773,7 @@ const LyricsCache = {
     try {
       const db = await this._openDB();
       const stores = ['lyrics', 'translations', 'youtube', 'metadata'];
-      
+
       // 모든 스토어의 삭제를 병렬로 처리하고 완료 대기
       const clearPromises = stores.map(storeName => {
         return new Promise((resolve, reject) => {
@@ -783,9 +783,9 @@ const LyricsCache = {
           tx.onerror = () => reject(tx.error);
         });
       });
-      
+
       await Promise.all(clearPromises);
-      
+
       console.log('[LyricsCache] All cache cleared');
       return true;
     } catch (error) {
@@ -793,7 +793,7 @@ const LyricsCache = {
       return false;
     }
   },
-  
+
   /**
    * 캐시 통계 조회
    */
@@ -802,18 +802,18 @@ const LyricsCache = {
       const db = await this._openDB();
       const stores = ['lyrics', 'translations', 'youtube', 'metadata'];
       const stats = {};
-      
+
       for (const storeName of stores) {
         const tx = db.transaction(storeName, 'readonly');
         const store = tx.objectStore(storeName);
-        
+
         stats[storeName] = await new Promise((resolve, reject) => {
           const request = store.count();
           request.onsuccess = () => resolve(request.result);
           request.onerror = () => reject(request.error);
         });
       }
-      
+
       return stats;
     } catch (error) {
       console.error('[LyricsCache] getStats error:', error);
@@ -1486,7 +1486,7 @@ const Utils = {
    */
   formatLyricLineToCopy(mainText, subText, subText2, originalText) {
     const lines = [];
-    
+
     // HTML 태그 제거 헬퍼
     const cleanHtml = (text) => {
       if (!text || typeof text !== "string") return "";
@@ -1496,7 +1496,7 @@ const Utils = {
         .replace(/<[^>]+>/g, "") // 기타 HTML 태그 제거
         .trim();
     };
-    
+
     // 원문 처리 - originalText가 있으면 우선 사용, 없으면 mainText 사용
     let originalClean = "";
     if (originalText && typeof originalText === "string") {
@@ -1507,23 +1507,23 @@ const Utils = {
       // 카라오케 모드에서 line 객체인 경우
       originalClean = cleanHtml(mainText.text);
     }
-    
+
     if (originalClean) {
       lines.push(originalClean);
     }
-    
+
     // subText 처리 (발음)
     const subClean = cleanHtml(subText);
     if (subClean) {
       lines.push(subClean);
     }
-    
+
     // subText2 처리 (번역)
     const sub2Clean = cleanHtml(subText2);
     if (sub2Clean) {
       lines.push(sub2Clean);
     }
-    
+
     return lines.join("\n");
   },
 
@@ -1679,7 +1679,7 @@ const Utils = {
   /**
    * Current version of the lyrics-plus app
    */
-  currentVersion: "2.3.6",
+  currentVersion: "2.3.7",
 
   /**
    * Check for updates from remote repository
@@ -1981,7 +1981,7 @@ const Utils = {
   getUserHash() {
     let hash = StorageManager.getPersisted("lyrics-plus:user-hash");
     if (!hash) {
-      hash = crypto.randomUUID ? crypto.randomUUID() : 
+      hash = crypto.randomUUID ? crypto.randomUUID() :
         'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
           const r = Math.random() * 16 | 0;
           const v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -2039,23 +2039,23 @@ const Utils = {
     try {
       const response = await fetch(syncUrl);
       const data = await response.json();
-      
+
       if (data.success && data.data) {
         if (window.ApiTracker && logId) {
-          window.ApiTracker.logResponse(logId, { 
+          window.ApiTracker.logResponse(logId, {
             offsetMs: data.data.offsetMs,
             voteCount: data.data.voteCount
           }, 'success');
         }
         // 로컬 캐시에 저장
-        LyricsCache.setSync(trackId, data.data).catch(() => {});
+        LyricsCache.setSync(trackId, data.data).catch(() => { });
         return data.data;
       }
       if (window.ApiTracker && logId) {
         window.ApiTracker.logResponse(logId, null, 'success', 'No offset found');
       }
       // 오프셋이 없는 경우도 캐시 (null 표시를 위한 빈 객체)
-      LyricsCache.setSync(trackId, { offsetMs: null, voteCount: 0 }).catch(() => {});
+      LyricsCache.setSync(trackId, { offsetMs: null, voteCount: 0 }).catch(() => { });
       return null;
     } catch (error) {
       if (window.ApiTracker && logId) {
@@ -2093,7 +2093,7 @@ const Utils = {
         })
       });
       const data = await response.json();
-      
+
       if (data.success) {
         if (window.ApiTracker && logId) {
           window.ApiTracker.logResponse(logId, { submitted: true }, 'success');
@@ -2134,7 +2134,7 @@ const Utils = {
         })
       });
       const data = await response.json();
-      
+
       if (data.success) {
         console.log(`[Lyrics Plus] Community feedback submitted: ${isPositive ? '👍' : '👎'}`);
         return data;
@@ -2170,7 +2170,7 @@ const Utils = {
         { cache: 'no-cache' }
       );
       const data = await response.json();
-      
+
       if (data.success) {
         return data.data;
       }
@@ -2189,9 +2189,9 @@ const Utils = {
     if (!trackId) return null;
 
     const userHash = this.getUserHash();
-    const userName = Spicetify.Platform?.UserAPI?._currentUser?.displayName || 
-                     Spicetify.User?.displayName || 
-                     'Anonymous';
+    const userName = Spicetify.Platform?.UserAPI?._currentUser?.displayName ||
+      Spicetify.User?.displayName ||
+      'Anonymous';
 
     try {
       const response = await fetch('https://lyrics.api.ivl.is/lyrics/youtube/community', {
@@ -2208,7 +2208,7 @@ const Utils = {
         })
       });
       const data = await response.json();
-      
+
       if (data.success) {
         console.log(`[Lyrics Plus] Community video submitted: ${videoId}`);
         return data;
@@ -2238,7 +2238,7 @@ const Utils = {
         })
       });
       const data = await response.json();
-      
+
       if (data.success) {
         console.log(`[Lyrics Plus] Community vote submitted: ${voteType > 0 ? '👍' : voteType < 0 ? '👎' : '취소'}`);
         return data;
@@ -2272,7 +2272,7 @@ const Utils = {
         }
       );
       const data = await response.json();
-      
+
       if (data.success) {
         console.log(`[Lyrics Plus] Community video deleted: ${videoEntryId}`);
         return data;
@@ -2294,17 +2294,17 @@ const Utils = {
   // =========================================================================
   // IndexedDB 기반 선택한 커뮤니티 영상 저장/로드
   // =========================================================================
-  
+
   /**
    * IndexedDB 데이터베이스 열기
    */
   async _openSelectedVideoDB() {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('LyricsPlusSelectedVideos', 1);
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result);
-      
+
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
         if (!db.objectStoreNames.contains('selectedVideos')) {
@@ -2313,7 +2313,7 @@ const Utils = {
       };
     });
   },
-  
+
   /**
    * 선택한 영상 정보 저장 (IndexedDB)
    * @param {string} trackUri - 트랙 URI
@@ -2324,23 +2324,23 @@ const Utils = {
       const db = await this._openSelectedVideoDB();
       const tx = db.transaction('selectedVideos', 'readwrite');
       const store = tx.objectStore('selectedVideos');
-      
+
       // 저장
       store.put({
         trackUri,
         ...videoInfo,
         savedAt: Date.now()
       });
-      
+
       // 트랜잭션 완료 대기
       await new Promise((resolve, reject) => {
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
       });
-      
+
       // 오래된 항목 정리 (30일 이상)
-      this._cleanupOldSelectedVideos(db).catch(() => {});
-      
+      this._cleanupOldSelectedVideos(db).catch(() => { });
+
       db.close();
       console.log(`[Lyrics Plus] Saved selected video for ${trackUri}:`, videoInfo.youtubeVideoId);
       return true;
@@ -2349,7 +2349,7 @@ const Utils = {
       return false;
     }
   },
-  
+
   /**
    * 오래된 선택 영상 정리 (30일 이상)
    */
@@ -2357,7 +2357,7 @@ const Utils = {
     const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
     const tx = db.transaction('selectedVideos', 'readwrite');
     const store = tx.objectStore('selectedVideos');
-    
+
     const request = store.openCursor();
     request.onsuccess = (event) => {
       const cursor = event.target.result;
@@ -2369,7 +2369,7 @@ const Utils = {
       }
     };
   },
-  
+
   /**
    * 저장된 선택 영상 정보 로드 (IndexedDB)
    * @param {string} trackUri - 트랙 URI
@@ -2380,15 +2380,15 @@ const Utils = {
       const db = await this._openSelectedVideoDB();
       const tx = db.transaction('selectedVideos', 'readonly');
       const store = tx.objectStore('selectedVideos');
-      
+
       const result = await new Promise((resolve, reject) => {
         const request = store.get(trackUri);
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
       });
-      
+
       db.close();
-      
+
       if (result) {
         console.log(`[Lyrics Plus] Loaded selected video for ${trackUri}:`, result.youtubeVideoId);
         return result;
@@ -2399,7 +2399,7 @@ const Utils = {
       return null;
     }
   },
-  
+
   /**
    * 저장된 선택 영상 삭제 (기본 영상으로 되돌릴 때)
    * @param {string} trackUri - 트랙 URI
@@ -2409,13 +2409,13 @@ const Utils = {
       const db = await this._openSelectedVideoDB();
       const tx = db.transaction('selectedVideos', 'readwrite');
       const store = tx.objectStore('selectedVideos');
-      
+
       await new Promise((resolve, reject) => {
         const request = store.delete(trackUri);
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
       });
-      
+
       db.close();
       console.log(`[Lyrics Plus] Removed selected video for ${trackUri}`);
       return true;
@@ -2430,23 +2430,23 @@ const Utils = {
    */
   extractYouTubeVideoId(url) {
     if (!url) return null;
-    
+
     // 이미 Video ID 형식인 경우 (11자리)
     if (/^[a-zA-Z0-9_-]{11}$/.test(url)) {
       return url;
     }
-    
+
     const patterns = [
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
       /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
       /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/
     ];
-    
+
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match) return match[1];
     }
-    
+
     return null;
   },
 
@@ -2456,34 +2456,34 @@ const Utils = {
    */
   async getYouTubeVideoTitle(videoId) {
     if (!videoId) return null;
-    
+
     try {
       // YouTube oEmbed API는 API 키 없이도 사용 가능
       const response = await fetch(
         `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
       );
-      
+
       // 404 = 영상이 존재하지 않음, 401 = 비공개 영상
       if (response.status === 404 || response.status === 401) {
         console.log("[Lyrics Plus] YouTube video not found or private:", videoId);
         return null;
       }
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      
+
       const data = await response.json();
       return data.title || null;
     } catch (error) {
       console.error("[Lyrics Plus] Failed to get YouTube title:", error);
-      
+
       // 백업: noembed.com 사용
       try {
         const backupResponse = await fetch(
           `https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`
         );
-        
+
         if (backupResponse.ok) {
           const backupData = await backupResponse.json();
           // noembed은 존재하지 않는 영상에 대해 error 필드를 반환함
@@ -2496,7 +2496,7 @@ const Utils = {
       } catch (backupError) {
         console.error("[Lyrics Plus] Backup title fetch also failed:", backupError);
       }
-      
+
       return null;
     }
   },
@@ -2509,38 +2509,38 @@ const Utils = {
     if (!videoId) {
       return { valid: false, title: null, error: 'invalidId' };
     }
-    
+
     // 기본적인 ID 형식 검증 (11자리, 영숫자 + 특수문자)
     if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
       return { valid: false, title: null, error: 'invalidFormat' };
     }
-    
+
     try {
       // oEmbed API로 영상 존재 여부 확인
       const response = await fetch(
         `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
       );
-      
+
       // 404 = 영상이 존재하지 않음
       if (response.status === 404) {
         return { valid: false, title: null, error: 'notFound' };
       }
-      
+
       // 401 = 비공개 영상
       if (response.status === 401) {
         return { valid: false, title: null, error: 'private' };
       }
-      
+
       if (!response.ok) {
         return { valid: false, title: null, error: 'httpError' };
       }
-      
+
       const data = await response.json();
-      
+
       if (!data.title) {
         return { valid: false, title: null, error: 'noTitle' };
       }
-      
+
       return { valid: true, title: data.title, error: null };
     } catch (error) {
       console.error("[Lyrics Plus] YouTube validation error:", error);

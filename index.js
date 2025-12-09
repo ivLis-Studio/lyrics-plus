@@ -304,6 +304,29 @@ const OverlaySender = {
     }
   },
 
+  _isSettingsOpen: false,
+  _settingsTimer: null,
+
+  setSettingsOpen(isOpen) {
+    this._isSettingsOpen = isOpen;
+    if (this._settingsTimer) {
+      clearInterval(this._settingsTimer);
+      this._settingsTimer = null;
+    }
+
+    if (isOpen) {
+      console.log('[OverlaySender] 설정창 열림 - 연결 확인 폴링 시작');
+      this.checkConnection();
+      this._settingsTimer = setInterval(() => {
+        if (!this.isConnected) {
+          this.checkConnection();
+        }
+      }, 2000);
+    } else {
+      console.log('[OverlaySender] 설정창 닫힘 - 연결 확인 폴링 종료');
+    }
+  },
+
   get isConnected() {
     return this._isConnected;
   },
@@ -469,7 +492,7 @@ const OverlaySender = {
 
     console.log('[OverlaySender] 가사 전송:', { lines: mappedLines.length, offset });
 
-    this.sendToEndpoint('/lyrics', {
+    await this.sendToEndpoint('/lyrics', {
       track: {
         title: trackInfo.title || Spicetify.Player.data?.item?.metadata?.title || '',
         artist: trackInfo.artist || Spicetify.Player.data?.item?.metadata?.artist_name || '',
@@ -503,7 +526,7 @@ const OverlaySender = {
           if (interval) clearInterval(interval);
           interval = setInterval(() => {
             self.postMessage('tick');
-          }, 100);
+          }, 250);
         } else if (e.data === 'stop') {
           if (interval) clearInterval(interval);
           interval = null;
@@ -513,8 +536,12 @@ const OverlaySender = {
 
     this._worker = new Worker(URL.createObjectURL(blob));
 
-    this._worker.onmessage = () => {
+    this._worker.onmessage = async () => {
       if (!this.enabled) return;
+      if (this._isSendingProgress) return;
+
+      // 연결되지 않았고 설정창도 안 열려있으면 진행률 전송 중단 (네트워크 보호)
+      if (!this.isConnected && !this._isSettingsOpen) return;
 
       // 전역 딜레이 변경 체크
       if (typeof CONFIG !== 'undefined' && CONFIG.visual) {
@@ -527,10 +554,15 @@ const OverlaySender = {
         }
       }
 
-      this.sendToEndpoint('/progress', {
-        position: Spicetify.Player.getProgress() || 0,
-        isPlaying: Spicetify.Player.isPlaying() || false
-      });
+      this._isSendingProgress = true;
+      try {
+        await this.sendToEndpoint('/progress', {
+          position: Spicetify.Player.getProgress() || 0,
+          isPlaying: Spicetify.Player.isPlaying() || false
+        });
+      } finally {
+        this._isSendingProgress = false;
+      }
     };
 
     this._worker.postMessage('start');
@@ -3083,6 +3115,13 @@ class LyricsContainer extends react.Component {
         null;
       if (!lyrics) {
         this.setState({ currentLyrics: [] });
+        // 오버레이에 가사 없음 상태 전송 (트랙 정보 업데이트용)
+        if (typeof OverlaySender !== 'undefined') {
+          OverlaySender.sendLyrics(
+            { uri: lyricsState.uri, title: this.state.title, artist: this.state.artist },
+            []
+          );
+        }
         return;
       }
     }
@@ -3186,7 +3225,7 @@ class LyricsContainer extends react.Component {
         currentLyrics: finalLyrics,
       });
       // 🔹 lyrics-plus-overlay 앱으로 원문 가사 전송 (번역 모드 미사용)
-      if (typeof OverlaySender !== 'undefined' && finalLyrics.length > 0) {
+      if (typeof OverlaySender !== 'undefined') {
         OverlaySender.sendLyrics(
           { uri, title: this.state.title, artist: this.state.artist },
           finalLyrics
@@ -3210,7 +3249,7 @@ class LyricsContainer extends react.Component {
         currentLyrics: originalLyrics,
       });
       // 🔹 lyrics-plus-overlay 앱으로 원문 가사 먼저 전송 (번역 로딩 전)
-      if (typeof OverlaySender !== 'undefined' && originalLyrics.length > 0) {
+      if (typeof OverlaySender !== 'undefined') {
         OverlaySender.sendLyrics(
           { uri, title: this.state.title, artist: this.state.artist },
           originalLyrics
@@ -3271,7 +3310,7 @@ class LyricsContainer extends react.Component {
       });
 
       // 🔹 lyrics-plus-overlay 앱으로 가사 전송
-      if (typeof OverlaySender !== 'undefined' && finalLyrics.length > 0) {
+      if (typeof OverlaySender !== 'undefined') {
         OverlaySender.sendLyrics(
           { uri, title: this.state.title, artist: this.state.artist },
           finalLyrics
@@ -3599,7 +3638,32 @@ class LyricsContainer extends react.Component {
       const cacheKey2 = `${lyricsState.uri}:${cacheKey}`;
       const cached = CacheManager.get(cacheKey2);
 
-      if (cached) return resolve(cached);
+      if (cached) {
+        // Fix cached items if they have double-encoded JSON structure
+        let fixNeeded = false;
+        let targetField = wantSmartPhonetic ? 'phonetic' : 'vi';
+
+        if (cached[targetField] && Array.isArray(cached[targetField]) &&
+          cached[targetField].length === 1 && typeof cached[targetField][0] === 'string' &&
+          cached[targetField][0].trim().startsWith('{')) {
+          try {
+            const parsed = JSON.parse(cached[targetField][0]);
+            if (wantSmartPhonetic && Array.isArray(parsed.phonetic)) {
+              cached.phonetic = parsed.phonetic;
+              fixNeeded = true;
+            } else if (!wantSmartPhonetic && Array.isArray(parsed.vi)) {
+              cached.vi = parsed.vi;
+              fixNeeded = true;
+            } else if (parsed.vi && Array.isArray(parsed.vi)) {
+              // Fallback
+              cached[targetField] = parsed.vi;
+              fixNeeded = true;
+            }
+          } catch (e) { }
+        }
+
+        return resolve(cached);
+      }
 
       // De-duplicate concurrent calls per (uri, type). Share the same promise for callers
       const inflightKey = `${lyricsState.uri}:${cacheKey}`;
@@ -3653,6 +3717,26 @@ class LyricsContainer extends react.Component {
           }
 
           if (!outText) throw new Error("Empty result from Gemini.");
+
+          // Handle nested JSON packaging (API issue workaround)
+          if (Array.isArray(outText) && outText.length === 1 && typeof outText[0] === 'string') {
+            try {
+              if (outText[0].trim().startsWith('{')) {
+                const parsed = JSON.parse(outText[0]);
+                if (wantSmartPhonetic && Array.isArray(parsed.phonetic)) {
+                  outText = parsed.phonetic;
+                } else if (!wantSmartPhonetic && Array.isArray(parsed.vi)) {
+                  outText = parsed.vi;
+                } else if (parsed.vi && Array.isArray(parsed.vi)) {
+                  // Fallback: request was phonetic but response came as vi?
+                  // or just general structure match
+                  outText = parsed.vi;
+                }
+              }
+            } catch (e) {
+              // Not valid JSON, process as standard array
+            }
+          }
 
           // Handle both array and string formats
           let lines;

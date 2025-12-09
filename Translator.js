@@ -59,14 +59,14 @@ class Translator {
   // 특정 trackId에 대한 진행 중인 요청 정리 (곡 변경 시 호출)
   static clearInflightRequests(trackId) {
     if (!trackId) return;
-    
+
     // _inflightRequests에서 해당 trackId로 시작하는 키 제거
     for (const key of _inflightRequests.keys()) {
       if (key.startsWith(`${trackId}:`)) {
         _inflightRequests.delete(key);
       }
     }
-    
+
     // _pendingRetries에서도 제거
     for (const key of _pendingRetries.keys()) {
       if (key.startsWith(`${trackId}:`)) {
@@ -133,7 +133,7 @@ class Translator {
     if (!ignoreCache && this._metadataCache.has(cacheKey)) {
       return this._metadataCache.get(cacheKey);
     }
-    
+
     // 로컬 캐시 (IndexedDB) 확인
     if (!ignoreCache) {
       try {
@@ -155,13 +155,13 @@ class Translator {
 
     const requestPromise = (async () => {
       const url = "https://lyrics.api.ivl.is/lyrics/translate/metadata";
-      
+
       // API 요청 로깅 시작
       let logId = null;
       if (window.ApiTracker) {
         logId = window.ApiTracker.logRequest('metadata', url, { trackId: finalTrackId, title, artist, lang: userLang });
       }
-      
+
       try {
         const response = await fetch(url, {
           method: "POST",
@@ -208,7 +208,7 @@ class Translator {
           // 메모리 캐시에 저장
           this._metadataCache.set(cacheKey, data.data);
           // 로컬 캐시(IndexedDB)에도 저장 (백그라운드)
-          LyricsCache.setMetadata(finalTrackId, userLang, data.data).catch(() => {});
+          LyricsCache.setMetadata(finalTrackId, userLang, data.data).catch(() => { });
           return data.data;
         }
 
@@ -303,10 +303,34 @@ class Translator {
     if (!text?.trim()) throw new Error("No text provided for translation");
 
     // Get API key from localStorage
-    const apiKey = StorageManager.getItem("lyrics-plus:visual:gemini-api-key");
+    const apiKeyRaw = StorageManager.getItem("lyrics-plus:visual:gemini-api-key");
+    let apiKeys = [];
+
+    // Parse API keys (support both single string and JSON array)
+    try {
+      if (apiKeyRaw) {
+        const trimmed = apiKeyRaw.trim();
+        if (trimmed.startsWith('[')) {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) {
+            apiKeys = parsed;
+          } else {
+            apiKeys = [trimmed];
+          }
+        } else {
+          apiKeys = [trimmed];
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to parse API keys, treating as single key", e);
+      apiKeys = [apiKeyRaw];
+    }
+
+    // Filter empty keys
+    apiKeys = apiKeys.filter(k => k && k.trim().length > 0);
 
     // Check if API key is provided
-    if (!apiKey || apiKey.trim() === "") {
+    if (apiKeys.length === 0) {
       throw new Error(
         I18n.t("translator.missingApiKey")
       );
@@ -323,7 +347,7 @@ class Translator {
 
     // 사용자의 현재 언어 가져오기
     const userLang = I18n.getCurrentLanguage();
-    
+
     // 1. 로컬 캐시 먼저 확인 (ignoreCache가 아닌 경우)
     if (!ignoreCache) {
       try {
@@ -333,8 +357,8 @@ class Translator {
           // 캐시 히트 로깅
           if (window.ApiTracker) {
             window.ApiTracker.logCacheHit(
-              wantSmartPhonetic ? 'phonetic' : 'translation', 
-              `${finalTrackId}:${userLang}`, 
+              wantSmartPhonetic ? 'phonetic' : 'translation',
+              `${finalTrackId}:${userLang}`,
               { lineCount: localCached.phonetic?.length || localCached.translation?.length || 0 }
             );
           }
@@ -344,10 +368,10 @@ class Translator {
         console.warn('[Translator] Local cache check failed:', e);
       }
     }
-    
+
     // 중복 요청 방지: 동일한 trackId + type + lang 조합에 대한 요청이 진행 중이면 해당 Promise 반환
     const requestKey = getRequestKey(finalTrackId, wantSmartPhonetic, userLang);
-    
+
     // ignoreCache가 아닌 경우에만 중복 요청 체크
     if (!ignoreCache && _inflightRequests.has(requestKey)) {
       console.log(`[Translator] Deduplicating request for: ${requestKey}`);
@@ -355,7 +379,7 @@ class Translator {
     }
 
     // 실제 API 호출을 수행하는 함수
-    const executeRequest = async () => {
+    const executeRequest = async (currentApiKey) => {
       const endpoints = [
         "https://lyrics.api.ivl.is/lyrics/translate",
       ];
@@ -369,7 +393,7 @@ class Translator {
         text,
         wantSmartPhonetic,
         provider,
-        apiKey,
+        apiKey: currentApiKey,
         ignore_cache: ignoreCache,
         lang: userLang,
         userHash,
@@ -379,13 +403,13 @@ class Translator {
       const category = wantSmartPhonetic ? 'phonetic' : 'translation';
       let logId = null;
       if (window.ApiTracker) {
-        logId = window.ApiTracker.logRequest(category, endpoints[0], { 
-          trackId: finalTrackId, 
-          artist, 
-          title, 
+        logId = window.ApiTracker.logRequest(category, endpoints[0], {
+          trackId: finalTrackId,
+          artist,
+          title,
           lang: userLang,
           wantSmartPhonetic,
-          textLength: text?.length || 0 
+          textLength: text?.length || 0
         });
       }
 
@@ -438,27 +462,27 @@ class Translator {
             // 진행 중 응답 처리 (202): 재시도 없이 기존 요청 대기
             if (res.status === 202 && errorData.status === "translation_in_progress") {
               console.log(`[Translator] Translation in progress for: ${requestKey}, waiting...`);
-              
+
               // 이미 재시도 대기 중인 경우 해당 Promise 반환
               if (_pendingRetries.has(requestKey)) {
                 return _pendingRetries.get(requestKey);
               }
-              
+
               // 일정 시간 후 자동 재시도 (폴링)
               const retryPromise = new Promise((resolve, reject) => {
                 const retryDelay = Math.min((errorData.retry_after || 5) * 1000, 30000);
                 const maxRetries = 20; // 최대 20회 재시도 (약 100초)
                 let retryCount = 0;
-                
+
                 const pollStatus = async () => {
                   retryCount++;
-                  
+
                   try {
                     // 상태 확인 API 호출
                     const statusUrl = `https://lyrics.api.ivl.is/lyrics/translate?action=status&trackId=${finalTrackId}&lang=${userLang}&isPhonetic=${wantSmartPhonetic}`;
                     const statusRes = await fetch(statusUrl);
                     const statusData = await statusRes.json();
-                    
+
                     if (statusData.status === "completed") {
                       // 완료되었으면 다시 요청 (캐시에서 가져옴)
                       _pendingRetries.delete(requestKey);
@@ -478,7 +502,7 @@ class Translator {
                       reject(new Error(statusData.message || "Translation failed"));
                       return;
                     }
-                    
+
                     // 아직 진행 중이면 계속 대기
                     if (retryCount < maxRetries) {
                       setTimeout(pollStatus, retryDelay);
@@ -495,12 +519,20 @@ class Translator {
                     }
                   }
                 };
-                
+
                 setTimeout(pollStatus, retryDelay);
               });
-              
+
               _pendingRetries.set(requestKey, retryPromise);
               return retryPromise;
+            }
+
+            if (res.status === 429) {
+              throw new Error("429 Rate Limit Exceeded");
+            }
+
+            if (res.status === 403) {
+              throw new Error("403 Forbidden");
             }
 
             if (errorData.error && errorData.message) {
@@ -551,7 +583,7 @@ class Translator {
         }
 
         // 성공 시 로컬 캐시에 저장 (백그라운드)
-        LyricsCache.setTranslation(finalTrackId, userLang, wantSmartPhonetic, data).catch(() => {});
+        LyricsCache.setTranslation(finalTrackId, userLang, wantSmartPhonetic, data).catch(() => { });
 
         return data;
       } catch (error) {
@@ -563,12 +595,40 @@ class Translator {
         if (error.name === "AbortError") {
           throw new Error(I18n.t("translator.requestTimeout"));
         }
-        throw new Error(`${I18n.t("translator.failedPrefix")}: ${error.message}`);
+        throw error;
       }
     };
 
+    // 로테이션 실행 로직
+    const runWithRotation = async () => {
+      let lastError;
+      for (let i = 0; i < apiKeys.length; i++) {
+        const key = apiKeys[i];
+        try {
+          return await executeRequest(key);
+        } catch (error) {
+          lastError = error;
+          // 429(Rate Limit) 또는 403(Forbidden/Invalid)인 경우 다음 키로 시도
+          const isRateLimit = error.message.includes("429") || error.message.includes("Rate Limit");
+          const isForbidden = error.message.includes("403") || error.message.includes("Forbidden") || error.message.includes("API key not valid");
+
+          if (isRateLimit || isForbidden) {
+            console.warn(`[Translator] API Key ${key.substring(0, 8)}... failed (${isRateLimit ? 'Rate Limit' : 'Invalid'}). Rotating...`);
+            if (i === apiKeys.length - 1) {
+              break; // 마지막 키였으면 중단
+            }
+            continue; // 다음 키 시도
+          }
+
+          // 그 외 에러는 즉시 중단
+          throw error;
+        }
+      }
+      throw new Error(`${I18n.t("translator.failedPrefix")}: ${lastError ? lastError.message : "All keys failed"}`);
+    };
+
     // Promise를 생성하고 Map에 저장
-    const requestPromise = executeRequest().finally(() => {
+    const requestPromise = runWithRotation().finally(() => {
       // 요청 완료 후 Map에서 제거
       _inflightRequests.delete(requestKey);
     });
@@ -623,8 +683,8 @@ class Translator {
           break;
         case "zh":
           await this.includeExternal(openCCPath);
-          this.includeExternal(pinyinProPath).catch(() => {});
-          this.includeExternal(tinyPinyinPath).catch(() => {});
+          this.includeExternal(pinyinProPath).catch(() => { });
+          this.includeExternal(tinyPinyinPath).catch(() => { });
           break;
         case "ru":
         case "vi":
@@ -828,7 +888,7 @@ class Translator {
         await this.includeExternal(url);
         await this.waitForGlobals(["pinyinPro"], 8000);
         return true;
-      } catch {}
+      } catch { }
     }
     return false;
   }
@@ -845,7 +905,7 @@ class Translator {
         await this.includeExternal(url);
         await this.waitForGlobals(["TinyPinyin"], 8000);
         return true;
-      } catch {}
+      } catch { }
     }
     return false;
   }
