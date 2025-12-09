@@ -1,4 +1,4 @@
-// Persian (Farsi) language file for Lyrics Plus
+﻿// Persian (Farsi) language file for Lyrics Plus
 window.LANG_FA = {
   "meta": {
     "language": "فارسی",
@@ -794,6 +794,10 @@ window.LANG_FA = {
         "desc": "تراز وسط آلبوم در نبود متن",
         "info": "وقتی متن آهنگ موجود نیست یا در حال بارگذاری است، کاور آلبوم در وسط صفحه قرار می‌گیرد"
       },
+      "infoGap": {
+        "desc": "فاصله کاور آلبوم",
+        "info": "تنظیم فاصله بین کاور آلبوم و کنترلها (پیکسل)"
+      },
       "twoColumnLayout": {
         "desc": "استفاده از طرح‌بندی دو ستونه"
       },
@@ -1089,3 +1093,4 @@ window.LANG_FA = {
   "close": "بستن",
   "cancel": "لغو"
 };
+

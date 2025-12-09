@@ -1,4 +1,4 @@
-// Bengali language file for Lyrics Plus
+﻿// Bengali language file for Lyrics Plus
 window.LANG_BN = {
   "meta": {
     "language": "বাংলা",
@@ -794,6 +794,10 @@ window.LANG_BN = {
         "desc": "লিরিক্স ছাড়া অ্যালবাম মাঝখানে",
         "info": "যখন লিরিক্স থাকে না বা লোড হচ্ছে তখন অ্যালবাম আর্ট মাঝখানে রাখুন"
       },
+      "infoGap": {
+        "desc": "অযলবম আরট গযপ",
+        "info": "অযলবম আরট এব কনটরলর মধয বযবধন সমঞজসয করন (পকসল)"
+      },
       "twoColumnLayout": {
         "desc": "২-কলাম লেআউট ব্যবহার করুন"
       },
@@ -1089,3 +1093,4 @@ window.LANG_BN = {
   "close": "বন্ধ করুন",
   "cancel": "বাতিল"
 };
+

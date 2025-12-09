@@ -1,4 +1,4 @@
-// Portuguese language file for Lyrics Plus
+﻿// Portuguese language file for Lyrics Plus
 window.LANG_PT = {
   "meta": {
     "language": "Português",
@@ -794,6 +794,10 @@ window.LANG_PT = {
         "desc": "Centralizar Álbum sem Letra",
         "info": "Posicionar capa do álbum no centro quando não houver letra ou estiver carregando"
       },
+      "infoGap": {
+        "desc": "Espaçamento do álbum",
+        "info": "Ajustar o espaçamento entre a capa do álbum e os controles (pixels)"
+      },
       "twoColumnLayout": {
         "desc": "Usar Layout de 2 Colunas"
       },
@@ -1089,3 +1093,4 @@ window.LANG_PT = {
   "close": "Fechar",
   "cancel": "Cancelar"
 };
+

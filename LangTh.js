@@ -1,4 +1,4 @@
-// Thai language file for Lyrics Plus
+﻿// Thai language file for Lyrics Plus
 window.LANG_TH = {
   "meta": {
     "language": "ไทย",
@@ -794,6 +794,10 @@ window.LANG_TH = {
         "desc": "จัดกลางเมื่อไม่มีเนื้อเพลง",
         "info": "จัดปกอัลบั้มให้อยู่กึ่งกลางหน้าจอเมื่อไม่มีเนื้อเพลงหรือกำลังโหลด"
       },
+      "infoGap": {
+        "desc": "ระยะหางปกอลบม",
+        "info": "ปรบระยะหางระหวางปกอลบมและสวนควบคม (พกเซล)"
+      },
       "twoColumnLayout": {
         "desc": "ใช้เลย์เอาต์ 2 คอลัมน์"
       },
@@ -1089,3 +1093,4 @@ window.LANG_TH = {
   "close": "ปิด",
   "cancel": "ยกเลิก"
 };
+

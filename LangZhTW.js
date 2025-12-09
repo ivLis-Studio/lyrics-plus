@@ -810,6 +810,10 @@ window.LANG_ZH_TW = {
         "desc": "無歌詞時置中顯示專輯",
         "info": "當歌詞不可用或正在載入時將專輯封面置中"
       },
+      "infoGap": {
+        "desc": "專輯封面間距",
+        "info": "調整專輯封面與控制項之間的間距（像素）"
+      },
       "twoColumnLayout": {
         "desc": "使用雙欄版面配置"
       },

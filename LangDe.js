@@ -1,4 +1,4 @@
-// German language file for Lyrics Plus
+﻿// German language file for Lyrics Plus
 window.LANG_DE = {
   "meta": {
     "language": "Deutsch",
@@ -810,6 +810,10 @@ window.LANG_DE = {
         "desc": "Album zentrieren ohne Text",
         "info": "Zentriert das Albumcover, wenn kein Text vorhanden ist oder geladen wird"
       },
+      "infoGap": {
+        "desc": "Albumcover-Abstand",
+        "info": "Abstand zwischen Albumcover und Steuerelementen anpassen (Pixel)"
+      },
       "twoColumnLayout": {
         "desc": "2-Spalten-Layout verwenden"
       },
@@ -1101,3 +1105,4 @@ window.LANG_DE = {
   "close": "Schließen",
   "cancel": "Abbrechen"
 };
+

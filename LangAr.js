@@ -1,4 +1,4 @@
-// Arabic language file for Lyrics Plus
+﻿// Arabic language file for Lyrics Plus
 window.LANG_AR = {
   "meta": {
     "language": "العربية",
@@ -794,6 +794,10 @@ window.LANG_AR = {
         "desc": "توسيط الألبوم بدون كلمات",
         "info": "توسيط غلاف الألبوم عند عدم وجود كلمات أو أثناء التحميل"
       },
+      "infoGap": {
+        "desc": "فجوة غلاف الألبوم",
+        "info": "ضبط المسافة بين غلاف الألبوم وعناصر التحكم (بالبكسل)"
+      },
       "twoColumnLayout": {
         "desc": "استخدام تخطيط عمودين"
       },
@@ -1089,3 +1093,4 @@ window.LANG_AR = {
   "close": "إغلاق",
   "cancel": "إلغاء"
 };
+

@@ -799,12 +799,16 @@ window.LANG_KO = {
         "desc": "번역 표시 방식",
         "info": "제목과 아티스트를 어떻게 표시할지 선택합니다",
         "options": {
-          "translated": "번역만",
-          "romanized": "발음만",
-          "originalTranslated": "원어 + 번역",
-          "originalRomanized": "원어 + 발음",
-          "all": "모두 표시"
+          "all": "모두 표시 (원어 + 번역 + 발음)",
+          "translated": "번역만 표시 (없으면 원어)",
+          "romanized": "발음만 표시 (없으면 원어)",
+          "original-translated": "원어 + 번역",
+          "original-romanized": "원어 + 발음"
         }
+      },
+      "infoGap": {
+        "desc": "앨범 아트 간격",
+        "info": "앨범 아트와 컨트롤/정보 사이의 간격을 조절합니다 (픽셀)"
       },
       "centerWhenNoLyrics": {
         "desc": "가사 없을 때 앨범 중앙 배치",

@@ -1,4 +1,4 @@
-// Spanish language file for Lyrics Plus
+﻿// Spanish language file for Lyrics Plus
 window.LANG_ES = {
   "meta": {
     "language": "Español",
@@ -810,6 +810,10 @@ window.LANG_ES = {
         "desc": "Centrar álbum sin letras",
         "info": "Centra el arte del álbum cuando no hay letras o se están cargando"
       },
+      "infoGap": {
+        "desc": "Espacio del álbum",
+        "info": "Ajustar el espacio entre la portada del álbum y los controles (píxeles)"
+      },
       "twoColumnLayout": {
         "desc": "Usar diseño de 2 columnas"
       },
@@ -1101,3 +1105,4 @@ window.LANG_ES = {
   "close": "Cerrar",
   "cancel": "Cancelar"
 };
+

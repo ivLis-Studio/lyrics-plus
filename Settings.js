@@ -5198,6 +5198,17 @@ const ConfigModal = () => {
               defaultValue: CONFIG.visual["fullscreen-album-radius"] || 12,
             },
             {
+              desc: I18n.t("settingsAdvanced.fullscreenMode.infoGap.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenMode.infoGap.info"),
+              key: "fullscreen-info-gap",
+              type: ConfigSliderRange,
+              min: 0,
+              max: 100,
+              step: 1,
+              unit: "px",
+              defaultValue: (CONFIG.visual["fullscreen-info-gap"] !== undefined) ? CONFIG.visual["fullscreen-info-gap"] : 24,
+            },
+            {
               desc: I18n.t("settingsAdvanced.fullscreenStyle.titleFontSize.desc"),
               info: I18n.t("settingsAdvanced.fullscreenStyle.titleFontSize.info"),
               key: "fullscreen-title-size",

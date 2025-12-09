@@ -1,4 +1,4 @@
-// French language file for Lyrics Plus
+﻿// French language file for Lyrics Plus
 window.LANG_FR = {
   "meta": {
     "language": "Français",
@@ -810,6 +810,10 @@ window.LANG_FR = {
         "desc": "Centrer album sans paroles",
         "info": "Centre la pochette de l'album lorsqu'il n'y a pas de paroles ou qu'elles chargent"
       },
+      "infoGap": {
+        "desc": "Espace pochette",
+        "info": "Ajuster l'espacement entre la pochette de l'album et les contrôles (pixels)"
+      },
       "twoColumnLayout": {
         "desc": "Utiliser la mise en page à 2 colonnes"
       },
@@ -1101,3 +1105,4 @@ window.LANG_FR = {
   "close": "Fermer",
   "cancel": "Annuler"
 };
+

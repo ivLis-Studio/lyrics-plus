@@ -1,4 +1,4 @@
-// Vietnamese language file for Lyrics Plus
+﻿// Vietnamese language file for Lyrics Plus
 window.LANG_VI = {
   "meta": {
     "language": "Tiếng Việt",
@@ -794,6 +794,10 @@ window.LANG_VI = {
         "desc": "Căn giữa khi không có lời",
         "info": "Căn giữa bìa album khi không có lời bài hát hoặc đang tải"
       },
+      "infoGap": {
+        "desc": "Khoảng cách ảnh bìa",
+        "info": "Điều chỉnh khoảng cách giữa ảnh bìa album và các nút điều khiển (pixel)"
+      },
       "twoColumnLayout": {
         "desc": "Sử dụng bố cục 2 cột"
       },
@@ -1089,3 +1093,4 @@ window.LANG_VI = {
   "close": "Đóng",
   "cancel": "Hủy"
 };
+

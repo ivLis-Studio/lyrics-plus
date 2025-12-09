@@ -1,4 +1,4 @@
-// Italian language file for Lyrics Plus
+﻿// Italian language file for Lyrics Plus
 window.LANG_IT = {
   "meta": {
     "language": "Italiano",
@@ -794,6 +794,10 @@ window.LANG_IT = {
         "desc": "Centra Album Senza Testo",
         "info": "Centra copertina album quando non c'è testo o è in caricamento"
       },
+      "infoGap": {
+        "desc": "Spazio copertina",
+        "info": "Regola lo spazio tra la copertina dell'album e i controlli (pixel)"
+      },
       "twoColumnLayout": {
         "desc": "Usa Layout a 2 Colonne"
       },
@@ -1089,3 +1093,4 @@ window.LANG_IT = {
   "close": "Chiudi",
   "cancel": "Annulla"
 };
+

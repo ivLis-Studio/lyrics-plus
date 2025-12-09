@@ -810,6 +810,10 @@ window.LANG_ZH_CN = {
         "desc": "无歌词时居中显示专辑",
         "info": "当歌词不可用或正在加载时将专辑封面居中"
       },
+      "infoGap": {
+        "desc": "专辑封面间距",
+        "info": "调整专辑封面与控件之间的间距（像素）"
+      },
       "twoColumnLayout": {
         "desc": "使用双列布局"
       },

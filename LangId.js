@@ -1,4 +1,4 @@
-// Indonesian language file for Lyrics Plus
+﻿// Indonesian language file for Lyrics Plus
 window.LANG_ID = {
   "meta": {
     "language": "Bahasa Indonesia",
@@ -794,6 +794,10 @@ window.LANG_ID = {
         "desc": "Tengah Saat Tidak Ada Lirik",
         "info": "Tengahkan sampul album saat tidak ada lirik atau sedang memuat"
       },
+      "infoGap": {
+        "desc": "Jarak Seni Album",
+        "info": "Atur jarak antara seni album dan kontrol (piksel)"
+      },
       "twoColumnLayout": {
         "desc": "Gunakan Tata Letak 2 Kolom"
       },
@@ -1089,3 +1093,4 @@ window.LANG_ID = {
   "close": "Tutup",
   "cancel": "Batal"
 };
+

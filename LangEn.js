@@ -806,6 +806,10 @@ window.LANG_EN = {
           "all": "Show All"
         }
       },
+      "infoGap": {
+        "desc": "Album Art Gap",
+        "info": "Adjust the gap between album art and controls (pixels)"
+      },
       "centerWhenNoLyrics": {
         "desc": "Center Album When No Lyrics",
         "info": "Center album art when lyrics are unavailable or loading"

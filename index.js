@@ -420,12 +420,22 @@ const OverlaySender = {
     }
 
     // 2. TrackSyncDB에서 트랙별 오프셋
-    try {
-      if (typeof TrackSyncDB !== 'undefined' && TrackSyncDB.getOffset) {
-        const dbOffset = await TrackSyncDB.getOffset(uri);
-        if (dbOffset) offset += dbOffset;
-      }
-    } catch (e) { }
+    // 메모리 캐시 확인
+    if (this._offsetCache && this._offsetCache[uri] !== undefined) {
+      offset += this._offsetCache[uri];
+    } else {
+      try {
+        if (typeof TrackSyncDB !== 'undefined' && TrackSyncDB.getOffset) {
+          const dbOffset = await TrackSyncDB.getOffset(uri);
+          if (dbOffset) {
+            offset += dbOffset;
+            // 캐시 저장
+            if (!this._offsetCache) this._offsetCache = {};
+            this._offsetCache[uri] = dbOffset;
+          }
+        }
+      } catch (e) { }
+    }
 
     // 3. localStorage 개별 트랙 딜레이
     try {
@@ -665,6 +675,7 @@ const OverlaySender = {
       this.lastSentUri = null;
       this.lastSentLyrics = null;
       this.lastSentOffset = null;
+      this._offsetCache = {};
     });
   },
 
@@ -3300,7 +3311,10 @@ class LyricsContainer extends react.Component {
         currentLyrics: originalLyrics,
       });
       // 🔹 lyrics-plus-overlay 앱으로 원문 가사 먼저 전송 (번역 로딩 전)
-      if (typeof OverlaySender !== 'undefined') {
+      // 단, 번역 모드가 켜져 있다면 번역이 준비될 때까지 기다림 (UI 깜빡임/레이아웃 변경 방지)
+      const isTranslationEnabled = (displayMode1 && displayMode1 !== 'none') || (displayMode2 && displayMode2 !== 'none');
+
+      if (typeof OverlaySender !== 'undefined' && !isTranslationEnabled) {
         OverlaySender.sendLyrics(
           { uri, title: this.state.title, artist: this.state.artist },
           originalLyrics

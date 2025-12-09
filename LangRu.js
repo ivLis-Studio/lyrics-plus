@@ -1,4 +1,4 @@
-// Russian language file for Lyrics Plus
+﻿// Russian language file for Lyrics Plus
 window.LANG_RU = {
   "meta": {
     "language": "Русский",
@@ -794,6 +794,10 @@ window.LANG_RU = {
         "desc": "Центрировать альбом без текста",
         "info": "Размещать обложку альбома по центру, когда текста нет или он загружается"
       },
+      "infoGap": {
+        "desc": "Отступ обложки",
+        "info": "Настроить отступ между обложкой альбома и элементами управления (пиксели)"
+      },
       "twoColumnLayout": {
         "desc": "Использовать 2-колоночный макет"
       },
@@ -1089,3 +1093,4 @@ window.LANG_RU = {
   "close": "Закрыть",
   "cancel": "Отмена"
 };
+

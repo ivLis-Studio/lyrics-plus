@@ -1,4 +1,4 @@
-// Hindi language file for Lyrics Plus
+﻿// Hindi language file for Lyrics Plus
 window.LANG_HI = {
   "meta": {
     "language": "हिन्दी",
@@ -787,6 +787,10 @@ window.LANG_HI = {
         "desc": "लिरिक्स न होने पर एल्बम बीच में",
         "info": "जब लिरिक्स नहीं होते या लोड हो रहे होते हैं तो एल्बम आर्ट को स्क्रीन के केंद्र में रखें"
       },
+      "infoGap": {
+        "desc": "एलबम आरट गप",
+        "info": "एलबम आरट और कटरल क बच क अतर समयजत कर (पकसल)"
+      },
       "twoColumnLayout": {
         "desc": "2-कॉलम लेआउट का उपयोग करें"
       },
@@ -1082,3 +1086,4 @@ window.LANG_HI = {
   "close": "बंद करें",
   "cancel": "रद्द करें"
 };
+
