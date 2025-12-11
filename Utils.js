@@ -1406,18 +1406,45 @@ const Utils = {
     return furiganaMap;
   },
 
+  // Store detected language globally for furigana check
+  _currentDetectedLanguage: null,
+
+  /**
+   * Set the detected language for the current track
+   * @param {string} language - The detected language code (e.g., 'ja', 'zh-hans', 'ko')
+   */
+  setDetectedLanguage(language) {
+    this._currentDetectedLanguage = language;
+  },
+
+  /**
+   * Get the current detected language
+   * @returns {string|null} - The detected language code or null
+   */
+  getDetectedLanguage() {
+    return this._currentDetectedLanguage;
+  },
+
   /**
    * Apply furigana to Japanese text if enabled in settings
+   * Only applies when the detected language is Japanese ('ja')
    * @param {string} text - The text to process
    * @returns {string} - Text with furigana HTML tags if applicable
    */
   applyFuriganaIfEnabled(text) {
-    // Check if furigana is enabled and if the text contains Japanese
+    // Check if furigana is enabled
     if (!CONFIG?.visual?.["furigana-enabled"]) {
       return text;
     }
 
     if (!text || typeof text !== "string") {
+      return text;
+    }
+
+    // Only apply furigana when the detected language is Japanese
+    // This prevents furigana from being applied to Chinese songs
+    const detectedLang = this._currentDetectedLanguage;
+    if (detectedLang !== "ja") {
       return text;
     }
 
@@ -1679,7 +1706,7 @@ const Utils = {
   /**
    * Current version of the lyrics-plus app
    */
-  currentVersion: "2.4.2",
+  currentVersion: "2.4.3",
 
   /**
    * Check for updates from remote repository

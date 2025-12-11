@@ -2166,6 +2166,8 @@ const Prefetcher = {
     // 언어 감지
     const detectedLanguage = Utils.detectLanguage(lyricsArray);
     if (!detectedLanguage) return;
+    // Update Utils detected language for furigana check
+    Utils.setDetectedLanguage(detectedLanguage);
 
     // 현재 설정된 display mode 확인
     let friendlyLanguage = null;
@@ -3939,12 +3941,15 @@ class LyricsContainer extends react.Component {
     if (provider === "geminiKo") {
       // If we have a cached language in state, use it
       if (this.state.language) {
+        // Update Utils detected language for furigana check
+        Utils.setDetectedLanguage(this.state.language);
         return this.state.language;
       }
 
       // Otherwise, detect language from lyrics
       const detectedLanguage = Utils.detectLanguage(lyrics);
-
+      // Update Utils detected language for furigana check
+      Utils.setDetectedLanguage(detectedLanguage);
       return detectedLanguage;
     }
 
@@ -3952,17 +3957,22 @@ class LyricsContainer extends react.Component {
     if (CONFIG.visual["translate:detect-language-override"] !== "off") {
       const overrideLanguage =
         CONFIG.visual["translate:detect-language-override"];
+      // Update Utils detected language for furigana check
+      Utils.setDetectedLanguage(overrideLanguage);
       return overrideLanguage;
     }
 
     // If we have a cached language in state, use it
     if (this.state.language) {
+      // Update Utils detected language for furigana check
+      Utils.setDetectedLanguage(this.state.language);
       return this.state.language;
     }
 
     // Otherwise, detect language from lyrics
     const detectedLanguage = Utils.detectLanguage(lyrics);
-
+    // Update Utils detected language for furigana check
+    Utils.setDetectedLanguage(detectedLanguage);
     return detectedLanguage;
   }
 
