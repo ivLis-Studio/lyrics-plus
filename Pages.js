@@ -799,14 +799,20 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 			},
 			...activeLines.map((line, i) => {
 				const { text, lineNumber, startTime, originalText, text2 } = line;
-				if (i === 1 && activeLineIndex === 1) {
-					const nextLine = activeLines[2];
-					const nextStartTime = nextLine?.startTime || 1;
-					return react.createElement(IdlingIndicator, {
-						key: `idling-indicator-${lineNumber}`,
-						progress: position / nextStartTime,
-						delay: nextStartTime / 3,
-					});
+				// Show IdlingIndicator on the second empty line (i === 1) when before first lyric starts
+				// This replaces the empty line, not the first lyric
+				if (i === 1 && activeLineIndex <= 2) {
+					const firstLyricLine = activeLines[2];
+					const firstLyricStartTime = firstLyricLine?.startTime || 1;
+					// Only show indicator if we're before the first lyric
+					if (position < firstLyricStartTime) {
+						return react.createElement(IdlingIndicator, {
+							key: `idling-indicator-${lineNumber}`,
+							progress: position / firstLyricStartTime,
+							delay: firstLyricStartTime / 3,
+							isActive: true,
+						});
+					}
 				}
 
 				let className = "lyrics-lyricsContainer-LyricsLine";
