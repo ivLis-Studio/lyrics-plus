@@ -63,8 +63,7 @@
 }
 
 /* Right Panel (Lyrics) Adjustments */
-.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage,
-.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-UnsyncedLyricsPage {
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-SyncedLyricsPage {
     grid-area: auto;
     /* Reset grid area to allow side-by-side */
     height: 100vh;
@@ -75,6 +74,18 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+}
+
+/* UnsyncedLyricsPage는 스크롤 가능하도록 별도 스타일 */
+.lyrics-lyricsContainer-LyricsContainer.fullscreen-active .lyrics-lyricsContainer-UnsyncedLyricsPage {
+    grid-area: auto;
+    height: 100vh;
+    width: 100%;
+    padding: 60px 40px;
+    box-sizing: border-box;
+    display: block;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* Adjust lyrics text size and alignment in fullscreen */
