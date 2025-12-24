@@ -802,8 +802,8 @@ window.LANG_KO = {
           "all": "모두 표시 (원어 + 번역 + 발음)",
           "translated": "번역만 표시 (없으면 원어)",
           "romanized": "발음만 표시 (없으면 원어)",
-          "original-translated": "원어 + 번역",
-          "original-romanized": "원어 + 발음"
+          "originalTranslated": "원어 + 번역",
+          "originalRomanized": "원어 + 발음"
         }
       },
       "infoGap": {

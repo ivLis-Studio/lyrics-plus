@@ -119,8 +119,32 @@ class Translator {
       return null;
     }
 
-    // API 키 확인
-    const apiKey = StorageManager.getItem("lyrics-plus:visual:gemini-api-key");
+    // API 키 확인 및 파싱 (JSON 배열 또는 단일 문자열 지원)
+    const apiKeyRaw = StorageManager.getItem("lyrics-plus:visual:gemini-api-key");
+    if (!apiKeyRaw || apiKeyRaw.trim() === "") {
+      return null;
+    }
+
+    // API 키 파싱 (callGemini와 동일한 로직)
+    let apiKey;
+    try {
+      const trimmed = apiKeyRaw.trim();
+      if (trimmed.startsWith('[')) {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          apiKey = parsed[0]; // 첫 번째 키 사용
+        } else {
+          apiKey = trimmed;
+        }
+      } else {
+        apiKey = trimmed;
+      }
+    } catch (e) {
+      console.warn("[Translator] Failed to parse API key, using as-is:", e);
+      apiKey = apiKeyRaw;
+    }
+
+    // 파싱된 키 검증
     if (!apiKey || apiKey.trim() === "") {
       return null;
     }
