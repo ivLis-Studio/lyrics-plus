@@ -799,10 +799,12 @@ const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara 
 			},
 			...activeLines.map((line, i) => {
 				const { text, lineNumber, startTime, originalText, text2 } = line;
-				// Show IdlingIndicator on the second empty line (i === 1) when before first lyric starts
-				// This replaces the empty line, not the first lyric
-				if (i === 1 && activeLineIndex <= 2) {
-					const firstLyricLine = activeLines[2];
+				// Show IdlingIndicator on the second empty line (lineNumber === 1) when before first lyric starts
+				// Check lineNumber instead of i to handle different lines-before configurations
+				// lineNumber 0 = first emptyLine, lineNumber 1 = second emptyLine, lineNumber 2+ = actual lyrics
+				if (lineNumber === 1 && activeLineIndex <= 2) {
+					// Find first actual lyric line from lyrics array (not from activeLines which may be sliced)
+					const firstLyricLine = lyrics[0];
 					const firstLyricStartTime = firstLyricLine?.startTime || 1;
 					// Only show indicator if we're before the first lyric
 					if (position < firstLyricStartTime) {
