@@ -414,6 +414,14 @@ window.LANG_EN = {
       "share": "Copy Share Link",
       "shareCopied": "🔗 Share link copied"
     },
+    "queue": {
+      "title": "Queue",
+      "recentlyPlayed": "Recently Played",
+      "nowPlaying": "Now Playing",
+      "upNext": "Next in Queue",
+      "empty": "Queue is empty",
+      "noRecent": "No recent play history"
+    },
     "contextType": {
       "playlist": "Playlist",
       "album": "Album",
@@ -889,6 +897,10 @@ window.LANG_EN = {
       "showLyricsProgress": {
         "desc": "Show Lyrics Progress",
         "info": "Display current lyrics line number and total line count"
+      },
+      "showQueue": {
+        "desc": "Show Queue on Hover",
+        "info": "Display queue panel when hovering on the right edge of the screen"
       }
     },
     "controllerStyle": {

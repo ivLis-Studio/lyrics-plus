@@ -411,8 +411,16 @@ window.LANG_DE = {
       "repeatOne": "Einen wiederholen",
       "mute": "Stumm",
       "unmute": "Ton an",
-      "share": "Link kopieren",
-      "shareCopied": "🔗 Link kopiert"
+      "share": "Link zum Teilen kopieren",
+      "shareCopied": "🔗 Link zum Teilen kopiert"
+    },
+    "queue": {
+      "title": "Warteschlange",
+      "recentlyPlayed": "Kürzlich gespielt",
+      "nowPlaying": "Aktuell läuft",
+      "upNext": "Als Nächstes",
+      "empty": "Die Warteschlange ist leer",
+      "noRecent": "Keine kürzlichen Wiedergaben"
     },
     "contextType": {
       "playlist": "Playlist",
@@ -889,6 +897,10 @@ window.LANG_DE = {
       "showLyricsProgress": {
         "desc": "Songtext-Fortschritt anzeigen",
         "info": "Zeigt die aktuelle Zeilennummer und die Gesamtanzahl der Zeilen an"
+      },
+      "showQueue": {
+        "desc": "Warteschlange-Panel anzeigen",
+        "info": "Zeigt die Wiedergabewarteschlange an, wenn die Maus auf die rechte Seite des Bildschirms bewegt wird"
       }
     },
     "controllerStyle": {

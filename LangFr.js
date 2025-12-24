@@ -414,6 +414,14 @@ window.LANG_FR = {
       "share": "Copier le lien de partage",
       "shareCopied": "🔗 Lien de partage copié"
     },
+    "queue": {
+      "title": "File d'attente",
+      "recentlyPlayed": "Récemment écoutés",
+      "nowPlaying": "En cours de lecture",
+      "upNext": "À suivre",
+      "empty": "La file d'attente est vide",
+      "noRecent": "Aucune lecture récente"
+    },
     "contextType": {
       "playlist": "Playlist",
       "album": "Album",
@@ -889,6 +897,10 @@ window.LANG_FR = {
       "showLyricsProgress": {
         "desc": "Afficher la progression des paroles",
         "info": "Affiche le numéro de la ligne actuelle et le nombre total de lignes"
+      },
+      "showQueue": {
+        "desc": "Afficher le panneau de file d'attente",
+        "info": "Affiche la file d'attente de lecture lorsque la souris passe sur le côté droit de l'écran"
       }
     },
     "controllerStyle": {

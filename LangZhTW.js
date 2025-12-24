@@ -414,6 +414,14 @@ window.LANG_ZH_TW = {
       "share": "複製分享連結",
       "shareCopied": "🔗 分享連結已複製"
     },
+    "queue": {
+      "title": "播放佇列",
+      "recentlyPlayed": "最近播放",
+      "nowPlaying": "正在播放",
+      "upNext": "即將播放",
+      "empty": "佇列為空",
+      "noRecent": "沒有最近播放記錄"
+    },
     "contextType": {
       "playlist": "播放清單",
       "album": "專輯",
@@ -889,6 +897,10 @@ window.LANG_ZH_TW = {
       "showLyricsProgress": {
         "desc": "顯示歌詞進度",
         "info": "顯示目前歌詞行號和總行數"
+      },
+      "showQueue": {
+        "desc": "顯示佇列面板",
+        "info": "當滑鼠懸停在螢幕右側時顯示播放佇列"
       }
     },
     "controllerStyle": {

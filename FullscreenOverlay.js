@@ -597,6 +597,212 @@ const FullscreenOverlay = (() => {
         );
     };
 
+    // Queue Panel Component - 오른쪽 hover 시 재생 대기열 표시
+    const QueuePanel = ({ show, isFullscreen }) => {
+        const [isHovered, setIsHovered] = useState(false);
+        const [currentTrack, setCurrentTrack] = useState(null);
+        const [nextTracks, setNextTracks] = useState([]);
+        const [recentTracks, setRecentTracks] = useState([]);
+        const [activeTab, setActiveTab] = useState('queue'); // 'queue' or 'recent'
+
+        // 재생 대기열 업데이트
+        useEffect(() => {
+            if (!show || !isFullscreen) return;
+
+            const updateQueue = () => {
+                try {
+                    const queue = Spicetify.Queue;
+                    const playerData = Spicetify.Player.data;
+
+                    // 현재 재생 중인 곡
+                    if (playerData?.item) {
+                        const meta = playerData.item.metadata;
+                        setCurrentTrack({
+                            title: meta?.title || "Unknown",
+                            artist: meta?.artist_name || "Unknown",
+                            image: meta?.image_url || "",
+                            uri: playerData.item.uri
+                        });
+                    }
+
+                    // 다음 곡들 (최대 15곡)
+                    if (queue?.nextTracks?.length > 0) {
+                        const next = queue.nextTracks.slice(0, 15).map((track, index) => {
+                            const meta = track.contextTrack?.metadata || {};
+                            return {
+                                title: meta.title || "Unknown",
+                                artist: meta.artist_name || "Unknown",
+                                image: meta.image_url || "",
+                                uri: track.contextTrack?.uri || "",
+                                index: index + 1
+                            };
+                        });
+                        setNextTracks(next);
+                    } else {
+                        setNextTracks([]);
+                    }
+
+                    // 최근 재생 곡들 (이전 곡 기록)
+                    if (queue?.prevTracks?.length > 0) {
+                        const prev = queue.prevTracks.slice(-10).reverse().map((track, index) => {
+                            const meta = track.contextTrack?.metadata || {};
+                            return {
+                                title: meta.title || "Unknown",
+                                artist: meta.artist_name || "Unknown",
+                                image: meta.image_url || "",
+                                uri: track.contextTrack?.uri || "",
+                                index: index + 1
+                            };
+                        });
+                        setRecentTracks(prev);
+                    } else {
+                        setRecentTracks([]);
+                    }
+                } catch (e) {
+                    console.warn('[FullscreenOverlay] Queue update failed:', e);
+                }
+            };
+
+            updateQueue();
+            const interval = setInterval(updateQueue, 1000);
+
+            // 곡 변경 이벤트 리스너
+            const songChangeHandler = () => updateQueue();
+            Spicetify.Player.addEventListener("songchange", songChangeHandler);
+
+            return () => {
+                clearInterval(interval);
+                Spicetify.Player.removeEventListener("songchange", songChangeHandler);
+            };
+        }, [show, isFullscreen]);
+
+        // 곡 클릭 시 재생
+        const handleTrackClick = useCallback((uri) => {
+            if (!uri) return;
+            try {
+                // URI로 직접 재생 (불필요한 스킵 요청 방지)
+                Spicetify.Player.playUri(uri);
+            } catch (e) {
+                console.warn('[FullscreenOverlay] Failed to play track:', e);
+            }
+        }, []);
+
+        if (!show || !isFullscreen) return null;
+
+        return react.createElement("div", {
+            className: "fullscreen-queue-wrapper"
+        },
+            // Hover trigger area (투명한 오른쪽 영역)
+            !isHovered && react.createElement("div", {
+                className: "fullscreen-queue-trigger-area",
+                onMouseEnter: () => setIsHovered(true)
+            }),
+
+            // Queue panel
+            isHovered && react.createElement("div", {
+                className: "fullscreen-queue-panel visible",
+                onMouseLeave: (e) => {
+                    // 패널 밖으로 마우스가 나갈 때만 닫기
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = e.clientX;
+                    const y = e.clientY;
+                    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+                        setIsHovered(false);
+                    }
+                }
+            },
+                // Content
+                react.createElement("div", { className: "fullscreen-queue-content" },
+                    activeTab === 'queue' ? react.createElement(react.Fragment, null,
+                        // 현재 재생 중
+                        currentTrack && react.createElement("div", { className: "fullscreen-queue-section" },
+                            react.createElement("div", { className: "fullscreen-queue-section-title" },
+                                I18n.t("fullscreen.queue.nowPlaying")
+                            ),
+                            react.createElement("div", { className: "fullscreen-queue-item current" },
+                                currentTrack.image && react.createElement("img", {
+                                    src: currentTrack.image,
+                                    className: "fullscreen-queue-item-image"
+                                }),
+                                react.createElement("div", { className: "fullscreen-queue-item-info" },
+                                    react.createElement("div", { className: "fullscreen-queue-item-title" }, currentTrack.title),
+                                    react.createElement("div", { className: "fullscreen-queue-item-artist" }, currentTrack.artist)
+                                ),
+                                react.createElement("div", { className: "fullscreen-queue-item-playing" },
+                                    react.createElement("span", { className: "fullscreen-queue-playing-icon" }, "♪")
+                                )
+                            )
+                        ),
+
+                        // 다음 재생 곡들
+                        nextTracks.length > 0 && react.createElement("div", { className: "fullscreen-queue-section" },
+                            react.createElement("div", { className: "fullscreen-queue-section-title" },
+                                I18n.t("fullscreen.queue.upNext")
+                            ),
+                            react.createElement("div", { className: "fullscreen-queue-list" },
+                                nextTracks.map((track, idx) =>
+                                    react.createElement("div", {
+                                        key: `next-${idx}`,
+                                        className: "fullscreen-queue-item",
+                                        onClick: () => handleTrackClick(track.uri)
+                                    },
+                                        track.image && react.createElement("img", {
+                                            src: track.image,
+                                            className: "fullscreen-queue-item-image"
+                                        }),
+                                        react.createElement("div", { className: "fullscreen-queue-item-info" },
+                                            react.createElement("div", { className: "fullscreen-queue-item-title" }, track.title),
+                                            react.createElement("div", { className: "fullscreen-queue-item-artist" }, track.artist)
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+
+                        // 대기열이 비어있는 경우
+                        nextTracks.length === 0 && react.createElement("div", { className: "fullscreen-queue-empty" },
+                            I18n.t("fullscreen.queue.empty")
+                        )
+                    ) : react.createElement(react.Fragment, null,
+                        // 최근 재생 곡들
+                        recentTracks.length > 0 ? react.createElement("div", { className: "fullscreen-queue-list" },
+                            recentTracks.map((track, idx) =>
+                                react.createElement("div", {
+                                    key: `recent-${idx}`,
+                                    className: "fullscreen-queue-item",
+                                    onClick: () => handleTrackClick(track.uri)
+                                },
+                                    track.image && react.createElement("img", {
+                                        src: track.image,
+                                        className: "fullscreen-queue-item-image"
+                                    }),
+                                    react.createElement("div", { className: "fullscreen-queue-item-info" },
+                                        react.createElement("div", { className: "fullscreen-queue-item-title" }, track.title),
+                                        react.createElement("div", { className: "fullscreen-queue-item-artist" }, track.artist)
+                                    )
+                                )
+                            )
+                        ) : react.createElement("div", { className: "fullscreen-queue-empty" },
+                            I18n.t("fullscreen.queue.noRecent")
+                        )
+                    )
+                ),
+
+                // Footer with tabs (하단에 탭 버튼)
+                react.createElement("div", { className: "fullscreen-queue-footer" },
+                    react.createElement("button", {
+                        className: `fullscreen-queue-tab ${activeTab === 'queue' ? 'active' : ''}`,
+                        onClick: () => setActiveTab('queue')
+                    }, I18n.t("fullscreen.queue.title")),
+                    react.createElement("button", {
+                        className: `fullscreen-queue-tab ${activeTab === 'recent' ? 'active' : ''}`,
+                        onClick: () => setActiveTab('recent')
+                    }, I18n.t("fullscreen.queue.recentlyPlayed"))
+                )
+            )
+        );
+    };
+
     // Main Overlay Component
     const Overlay = ({
         coverUrl,
@@ -631,6 +837,7 @@ const FullscreenOverlay = (() => {
         const showVolume = CONFIG?.visual?.["fullscreen-show-volume"] !== false;
         const showProgress = CONFIG?.visual?.["fullscreen-show-progress"] !== false;
         const showLyricsProgress = CONFIG?.visual?.["fullscreen-show-lyrics-progress"] === true;
+        const showQueue = CONFIG?.visual?.["fullscreen-show-queue"] !== false;
         const autoHideUI = CONFIG?.visual?.["fullscreen-auto-hide-ui"] !== false;
         const autoHideDelay = (Number(CONFIG?.visual?.["fullscreen-auto-hide-delay"]) || 3) * 1000;
 
@@ -939,7 +1146,12 @@ const FullscreenOverlay = (() => {
                     currentLine: currentLyricIndex,
                     totalLines: totalLyrics
                 })
-            )
+            ),
+            // Queue panel (right side hover)
+            react.createElement(QueuePanel, {
+                show: showQueue,
+                isFullscreen: isFullscreen
+            })
         );
     };
 

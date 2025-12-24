@@ -414,6 +414,14 @@ window.LANG_ZH_CN = {
       "share": "复制分享链接",
       "shareCopied": "🔗 分享链接已复制"
     },
+    "queue": {
+      "title": "播放队列",
+      "recentlyPlayed": "最近播放",
+      "nowPlaying": "正在播放",
+      "upNext": "即将播放",
+      "empty": "队列为空",
+      "noRecent": "没有最近播放记录"
+    },
     "contextType": {
       "playlist": "播放列表",
       "album": "专辑",
@@ -889,6 +897,10 @@ window.LANG_ZH_CN = {
       "showLyricsProgress": {
         "desc": "显示歌词进度",
         "info": "显示当前歌词行号和总行数"
+      },
+      "showQueue": {
+        "desc": "显示队列面板",
+        "info": "当鼠标悬停在屏幕右侧时显示播放队列"
       }
     },
     "controllerStyle": {

@@ -5342,6 +5342,13 @@ const ConfigModal = () => {
               type: ConfigSlider,
               defaultValue: CONFIG.visual["fullscreen-show-lyrics-progress"] ?? false,
             },
+            {
+              desc: I18n.t("settingsAdvanced.fullscreenUI.showQueue.desc"),
+              info: I18n.t("settingsAdvanced.fullscreenUI.showQueue.info"),
+              key: "fullscreen-show-queue",
+              type: ConfigSlider,
+              defaultValue: CONFIG.visual["fullscreen-show-queue"] ?? true,
+            },
           ],
           onChange: (name, value) => {
             CONFIG.visual[name] = value;

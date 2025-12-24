@@ -414,6 +414,14 @@ window.LANG_JA = {
       "share": "共有リンクをコピー",
       "shareCopied": "🔗 共有リンクがコピーされました"
     },
+    "queue": {
+      "title": "キュー",
+      "recentlyPlayed": "最近再生した項目",
+      "nowPlaying": "現在再生中",
+      "upNext": "次に再生",
+      "empty": "キューは空です",
+      "noRecent": "最近の再生履歴はありません"
+    },
     "contextType": {
       "playlist": "プレイリスト",
       "album": "アルバム",
@@ -889,6 +897,10 @@ window.LANG_JA = {
       "showLyricsProgress": {
         "desc": "歌詞進行を表示",
         "info": "現在の歌詞行番号と総行数を表示"
+      },
+      "showQueue": {
+        "desc": "キューパネルを表示",
+        "info": "画面右端でマウスホバー時にキューパネルを表示"
       }
     },
     "controllerStyle": {

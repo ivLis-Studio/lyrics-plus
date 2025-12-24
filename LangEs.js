@@ -414,6 +414,14 @@ window.LANG_ES = {
       "share": "Copiar enlace para compartir",
       "shareCopied": "🔗 Enlace para compartir copiado"
     },
+    "queue": {
+      "title": "Cola",
+      "recentlyPlayed": "Reproducido recientemente",
+      "nowPlaying": "Reproduciendo ahora",
+      "upNext": "A continuación",
+      "empty": "La cola está vacía",
+      "noRecent": "No hay reproducciones recientes"
+    },
     "contextType": {
       "playlist": "Lista de reproducción",
       "album": "Álbum",
@@ -889,6 +897,10 @@ window.LANG_ES = {
       "showLyricsProgress": {
         "desc": "Mostrar progreso de letras",
         "info": "Muestra el número de línea actual y el total de líneas de letras"
+      },
+      "showQueue": {
+        "desc": "Mostrar panel de cola",
+        "info": "Muestra la cola de reproducción cuando el ratón pasa sobre el lado derecho de la pantalla"
       }
     },
     "controllerStyle": {

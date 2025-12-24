@@ -49,7 +49,23 @@ window.LANG_ID = {
     "contributors": "Kontributor",
     "fadWarningTitle": "⚠️ Ekstensi Full Screen Sedang Aktif",
     "fadWarningDesc": "Tidak didukung saat ekstensi Full Screen sedang digunakan.",
-    "fadWarningTip": "Silakan ubah pengaturan penyusunan di pengaturan ekstensi Full Screen secara langsung."
+    "fadWarningTip": "Silakan ubah pengaturan penyusunan di pengaturan ekstensi Full Screen secara langsung.",
+    "desktopOverlay": "Overlay Desktop",
+    "desktopOverlaySubtitle": "Tampilkan lirik sebagai overlay di desktop"
+  },
+  "overlay": {
+    "enabled": {
+      "label": "Aktifkan Overlay Desktop",
+      "desc": "Kirim lirik ke aplikasi overlay desktop"
+    },
+    "status": {
+      "connected": "✓ Terhubung",
+      "disconnected": "Tidak terhubung",
+      "checking": "Memeriksa..."
+    },
+    "openApp": "Buka Aplikasi",
+    "download": "Unduh Aplikasi",
+    "downloadDesc": "Unduh jika aplikasi overlay belum terpasang"
   },
   "settings": {
     "language": {
@@ -397,6 +413,14 @@ window.LANG_ID = {
       "unmute": "Bunyikan",
       "share": "Salin Tautan Berbagi",
       "shareCopied": "🔗 Tautan berbagi disalin"
+    },
+    "queue": {
+      "title": "Antrean",
+      "recentlyPlayed": "Baru Diputar",
+      "nowPlaying": "Sedang Diputar",
+      "upNext": "Berikutnya",
+      "empty": "Antrean kosong",
+      "noRecent": "Tidak ada pemutaran terbaru"
     },
     "contextType": {
       "playlist": "Playlist",
@@ -877,6 +901,10 @@ window.LANG_ID = {
       "showLyricsProgress": {
         "desc": "Tampilkan Progres Lirik",
         "info": "Tampilkan nomor baris saat ini dan total baris lirik"
+      },
+      "showQueue": {
+        "desc": "Tampilkan Panel Antrean",
+        "info": "Tampilkan antrean pemutaran saat mouse berada di sisi kanan layar"
       }
     },
     "controllerStyle": {

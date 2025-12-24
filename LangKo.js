@@ -414,6 +414,14 @@ window.LANG_KO = {
       "share": "공유 링크 복사",
       "shareCopied": "🔗 공유 링크가 복사되었습니다"
     },
+    "queue": {
+      "title": "재생목록",
+      "recentlyPlayed": "최근 재생한 항목",
+      "nowPlaying": "지금 재생 중",
+      "upNext": "다음 재생 목록",
+      "empty": "대기열이 비어 있습니다",
+      "noRecent": "최근 재생 기록이 없습니다"
+    },
     "contextType": {
       "playlist": "플레이리스트",
       "album": "앨범",
@@ -889,6 +897,10 @@ window.LANG_KO = {
       "showLyricsProgress": {
         "desc": "가사 진행률 표시",
         "info": "현재 가사 줄 번호와 전체 가사 줄 수를 표시합니다"
+      },
+      "showQueue": {
+        "desc": "대기열 패널 표시",
+        "info": "화면 오른쪽에 마우스를 가져가면 재생 대기열을 표시합니다"
       }
     },
     "controllerStyle": {
